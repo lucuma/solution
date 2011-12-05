@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-    Shake-SQLAlchemy
-    ----------------------------------------------
+    # Shake-SQLAlchemy
 
     Implements a basic bridge to SQLAlchemy.
 
-    :Copyright © 2010-2011 by Lúcuma labs (http://lucumalabs.com).
-    :MIT License. (http://www.opensource.org/licenses/mit-license.php)
+    Copyright © 2011 by Lúcuma labs (http://lucumalabs.com).
+    MIT License. (http://www.opensource.org/licenses/mit-license.php)
 
 """
-from __future__ import with_statement, absolute_import
+from __future__ import absolute_import
 
 import re
-from threading import Lock
+import threading
 
-from shake import json
 try:
     import sqlalchemy
 except ImportError:
@@ -23,37 +21,17 @@ except ImportError:
         ' You can get download it from http://www.sqlalchemy.org/'
         ' If you\'ve already installed SQLAlchemy, then make sure you have '
         ' it in your PYTHONPATH.')
-from sqlalchemy import orm
 from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.orm.exc import UnmappedClassError
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.types import TypeDecorator, Text
-from werkzeug.exceptions import NotFound
 
-
-_CAMELCASE_RE = re.compile(r'([A-Z]+)(?=[a-z0-9])')
-
-
-class JSONEncodedType(TypeDecorator):
-    """Represents an immutable structure as a JSON-encoded string.
-    """
-    impl = Text
-
-    def process_bind_param(self, value, dialect):
-        if value is None:
-            return None
-        return json.dumps(value)
-
-    def process_result_value(self, value, dialect):
-        if value is None:
-            return {}
-        return json.loads(value)
+from .query import Query, Future, NotFound
+from .types import JSONEncodedType
 
 
 def _create_scoped_session(db):
     return scoped_session(sessionmaker(autocommit=False, autoflush=True,
-        bind=db.engine))
+        bind=db.engine, query_cls=Query))
 
 
 def _make_table(db):
@@ -78,7 +56,7 @@ class _EngineConnector(object):
         self._sqlalch = sqlalch
         self._engine = None
         self._connected_for = None
-        self._lock = Lock()
+        self._lock = threading.Lock()
 
     def get_engine(self):
         with self._lock:
@@ -91,6 +69,9 @@ class _EngineConnector(object):
             self._engine = engine = sqlalchemy.create_engine(info, **options)
             self._connected_for = (uri, echo)
             return engine
+
+
+_CAMELCASE_RE = re.compile(r'([A-Z]+)(?=[a-z0-9])')
 
 
 class _ModelTableNameDescriptor(object):
@@ -163,7 +144,7 @@ class SQLAlchemy(object):
         self.apply_driver_hacks()
         
         self.connector = None
-        self._engine_lock = Lock()
+        self._engine_lock = threading.Lock()
         self.session = _create_scoped_session(self)
 
         self.Model = declarative_base(cls=Model, name='Model')
@@ -243,11 +224,11 @@ class SQLAlchemy(object):
                 connector = _EngineConnector(self)
                 self.connector = connector
             return connector.get_engine()
-
+    
     def create_all(self):
         """Creates all tables. """
         self.Model.metadata.create_all(bind=self.engine)
-
+    
     def drop_all(self):
         """Drops all tables. """
         self.Model.metadata.drop_all(bind=self.engine)

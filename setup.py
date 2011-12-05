@@ -9,18 +9,18 @@ from setuptools import setup
 
 
 ROOTDIR = os.path.dirname(__file__)
-README = os.path.join(ROOTDIR, 'README.txt')
+README = os.path.join(ROOTDIR, 'README.rst')
 
 
 def run_tests():
     import sys, subprocess
-    errno = subprocess.call([sys.executable, 'run_tests.py'])
+    errno = subprocess.call([sys.executable, 'runtests.py'])
     raise SystemExit(errno)
 
 
 setup(
     name='Shake-SQLAlchemy',
-    version='0.2',
+    version='0.4',
     author='Juan-Pablo Scaletti',
     author_email='juanpablo@lucumalabs.com',
     packages=['shake_sqlalchemy'],
@@ -30,7 +30,9 @@ setup(
     description='Add SQLAlchemy support to your Shake application',
     long_description=open(README).read(),
     include_package_data=True,
-    install_requires=['Shake', 'SQLAlchemy'],
+    install_requires=[
+        'SQLAlchemy'
+    ],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',

@@ -1,6 +1,4 @@
-include *.txt *.py
-recursive-include shake_sqlalchemy *
+include *.*
+recursive-include shake_auth *
 recursive-include docs *
 global-exclude shake *.pyc *.pyo
-prune docs/_build
-prune docs/_themes/.git

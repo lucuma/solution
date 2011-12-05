@@ -1,6 +1,4 @@
-
-Shake-SQLAlchemy
-----------------------------------------------
+# Shake-SQLAlchemy
 
 Implements a basic bridge to SQLAlchemy.
 

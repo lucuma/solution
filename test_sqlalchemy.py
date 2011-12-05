@@ -8,12 +8,23 @@ from datetime import datetime
 import os
 import pytest
 
-from shake_sqlalchemy import SQLAlchemy, JSONEncodedType
+from shake_sqlalchemy import SQLAlchemy, JSONEncodedType, NotFound, Future
 
 
 prefix = 'sqlite:///'
 URI1 = 'db1.sqlite'
 URI2 = 'db2.sqlite'
+
+
+def tear_down():
+    try:
+        os.remove(URI1)
+    except:
+        pass
+    try:
+        os.remove(URI2)
+    except:
+        pass
 
 
 def create_test_model(db):
@@ -33,18 +44,8 @@ def create_test_model(db):
     return Todo
 
 
-def tear_down():
-    try:
-        os.remove(URI1)
-    except:
-        pass
-    try:
-        os.remove(URI2)
-    except:
-        pass
-
-
-def test_basic_insert():
+def test_insert():
+    tear_down()
     db = SQLAlchemy(prefix + URI1)
     Todo = create_test_model(db)
     db.create_all()
@@ -58,11 +59,11 @@ def test_basic_insert():
     db.commit()
     titles = ' '.join(x.title for x in db.query(Todo).all())
     assert titles == 'First Second'
-
     tear_down()
 
 
-def test_request_context():
+def test_select():
+    tear_down()
     db = SQLAlchemy(prefix + URI1)
     Todo = create_test_model(db)
     db.create_all()
@@ -70,12 +71,22 @@ def test_request_context():
     data = db.query(Todo).all()
     assert len(data) == 0
 
-    todo = Todo('Test', 'test')
-    db.add(todo)
+    def add(title, text=''):
+        todo = Todo(title, text)
+        db.add(todo)
+    
+    add('First', 'The text')
+    add('Second', 'The text')
     db.commit()
+    
     data = db.query(Todo).all()
+    assert len(data) == 2
+
+    data = db.query(Todo).filter(Todo.title == 'First').all()
     assert len(data) == 1
 
+    data = db.query(Todo).filter(Todo.title == 'First').first()
+    assert data.title == 'First'
     tear_down()
 
 
@@ -84,7 +95,30 @@ def test_helper_api():
     assert db.metadata == db.Model.metadata
 
 
+def test_notfound():
+    tear_down()
+    db = SQLAlchemy(prefix + URI1)
+    Todo = create_test_model(db)
+    db.create_all()
+    TITLE = 'test'
+    TEXT = 'The text'
+    todo = Todo(TITLE, TEXT)
+    db.add(todo)
+    db.commit()
+
+    with pytest.raises(NotFound):
+        db.query(Todo).filter(Todo.title== 'foo').first_or_notfound()
+    
+    with pytest.raises(NotFound):
+        db.query(Todo).get_or_notfound(999)
+    
+    data = db.query(Todo).filter(Todo.title== TITLE).first_or_notfound()
+    assert data.text == TEXT
+    tear_down()
+
+
 def test_multiple_databases():
+    tear_down()
     db1 = SQLAlchemy(prefix + URI1)
     db2 = SQLAlchemy(prefix + URI2)
     Todo1 = create_test_model(db1)
@@ -109,11 +143,11 @@ def test_multiple_databases():
 
     assert db1.query(Todo1).count() == 3
     assert db2.query(Todo2).count() == 1
-
     tear_down()
 
 
-def test_json_type():
+def test_jsontype():
+    tear_down()
     db = SQLAlchemy(prefix + URI1)
 
     class Post(db.Model):
@@ -129,6 +163,24 @@ def test_json_type():
     
     post = db.query(Post).first()
     assert post.content == data
+    tear_down()
 
+
+def test_promises():
+    tear_down()
+    db = SQLAlchemy(prefix + URI1)
+    Todo = create_test_model(db)
+    db.create_all()
+
+    def add(title, text=''):
+        todo = Todo(title, text)
+        db.add(todo)
+    
+    add('First', 'The text')
+    add('Second', 'The text')
+    db.commit()
+
+    data = db.query(Todo).promise()
+    assert isinstance(data, Future)
     tear_down()
 
