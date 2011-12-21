@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-try: 
-    import simplejson as json
-except ImportError:
-    import json
+from shake.serializers import to_json, from_json
 from sqlalchemy.types import TypeDecorator, Text
 
 
@@ -18,7 +15,7 @@ class JSONEncodedType(TypeDecorator):
         if value is None:
             return None
         try:
-            json_value = json.dumps(value)
+            json_value = to_json(value)
         except ValueError:
             json_value = {}
         return json_value
@@ -27,7 +24,7 @@ class JSONEncodedType(TypeDecorator):
         if json_value is None:
             return {}
         try:
-            value = json.loads(json_value)
+            value = from_json(json_value)
         except ValueError:
             value = {}
         return value

@@ -1,18 +1,34 @@
 # -*- coding: utf-8 -*-
 """
-    # Shake-SQLAlchemy
+# Shake-SQLAlchemy
 
-    Implements a basic bridge to SQLAlchemy.
+Implements a bridge to SQLAlchemy, adding some custom capabilities.
 
-    Copyright © 2011 by Lúcuma labs (http://lucumalabs.com).
-    MIT License. (http://www.opensource.org/licenses/mit-license.php)
+To the base model class:
 
+    - Automatic table naming
+    - to_dict method + iterable
+    - to_json method
+
+To the base query class, the following methods:
+
+    - to_json
+    - first_or_notfound
+    - get_or_notfound
+    - promise
+
+
+---------------------------------------
+Copyright © 2011 by [Lúcuma labs] (http://lucumalabs.com).  
+See `AUTHORS.md` for more details.  
+License: [MIT License] (http://www.opensource.org/licenses/mit-license.php).
 """
 from __future__ import absolute_import
 
 import re
 import threading
 
+from shake.serializers import to_json
 try:
     import sqlalchemy
 except ImportError:
@@ -27,6 +43,9 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from .query import Query, Future, NotFound
 from .types import JSONEncodedType
+
+
+__version__ = '0.5'
 
 
 def _create_scoped_session(db):
@@ -94,6 +113,21 @@ class Model(object):
 
     __tablename__ = _ModelTableNameDescriptor()
 
+    def to_dict(self):
+        d = {}
+        for c in self.__mapper__.columns:
+            value = getattr(self, c.name)
+            yield(c.name, value)
+    
+    def to_json(self):
+        return to_json(dict(self.to_dict()))
+    
+    def __iter__(self):
+        """Returns an iterable that supports .next()
+        so we can do dict(sa_instance).
+        """
+        return self.to_dict()
+    
     def __repr__(self):
         return '<%s>' % self.__class__.__name__
 

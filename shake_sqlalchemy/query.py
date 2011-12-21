@@ -3,11 +3,8 @@ from __future__ import absolute_import
 
 import threading
 
-try:
-    from werkzeug.exceptions import NotFound
-except ImportError:
-    class NotFound(Exception):
-        pass
+from shake import NotFound
+from shake.serializers import to_json
 from sqlalchemy.orm.query import Query as BaseQuery
 
 
@@ -86,4 +83,7 @@ class Query(BaseQuery):
         """Makes a promise and returns a :class:`Future`.
         """
         return Future(self)
+    
+    def to_json(self):
+        return to_json([dict(item) for item in self])
 
