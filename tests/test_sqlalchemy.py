@@ -182,5 +182,7 @@ def test_promises():
 
     data = db.query(Todo).promise()
     assert isinstance(data, Future)
+    ## Consume the future
+    list(data)
     tear_down()
 
