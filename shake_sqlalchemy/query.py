@@ -3,9 +3,15 @@ from __future__ import absolute_import
 
 import threading
 
-from shake import NotFound
-from shake.serializers import to_json
+try:
+    from shake import NotFound
+except ImportError:
+    class NotFound(Exception):
+        pass
+
 from sqlalchemy.orm.query import Query as BaseQuery
+
+from .serializers import to_json
 
 
 class Future(object):

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from shake.serializers import to_json, from_json
 from sqlalchemy.types import TypeDecorator, Text
+
+from .serializers import to_json, from_json
 
 
 class JSONEncodedType(TypeDecorator):

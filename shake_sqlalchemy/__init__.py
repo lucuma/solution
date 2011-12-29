@@ -28,7 +28,6 @@ from __future__ import absolute_import
 import re
 import threading
 
-from shake.serializers import to_json
 try:
     import sqlalchemy
 except ImportError:
@@ -42,6 +41,7 @@ from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.declarative import declarative_base
 
 from .query import Query, Future, NotFound
+from .serializers import to_json
 from .types import JSONEncodedType
 
 
