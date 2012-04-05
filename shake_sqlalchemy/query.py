@@ -14,6 +14,38 @@ from sqlalchemy.orm.query import Query as BaseQuery
 from .serializers import to_json
 
 
+class Query(BaseQuery):
+    """The subtype of :class:`sqlalchemy.orm.query.Query` class, that provides
+    custom methods.
+    """
+
+    def first_or_notfound(self):
+        """Like :meth:`first` but if no result is found, instead of
+        returning `None` raises a NotFound exception.
+        """
+        result = self.first()
+        if result is None:
+            raise NotFound
+        return result
+    
+    def get_or_notfound(self, ident):
+        """Like :meth:`get` but aborts with 404 if not found instead of
+        returning `None`.
+        """
+        result = self.get(ident)
+        if result is None:
+            raise NotFound
+        return result
+    
+    def promise(self):
+        """Makes a promise and returns a :class:`Future`.
+        """
+        return Future(self)
+    
+    def to_json(self):
+        return to_json([dict(item) for item in self])
+
+
 class Future(object):
     """Promised future query result.
 
@@ -60,36 +92,4 @@ class Future(object):
         is not yet.
         """
         return list(self)
-
-
-class Query(BaseQuery):
-    """The subtype of :class:`sqlalchemy.orm.query.Query` class, that provides
-    custom methods.
-    """
-
-    def first_or_notfound(self):
-        """Like :meth:`first` but if no result is found, instead of
-        returning `None` raises a NotFound exception.
-        """
-        result = self.first()
-        if result is None:
-            raise NotFound
-        return result
-    
-    def get_or_notfound(self, ident):
-        """Like :meth:`get` but aborts with 404 if not found instead of
-        returning `None`.
-        """
-        result = self.get(ident)
-        if result is None:
-            raise NotFound
-        return result
-    
-    def promise(self):
-        """Makes a promise and returns a :class:`Future`.
-        """
-        return Future(self)
-    
-    def to_json(self):
-        return to_json([dict(item) for item in self])
 

@@ -5,12 +5,9 @@ try:
     import simplejson as json
 except ImportError:
     try:
-        from django.utils import simplejson as json
+        import json
     except ImportError:
-        try:
-            import json
-        except ImportError:
-            raise ImportError('Unable to find a JSON implementation')
+        raise ImportError('Unable to find a JSON implementation')
 
 
 def to_json(value, **options):

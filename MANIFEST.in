@@ -1,7 +1,3 @@
 include *.py *.txt *.rst *.md
 recursive-include shake_sqlalchemy *
 recursive-include tests *
-recursive-exclude shake_sqlalchemy *.pyc
-recursive-exclude shake_sqlalchemy .DS_Store
-recursive-exclude tests *.pyc
-recursive-exclude tests .DS_Store

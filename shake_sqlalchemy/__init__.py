@@ -19,9 +19,9 @@ To the base query class, the following methods:
 
 
 ---------------------------------------
-Copyright © 2011 by [Lúcuma labs] (http://lucumalabs.com).  
-See `AUTHORS.md` for more details.  
 License: [MIT License] (http://www.opensource.org/licenses/mit-license.php).
+Copyright © 2011 by [Lúcuma labs] (http://lucumalabs.com).  
+See `AUTHORS.md` for more details.
 """
 from __future__ import absolute_import
 
@@ -45,7 +45,7 @@ from .serializers import to_json
 from .types import JSONEncodedType
 
 
-__version__ = '0.6'
+__version__ = '1.0.1'
 
 
 def _create_scoped_session(db):
