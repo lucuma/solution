@@ -3,7 +3,7 @@
 Solution
 ====================
 
-An easy-to-use bridge to SQLAlchemy, adding some custom capabilities.
+Makes SQLAlchemy easy and fun to use, and adding some custom capabilities
 
 Example::
 
@@ -146,24 +146,10 @@ class Model(object):
 
 
 class SQLAlchemy(object):
-    """This class is used to control the SQLAlchemy integration to one
-    or more Shake applications. Depending on how you initialize the
-    object it is usable right away or will attach as needed to a
-    WSGI application.
+    """This class is used to instantiate a SQLAlchemy connection to
+    a database.
 
-    There are two usage modes which work very similar. One is binding
-    the instance to a very specific WSGI application::
-
-        app = Shake(settings)
-        db = SQLAlchemy('sqlite://', app=app)
-
-    The second possibility is to create the object once and configure the
-    application later to support it::
-
-        db = SQLAlchemy()
-
-        app = Shake(settings)
-        db.init_app(app)
+        db = SQLAlchemy(_uri_to_database_)
 
     Additionally this class also provides access to all the SQLAlchemy
     functions from the :mod:`sqlalchemy` and :mod:`sqlalchemy.orm` modules.
@@ -172,6 +158,22 @@ class SQLAlchemy(object):
         class User(db.Model):
             login = db.Column(db.String(80), unique=True)
             passw_hash = db.Column(db.String(80))
+
+    ∫In a web application you need to call `db.session.remove()`
+    after each response, and `db.session.rollback()` if an error occurs.
+    
+    If your application object has a `before_response` decorator, you can
+    fo it automatically binding it::
+
+        app = Shake(settings)
+        db = SQLAlchemy('sqlite://', app=app)
+
+    or::
+
+        db = SQLAlchemy()
+
+        app = Shake(settings)
+        db.init_app(app)
 
     """
 
@@ -244,14 +246,18 @@ class SQLAlchemy(object):
         environment, never use a database without initialize it first, 
         or connections will leak.
         """
-        if self not in app.databases:
+        if hasattr(app, 'databases') and isinstance(app.databases, list):
+            if self in app.databases:
+                return
             app.databases.append(self)
 
+        if hasattr(app, 'before_response'):
             @app.before_response
             def shutdown_session(response):
                 self.session.remove()
                 return response
-            
+        
+        if hasattr(app, 'on_exception'):
             @app.on_exception
             def rollback(error):
                 try:
