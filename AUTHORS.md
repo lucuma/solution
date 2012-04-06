@@ -1,6 +1,6 @@
 # Authors
 
-Shake-SQLAlchemy is written and maintained by the Lúcuma labs team:
+**Solution** is written and maintained by the Lúcuma labs team:
 
 Project Leader / Developer:
 

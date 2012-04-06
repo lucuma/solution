@@ -9,9 +9,9 @@ from .serializers import to_json, from_json
 class JSONEncodedType(TypeDecorator):
     """Represents an immutable structure as a JSON-encoded string.
     """
-
+    
     impl = Text
-
+    
     def process_bind_param(self, value, dialect):
         if value is None:
             return None

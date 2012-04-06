@@ -8,7 +8,7 @@ from datetime import datetime
 import os
 import pytest
 
-from shake_sqlalchemy import SQLAlchemy, JSONEncodedType, NotFound, Future
+from solution import SQLAlchemy, JSONEncodedType, NotFound, Future
 
 
 prefix = 'sqlite:///'

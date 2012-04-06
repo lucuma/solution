@@ -5,7 +5,7 @@ import re
 from setuptools import setup
 
 
-PACKAGE = 'shake_sqlalchemy'
+PACKAGE = 'solution'
 THIS_DIR = os.path.dirname(__file__).rstrip('/')
 
 
@@ -63,16 +63,16 @@ def run_tests():
 
 
 setup(
-    name = 'Shake-SQLAlchemy',
+    name = 'Solution',
     version = get_version(),
     author = 'Juan-Pablo Scaletti',
     author_email = 'juanpablo@lucumalabs.com',
     packages = [PACKAGE],
     package_data = find_packages_data(PACKAGE, 'tests'),
     zip_safe = False,
-    url = 'http://github.com/lucuma/Shake',
+    url = 'http://github.com/lucuma/solution',
     license = 'MIT license (http://www.opensource.org/licenses/mit-license.php)',
-    description = 'Add SQLAlchemy support to your Shake application',
+    description = 'Implements an easy-to-use bridge to SQLAlchemy',
     long_description = read_from(get_path('README.rst')),
     install_requires = get_requirements(),
     classifiers = [

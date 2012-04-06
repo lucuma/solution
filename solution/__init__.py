@@ -1,22 +1,35 @@
 # -*- coding: utf-8 -*-
 """
-# Shake-SQLAlchemy
+Solution
+====================
 
-Implements a bridge to SQLAlchemy, adding some custom capabilities.
+An easy-to-use bridge to SQLAlchemy, adding some custom capabilities.
 
-To the base model class:
+Example::
 
-    - Automatic table naming
-    - to_dict method + iterable
-    - to_json method
+    from solution import SQLALchemy
 
-To the base query class, the following methods:
+    db = SQLALchemy('postgresql://scott:tiger@localhost:5432/mydatabase')
 
-    - to_json
+    class ToDo(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        title = db.Column(db.String(60), nullable=False)
+        done = db.Column(db.Boolean, nullable=False, default=False)
+        pub_date = db.Column(db.DateTime, nullable=False,
+            default=datetime.utcnow)
+
+    to_do = ToDo(title='Install Solution', done=True)
+    db.add(to_do)
+    db.commit()
+
+    completed = db.query(ToDo).filter(ToDo.done == True).all()
+
+It does an automatic table naming (if no name is defined) and, to the
+base query class, it adds the following methods::
+
     - first_or_notfound
     - get_or_notfound
-    - promise
-
+    - to_json
 
 ---------------------------------------
 License: [MIT License] (http://www.opensource.org/licenses/mit-license.php).
@@ -32,7 +45,7 @@ try:
     import sqlalchemy
 except ImportError:
     raise ImportError('Unable to load the sqlalchemy package.'
-        ' `Shake-SQLAlchemy` needs the SQLAlchemy library to run.'
+        ' `Solution` needs the SQLAlchemy library to run.'
         ' You can get download it from http://www.sqlalchemy.org/'
         ' If you\'ve already installed SQLAlchemy, then make sure you have '
         ' it in your PYTHONPATH.')
@@ -45,7 +58,7 @@ from .serializers import to_json
 from .types import JSONEncodedType
 
 
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 
 def _create_scoped_session(db):
@@ -134,14 +147,14 @@ class Model(object):
 
 class SQLAlchemy(object):
     """This class is used to control the SQLAlchemy integration to one
-    or more Shake applications.  Depending on how you initialize the
+    or more Shake applications. Depending on how you initialize the
     object it is usable right away or will attach as needed to a
-    Shake application.
+    WSGI application.
 
-    There are two usage modes which work very similar.  One is binding
-    the instance to a very specific Shake application::
+    There are two usage modes which work very similar. One is binding
+    the instance to a very specific WSGI application::
 
-        app = Shake(urls, settings)
+        app = Shake(settings)
         db = SQLAlchemy('sqlite://', app=app)
 
     The second possibility is to create the object once and configure the
@@ -149,14 +162,8 @@ class SQLAlchemy(object):
 
         db = SQLAlchemy()
 
-        def create_app():
-            app = Shake(urls, settings)
-            db.init_app(app)
-            return app
-
-    The difference between the two is that in the first case methods like
-    :meth:`create_all` and :meth:`drop_all` will work all the time but in
-    the second case an app must be running.
+        app = Shake(settings)
+        db.init_app(app)
 
     Additionally this class also provides access to all the SQLAlchemy
     functions from the :mod:`sqlalchemy` and :mod:`sqlalchemy.orm` modules.
@@ -216,6 +223,9 @@ class SQLAlchemy(object):
     
     def add(self, *args, **kwargs):
         return self.session.add(*args, **kwargs)
+
+    def flush(self, *args, **kwargs):
+        return self.session.flush(*args, **kwargs)
     
     def commit(self):
         return self.session.commit()
@@ -230,9 +240,9 @@ class SQLAlchemy(object):
 
     def init_app(self, app):
         """This callback can be used to initialize an application for the
-        use with this database setup.  Never use a database in the context
-        of an application not initialized that way or connections will
-        leak.
+        use with this database setup. In a web application or a multithreaded
+        environment, never use a database without initialize it first, 
+        or connections will leak.
         """
         if self not in app.databases:
             app.databases.append(self)

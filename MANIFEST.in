@@ -1,3 +1,3 @@
 include *.py *.txt *.rst *.md
-recursive-include shake_sqlalchemy *
+recursive-include solution *
 recursive-include tests *
