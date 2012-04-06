@@ -2,7 +2,7 @@
 Solution
 ====================
 
-An easy-to-use bridge to SQLAlchemy, adding some custom capabilities.
+Makes SQLAlchemy easy and fun to use, and adds some custom capabilities.
 
 Example::
 

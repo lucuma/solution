@@ -3,7 +3,7 @@
 Solution
 ====================
 
-Makes SQLAlchemy easy and fun to use, and adding some custom capabilities
+Makes SQLAlchemy easy and fun to use, and adds some custom capabilities.
 
 Example::
 
