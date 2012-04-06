@@ -4,7 +4,7 @@ Solution
 
 Makes SQLAlchemy easy and fun to use, and adds some custom capabilities.
 
-Example:
+Example::
 
 .. sourcecode:: python
 
