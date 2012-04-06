@@ -24,7 +24,7 @@ db.commit()
 completed = db.query(ToDo).filter(ToDo.done == True).all()
 ```
 
-It does an automatic table naming (if no name is defined) and, to the base query class, adds the following methods::
+It does an automatic table naming (if no name is defined) and, to the base query class, adds the following methods:
     
 - first_or_notfound
 - get_or_notfound
