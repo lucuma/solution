@@ -29,13 +29,13 @@ Example:
 It does an automatic table naming (if no name is defined) and, to the
 base query class, it adds the following methods::
 
-    - first_or_notfound
-    - get_or_notfound
-    - to_json
+- first_or_notfound
+- get_or_notfound
+- to_json
 
 ---------------------------------------
-License: [MIT License] (http://www.opensource.org/licenses/mit-license.php).
-Copyright © 2011 by [Lúcuma labs] (http://lucumalabs.com).  
+MIT License (http://www.opensource.org/licenses/mit-license.php).
+Copyright © 2011 by Lúcuma labs (http://lucumalabs.com).  
 See `AUTHORS.md` for more details.
 """
 from __future__ import absolute_import

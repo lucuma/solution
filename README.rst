@@ -1,12 +1,8 @@
-
+==========
 Solution
-====================
-
-Makes SQLAlchemy easy and fun to use, and adds some custom capabilities.
+==========
 
 Example::
-
-.. sourcecode:: python
 
     from solution import SQLALchemy
 
@@ -25,8 +21,8 @@ Example::
 
     completed = db.query(ToDo).filter(ToDo.done == True).all()
 
-It does an automatic table naming (if no name is defined) and, to the base query class, adds the following methods::
-    
-    - first_or_notfound
-    - get_or_notfound
-    - to_json
+It does an automatic table naming (if no name is defined) and, to the base query class, adds the following methods:
+
+- first_or_notfound
+- get_or_notfound
+- to_json

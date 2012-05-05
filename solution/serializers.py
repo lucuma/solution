@@ -33,6 +33,8 @@ class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return obj.strftime(DATETIME_FORMAT)
+        elif isinstance(obj, datetime.date):
+            return obj.strftime(DATE_FORMAT)
         else:
             return json.JSONEncoder.default(self, obj)
 

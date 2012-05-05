@@ -29,3 +29,8 @@ It does an automatic table naming (if no name is defined) and, to the base query
 - first_or_notfound
 - get_or_notfound
 - to_json
+
+---------------------------------------
+[MIT License] (http://www.opensource.org/licenses/mit-license.php).
+Copyright © 2011 by [Lúcuma labs] (http://lucumalabs.com).  
+See `AUTHORS.md` for more details.
