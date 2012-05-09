@@ -60,7 +60,7 @@ from .serializers import to_json
 from .types import JSONEncodedType
 
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
 def _create_scoped_session(db):
@@ -134,8 +134,13 @@ class Model(object):
             value = getattr(self, c.name)
             yield(c.name, value)
     
-    def to_json(self):
-        return to_json(dict(self.to_dict()))
+    def to_json(self, *fields):
+        data = dict(self.to_dict())
+        if fields:
+            for field in data.keys():
+                if field not in fields:
+                    del data[field]
+        return to_json(data)
     
     def __iter__(self):
         """Returns an iterable that supports .next()

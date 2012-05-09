@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from decimal import Decimal
 
-from sqlalchemy.types import TypeDecorator, Text
+from sqlalchemy import types
 
 from .serializers import to_json, from_json
 
 
-class JSONEncodedType(TypeDecorator):
+class JSONEncodedType(types.TypeDecorator):
     """Represents an immutable structure as a JSON-encoded string.
     """
     
-    impl = Text
+    impl = types.Text
     
     def process_bind_param(self, value, dialect):
         if value is None:
