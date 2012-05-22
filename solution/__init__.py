@@ -54,13 +54,14 @@ except ImportError:
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.schema import MetaData
 
 from .query import Query, Future, NotFound
 from .serializers import to_json
 from .types import JSONEncodedType
 
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 
 def _create_scoped_session(db):
@@ -205,6 +206,19 @@ class SQLAlchemy(object):
         
         _include_sqlalchemy(self)
 
+    def apply_driver_hacks(self):
+        if self.info.drivername == 'mysql':
+            self.info.query.setdefault('charset', 'utf8')
+            self.options.setdefault('pool_size', 10)
+            self.options.setdefault('pool_recycle', 7200)
+        
+        elif self.info.drivername == 'sqlite':
+            pool_size = self.options.get('pool_size')
+            if self.info.database in (None, '', ':memory:') and pool_size == 0:
+                raise RuntimeError('SQLite in-memory database with an '
+                    'empty queue (pool_size = 0) is not possible due to '
+                    'data loss.')
+
     def build_options_dict(self, **kwargs):
         options = {'convert_unicode': True}
         for key, value in kwargs.items():
@@ -212,19 +226,35 @@ class SQLAlchemy(object):
                 options[key] = value
         return options
 
-    def apply_driver_hacks(self):
-        if self.info.drivername == 'mysql':
-            self.info.query.setdefault('charset', 'utf8')
-            self.options.setdefault('pool_size', 10)
-            self.options.setdefault('pool_recycle', 7200)
+    def init_app(self, app):
+        """This callback can be used to initialize an application for the
+        use with this database setup. In a web application or a multithreaded
+        environment, never use a database without initialize it first, 
+        or connections will leak.
+        """
+        if hasattr(app, 'databases') and isinstance(app.databases, list):
+            if self in app.databases:
+                return
+            app.databases.append(self)
 
-        elif self.info.drivername == 'sqlite':
-            pool_size = self.options.get('pool_size')
-            if self.info.database in (None, '', ':memory:'):
-                if pool_size == 0:
-                    raise RuntimeError('SQLite in-memory database with an '
-                        'empty queue (pool_size = 0) is not possible due to '
-                        'data loss.')
+        def shutdown_session(response):
+            self.session.remove()
+            return response
+
+        def rollback(error):
+            try:
+                self.session.rollback()
+            except (Exception), e:
+                pass
+
+        if hasattr(app, 'before_response'):
+            app.before_response(shutdown_session)
+
+        if hasattr(app, 'after_request'):
+            app.after_request(shutdown_session)
+
+        if hasattr(app, 'on_exception'):
+            app.on_exception(rollback)
     
     @property
     def query(self):
@@ -247,31 +277,6 @@ class SQLAlchemy(object):
         """Returns the metadata"""
         return self.Model.metadata
 
-    def init_app(self, app):
-        """This callback can be used to initialize an application for the
-        use with this database setup. In a web application or a multithreaded
-        environment, never use a database without initialize it first, 
-        or connections will leak.
-        """
-        if hasattr(app, 'databases') and isinstance(app.databases, list):
-            if self in app.databases:
-                return
-            app.databases.append(self)
-
-        if hasattr(app, 'before_response'):
-            @app.before_response
-            def shutdown_session(response):
-                self.session.remove()
-                return response
-        
-        if hasattr(app, 'on_exception'):
-            @app.on_exception
-            def rollback(error):
-                try:
-                    self.session.rollback()
-                except (Exception), e:
-                    pass
-
     @property
     def engine(self):
         """Gives access to the engine. """
@@ -290,9 +295,11 @@ class SQLAlchemy(object):
         """Drops all tables. """
         self.Model.metadata.drop_all(bind=self.engine)
 
-    def reflect(self):
+    def reflect(self, meta=None):
         """Reflects tables from the database. """
-        self.Model.metadata.reflect(bind=self.engine)
+        meta = meta or MetaData()
+        meta.reflect(bind=self.engine)
+        return meta
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.uri)
