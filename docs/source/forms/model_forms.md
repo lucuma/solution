@@ -1,8 +1,8 @@
-title: Formularios a partir de modelos
+title: Formularios automáticos
 template: page.html
 
 
-# Formularios a partir de modelos
+# Formularios automáticos
 
 Aunque pueden armarse formularios desde cero, la mayoría de las veces se usan para editar un modelo ya existente. En vez de repetir los campos en el modelo y en el formulario, ¿no sería mucho más fácil si pudieramos simplemente reusarlos? Por suerte, _Solution_ te permite hacer jústamente eso.
 
@@ -51,14 +51,12 @@ def update_post(request, book_id):
     return render('posts/edit.html', locals())
 ```
 
-## Validadores de campos
+## Validadores
 
 ...
 
 
-
-
-## Asociaciones
+## Relaciones
 
 Para usar modelos relacionados —como el de `post.author` en el primer ejemplo— _Solution_ puede generar `<select>` o una serie de botones de radio o checks, llenándolos con la lista de objetos de dicho modelo. Veamos como funciona.
 
@@ -67,25 +65,46 @@ Para usar modelos relacionados —como el de `post.author` en el primer ejemplo�
 {{ form.author('name') }}
 ```
 
-se mostrará como:
+se mostrará como un `<select>`:
 
 -----> IMAGEN1 <------
 
-Puedes personalizar esta lita, filtar estos valores u ordenarlos de otro modo, diréctamente al mostrarlos
+Como siempre, puedes cambiar la representación de ese campo, a una serie de botones de radio por ejemplo.
+
+```jinja
+<label>Author</label>
+{{ form.author.as_radio('name') }}
+```
+
+
+### Filtrando la colección de valores
+
+Puedes personalizar esta colección de valores, filtarlos u ordenarlos de otro modo, diréctamente al mostrarlos
 
 ```jinja
 <label>Author</label>
 {{ form.author('name').filter_by(deleted=False) }}
 ```
 
-o al definir el formulario
+o al definir el formulario, diréctamente como unq query (se evaluará al mostar el formulario),
 
 ```python
 class PostForm(Post.Form):
     _fields = ['title', 'content', 'published_at', 'author',]
 
-    author = {
-        'collection': db.query(Author.name).filter_by(deleted=False)
-    }
+    author_collection = db.query(Author.name).filter_by(deleted=False)
+```
+
+ o como una función
+
+```python
+def get_author_collection(request, query):
+    # ...
+    return query
+
+class PostForm(Post.Form):
+    _fields = ['title', 'content', 'published_at', 'author',]
+
+    author_collection = get_author_collection
 ```
 

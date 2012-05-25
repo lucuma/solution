@@ -213,6 +213,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: inherit;
   font-weight: bold;
   color: #111;
+  line-height: 1.6;
   text-rendering: optimizelegibility;
 }
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
@@ -248,7 +249,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
 
 h1 {
   font-size: 30px;
-  line-height: 3.24em;
+  padding: 10px 0 8px;
 }
 h1 small {
   font-size: 18px;
@@ -262,7 +263,6 @@ header h1 small {
 
 h2 {
   font-size: 22px;
-  line-height: 34px;
   padding: 10px 0 2px;
 }
 h2 small {
@@ -271,14 +271,9 @@ h2 small {
 
 h3 {
   font-size: 18px;
-  line-height: 22px;
 }
 h3 small {
   font-size: 14px;
-}
-
-h4, h5, h6 {
-  line-height: 17px;
 }
 
 h4 {
@@ -476,7 +471,7 @@ ol {
   list-style: decimal;
 }
 li {
-  line-height: 1.62em;
+  line-height: 1.6;
 }
 ul.unstyled,
 ol.unstyled {
@@ -643,7 +638,6 @@ margin-left: 30px;
 }
 
 #content .main h1:first-child {
-  height: 110px;
   font-size: 34px;
 }
 
@@ -676,7 +670,18 @@ footer {
 
 .pull-left {
 float: left;
-margin-left: -380px;
+margin-left: -360px;
+font-size: 14px;
+padding: 10px 0;
+}
+
+.pull-left img {
+max-width: 350px;
+}
+
+.pull-left p {
+max-width: 300px;
+text-align: right;
 }
 
 /******************************************************************************

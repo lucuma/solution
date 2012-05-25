@@ -237,11 +237,11 @@ class SQLAlchemy(object):
                 return
             app.databases.append(self)
 
-        def shutdown_session(response):
+        def shutdown_session(response=None):
             self.session.remove()
             return response
 
-        def rollback(error):
+        def rollback(error=None):
             try:
                 self.session.rollback()
             except (Exception), e:
@@ -250,8 +250,8 @@ class SQLAlchemy(object):
         if hasattr(app, 'before_response'):
             app.before_response(shutdown_session)
 
-        if hasattr(app, 'after_request'):
-            app.after_request(shutdown_session)
+        if hasattr(app, 'teardown_request'):
+            app.teardown_request(shutdown_session)
 
         if hasattr(app, 'on_exception'):
             app.on_exception(rollback)

@@ -4,7 +4,7 @@ template: page.html
 
 # Validadores
 
-
+...
 
 
 ## Validadores a nivel de formulario
@@ -14,21 +14,18 @@ A veces, para validar un campo, podemos necesitar compararlo con otros. No es se
 Por ejemplo un formulario de registro podría ser como sigue:
 
 ```python
+from solution import Form
 from solution.forms.validators import AssertEqual
 
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    login = db.Column(db.String, unique=True, nullable=False)
-    password = db.Column(db.String, nullable=True)
+class RegisterForm(Form):
+    login = forms.TextField()
+    password = forms.PasswordField()
+    repeat_password = forms.PasswordField()
 
-
-class RegisterForm(User.Form):
-    _fields = ['login', 'password', 'repeat_password']
-    _validators = [
+    _validate = [
         AssertEqual('password', 'repeat_password',
-            msg=u'Passwords must match'),
+            message=u'Passwords must match'),
     ]
 ```
 
-En este ejemplo, `repeat_password` no está definido en el modelo, sino uno que solo se usa en el formulario. Por defecto no tiene ningún validador asignado. Agregamos un validador a nivel de formulario para asegurarnos que su valor sea igual al de `password`.
+En este ejemplo, agregamos un validador a nivel de formulario para asegurarnos que el valor de `repeat_password` sea igual al de `password`.

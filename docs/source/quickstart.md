@@ -54,8 +54,6 @@ db.init_app(app)
 `db` contiene todos los atributos y funciones definidas en los módulos `sqlalchemy` y `sqlalchemy.orm`. Además, provee una clase llamada `Model` que es la base declarativa que usaremos al declarar nuestros modelos.
 
 ```python
-from main import db
-
 class User(db.Model):
 
     __tablename__ = 'users'
