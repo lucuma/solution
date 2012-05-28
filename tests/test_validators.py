@@ -10,6 +10,8 @@ def test_required():
     """
     validator = v.Required()
     assert validator(u'abc')
+    assert validator(True)
+    assert not validator(u'')
     assert not validator(None)
 
 
@@ -17,7 +19,18 @@ def test_isnumber():
     """Test the field validator `IsNumber`.
     """
     validator = v.IsNumber()
-    assert validator(u'33')
+    assert validator(33)
+    assert validator(2.4)
+    assert not validator(u'as2')
+
+
+def test_isnaturalnumber():
+    """Test the field validator `IsNaturalNumber`.
+    """
+    validator = v.IsNaturalNumber()
+    assert validator(33)
+    assert not validator(2.4)
+    assert not validator(-10)
     assert not validator(u'as2')
 
 
@@ -81,10 +94,18 @@ def test_match():
     assert not validator(u'33')
 
 
-def test_isemail():
-    """Test the field validator `IsEmail`.
+def test_iscolor():
+    """Test the field validator `IsColor`.
     """
-    validator = v.IsEmail()
+    validator = v.IsColor()
+    assert validator(u'#ffaf2e')
+    assert not validator(u'33')
+
+
+def test_validemail():
+    """Test the field validator `ValidEmail`.
+    """
+    validator = v.ValidEmail()
     assert validator(u'juan+pablo@example.net')
     assert validator(u'juanpablo.scaletti@nic.pe')
     assert not validator(u'lalala')
@@ -92,11 +113,11 @@ def test_isemail():
 
 
 def test_isurl():
-    """Test the field validator `IsURL`.
+    """Test the field validator `ValidURL`.
     """
-    validator = v.IsURL()
+    validator = v.ValidURL()
     assert validator(u'http://example.com')
-    assert validator(u'http://www.archive.org')
+    assert validator(u'www.archive.org')
     assert validator(u'http://españa.es')
     assert not validator('http://')
     assert not validator(u'lalala')

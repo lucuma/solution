@@ -20,11 +20,11 @@ class Required(object):
         self.message = message
 
     def __call__(self, python_value):
-        return len(str(python_value or u'')) > 0
+        return bool(python_value)
 
 
 class IsNumber(object):
-    """Validates that the field is a number.
+    """Validates that the field is a number (integer or floating point).
 
     :param message:
         Error message to raise in case of a validation error.
@@ -42,6 +42,28 @@ class IsNumber(object):
         except Exception:
             return False
         return True
+
+
+class IsNaturalNumber(object):
+    """Validates that the field is a natural number (positive integer
+    including zero).
+
+    :param message:
+        Error message to raise in case of a validation error.
+    """
+    code = 'invalid'
+    
+    def __init__(self, message=None):
+        if message is None:
+            message = u'Enter a positive integer number.'
+        self.message = message
+
+    def __call__(self, python_value):
+        try:
+            n = int(str(python_value), 10)
+        except Exception:
+            return False
+        return n >= 0
 
 
 class IsDate(object):
@@ -215,7 +237,22 @@ class Match(object):
         return self.regex.match(python_value or u'')
 
 
-class IsEmail(object):
+class IsColor(Match):
+    """Validates that the field is a string representing a rgb or rgba color
+    in the format `#rrggbb[aa]`.
+
+    :param message:
+        Error message to raise in case of a validation error.
+    """
+    regex = re.compile(r'#[0-9a-f]{6,8}', re.IGNORECASE)
+
+    def __init__(self, message=None):
+        if message is None:
+            message = u'Enter a valid color.'
+        self.message = message
+
+
+class ValidEmail(object):
     """Validates an email address. Note that this uses a very primitive regular
     expression and should only be used in instances where you later verify by
     other means, or wen it doesn't matters very much the email is real.
@@ -255,7 +292,7 @@ class IsEmail(object):
         return False
 
 
-class IsURL(object):
+class ValidURL(object):
     """Simple regexp based URL validation. Much like the IsEmail validator, you
     probably want to validate the URL later by other means if the URL must
     resolve.
@@ -270,7 +307,7 @@ class IsURL(object):
     """
     code = 'invalid_url'
 
-    _url_re = ur'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$'
+    _url_re = ur'^([a-z]{3,7}:(//)?)?([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$'
 
     def __init__(self, require_tld=True, message=None):
         tld_part = ur'\.[a-z]{2,10}' if require_tld else u''
@@ -398,7 +435,12 @@ class AfterNow(After):
         return super(AfterNow, self).__call__(python_value)
 
 
-class AreEqual(object):
+class FormValidator(object):
+    """Base Form Validator."""
+    pass
+
+
+class AreEqual(FormValidator):
     """Form validator that assert that two fields have the same value.
 
     :param name1:
