@@ -1,24 +1,6 @@
 # -*- coding: utf-8 -*-
 from .fields import Field, File
-
-
-class FakeMultiDict(dict):
-    """Adds a fake `getlist` method to a regular dict; or act as a proxy to
-    Webob's MultiDict `getall` method. 
-    """
-    def __getattr__(self, attr):
-        try:
-            return self[attr]
-        except KeyError, error:
-            raise AttributeError(error)
-
-    def getlist(self, name):
-        if hasattr(self, 'getall'):
-            return self.getall(name)
-        value = self.get(name)
-        if value is None:
-            return []
-        return [value]
+from .utils import FakeMultiDict
 
 
 class Form(object):
@@ -74,13 +56,13 @@ class Form(object):
     def _init_data(self, data, files, obj):
         """Load the data into the form.
         """
-        no_initial_data = not (data or files or obj)
+        no_data = not (data or files or obj)
 
         for name, field in self._fields.iteritems():
             field.reset()
-            if no_initial_data:
+            if no_data:
                 continue
-            # Load initial data
+            # Load data
             if not isinstance(field, File):
                 value = data.getlist(name)
             else:
@@ -103,7 +85,7 @@ class Form(object):
 
     @property
     def has_changed(self):
-        return bool(self.changed_fields)
+        return len(self.changed_fields) > 0
 
     def is_valid(self):
         """Return whether the current values of the form fields are all valid.
@@ -112,19 +94,20 @@ class Form(object):
         self.changed_fields = []
         self._errors = {}
         cleaned_data = {}
+        changed_fields = []
         errors = {}
 
         # Validate each field
         for name, field in self._fields.items():
-            value = field.validate()
+            python_value = field.validate()
             if field.error:
                 errors[name] = field.error
                 continue
 
-            cleaned_data[name] = value
-            field.has_changed = value != getattr(self._obj, name, None)
+            cleaned_data[name] = python_value
+            field.has_changed = (python_value != getattr(self._obj, name, None))
             if field.has_changed:
-                self.changed_fields.append(name)
+                changed_fields.append(name)
 
         # Validate relation between fields
         for name, field in self._fields.items():
@@ -136,7 +119,9 @@ class Form(object):
         if errors:
             self._errors = errors
             return False
+
         self.cleaned_data = cleaned_data
+        self.changed_fields = changed_fields
         return True
 
     def save(self):

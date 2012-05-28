@@ -54,6 +54,7 @@ class Field(object):
     def reset(self):
         self._value = None
         self.error = None
+        self.has_changed = False
 
     def _validator_in(self, validator, validators):
         for v in validators:
@@ -90,10 +91,11 @@ class Field(object):
     def validate(self, cleaned_data=None):
         """Validates the current value of a field.
         """
+        self.error = None
         if cleaned_data is None:
             python_value = self.to_python()
             # Do not validate optional fields
-            if python_value is None and self.optional:
+            if (python_value is None) and self.optional:
                 return None
             self._validate_value(python_value)
             return python_value

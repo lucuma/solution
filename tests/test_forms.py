@@ -80,7 +80,7 @@ def test_is_valid():
 
 def test_has_changed():
     form = ContactForm()
-    form.is_valid()
+    assert not form.is_valid()
     assert not form.has_changed
 
     data = {
@@ -89,7 +89,6 @@ def test_has_changed():
     }
     form.subject.value = data['subject']
     form.message.value = data['message']
-    print form._errors
     assert form.is_valid()
     assert form.has_changed
 
@@ -99,9 +98,11 @@ def test_changed_data():
     data = {
         'subject': u'Lalala',
         'message': u'Lalala',
+        'email': None
     }
     form.subject.value = data['subject']
     form.message.value = data['message']
-    assert form.changed_fields == data.keys()
+    assert form.is_valid()
+    assert form.changed_fields == ['message', 'subject']
     assert form.cleaned_data == data
 
