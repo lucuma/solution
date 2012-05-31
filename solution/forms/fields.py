@@ -12,9 +12,17 @@ except ImportError:
     Markup = unicode
 
 
-__all__ = ['Markup', 'ValidationError', 'Field', 'File', 'Text',
-    'Password', 'Number', 'Email', 'URL', 'Date',
-    'DateTime', 'Color',]
+__all__ = (
+    'Markup', 'ValidationError',
+
+    '_Field', '_Text', '_Password', '_Number', '_NaturalNumber', '_Email',
+    '_URL', '_Date', '_DateTime', '_Color', '_File', '_Boolean',
+    '_Select', '_SelectMulti', '_Collection',
+
+    'Field', 'Text', 'Password', 'Number', 'NaturalNumber', 'Email',
+    'URL', 'Date', 'DateTime', 'Color', 'File', 'Boolean',
+    'Select', 'SelectMulti', 'Collection',
+)
 
 
 class ValidationError(object):
@@ -27,10 +35,13 @@ class ValidationError(object):
         return '<ValidationError %s: %s>' % (self.code, self.message)
 
 
-class Field(object):
-    """A base form field. All fields must inherit from this class.
+#- Real fields
+#------------------------------------------------------------------------------#
 
-    :param *validators:
+class _Field(object):
+    """The real form field class.
+
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -44,17 +55,12 @@ class Field(object):
     hide_value = False
     has_changed = False
 
-    def __init__(self, *validators, **kwargs):
+    def __init__(self, *validate, **kwargs):
         self.validators = [val() if inspect.isclass(val) else val
-            for val in validators]
-        self.optional = not self._validator_in(v.Required, validators)
+            for val in validate]
+        self.optional = not self._validator_in(v.Required, validate)
         # Extensibility FTW
         self.extra = kwargs
-
-    def reset(self):
-        self._value = None
-        self.error = None
-        self.has_changed = False
 
     def _validator_in(self, validator, validators):
         for v in validators:
@@ -183,14 +189,14 @@ class Field(object):
         raise NotImplemented
 
 
-class Text(Field):
+class _Text(_Field):
     """A text field.
 
     :param clean:
         An optional function that takes the value and return a 'cleaned'
         version of it. If the value raise an exception, `None` will be
         returned instead.
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -199,13 +205,13 @@ class Text(Field):
     _type = 'text'
     _default_validator = None
 
-    def __init__(self, *validators, **kwargs):
+    def __init__(self, *validate, **kwargs):
         defval = self._default_validator
-        validators = list(validators)
-        if defval and not self._validator_in(defval, validators):
-            validators.append(defval())
+        validate = list(validate)
+        if defval and not self._validator_in(defval, validate):
+            validate.append(defval())
 
-        super(Text, self).__init__(*validators, **kwargs)
+        super(_Text, self).__init__(*validate, **kwargs)
 
     def __call__(self, **kwargs):
         return self.as_input(**kwargs)
@@ -226,13 +232,13 @@ class Text(Field):
         return Markup(html)
 
 
-class Password(Text):
+class _Password(_Text):
     """A password field.
 
     :param hide_value:
         If `True` this field will not reproduce the value on a form
         submit by default. This is the default for security purposes.
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -240,15 +246,15 @@ class Password(Text):
     """
     _type = 'password'
 
-    def __init__(self, hide_value=True, *validators, **kwargs):
+    def __init__(self, hide_value=True, *validate, **kwargs):
         self.hide_value = hide_value
-        super(Password, self).__init__(*validators, **kwargs)
+        super(_Password, self).__init__(*validate, **kwargs)
 
 
-class Number(Text):
+class _Number(_Text):
     """A number field.
 
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -264,10 +270,10 @@ class Number(Text):
             return None
 
 
-class NaturalNumber(Text):
+class _NaturalNumber(_Text):
     """A natural number (positive integer including zero) field.
 
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -283,10 +289,10 @@ class NaturalNumber(Text):
             return None
 
 
-class Email(Text):
+class _Email(_Text):
     """An email field.
 
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -296,10 +302,10 @@ class Email(Text):
     _default_validator = v.ValidEmail
 
 
-class URL(Text):
+class _URL(_Text):
     """An URL field.
 
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -309,10 +315,10 @@ class URL(Text):
     _default_validator = v.ValidURL
 
 
-class Date(Text):
+class _Date(_Text):
     """A date field.
 
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -322,10 +328,10 @@ class Date(Text):
     _default_validator = v.IsDate
 
 
-class DateTime(Text):
+class _DateTime(_Text):
     """A datetime field.
 
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -335,10 +341,10 @@ class DateTime(Text):
     _default_validator = v.IsDate
 
 
-class Color(Text):
+class _Color(_Text):
     """A color field.
 
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -394,13 +400,13 @@ class Color(Text):
         return color
 
 
-class File(Field):
+class _File(_Field):
     """ An uploaded file field.
 
     :param upload:
         Optional function to be call for doing the actual file upload. It must
         return a python value ready for validation.
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -408,9 +414,9 @@ class File(Field):
     """
     hide_value = True
 
-    def __init__(self, upload=None, *validators, **kwargs):
+    def __init__(self, upload=None, *validate, **kwargs):
         self.upload = upload
-        super(File, self).__init__(*validators, **kwargs)
+        super(_File, self).__init__(*validate, **kwargs)
 
     def to_python(self, value):
         if not self.value:
@@ -432,21 +438,21 @@ class File(Field):
 
 FALSY_VALUES = [u'', u'0', u'no', u'off', u'false',]
 
-class Boolean(Field):
+class _Boolean(_Field):
     """A True/False field.
 
     :param falsy:
         A list of raw values considered `False`.
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
     Any other named parameter will be stored in `self.extra`.
     """
 
-    def __init__(self, falsy=FALSY_VALUES, *validators, **kwargs):
+    def __init__(self, falsy=FALSY_VALUES, *validate, **kwargs):
         self.falsy = falsy
-        super(Boolean, self).__init__(*validators, **kwargs)
+        super(_Boolean, self).__init__(*validate, **kwargs)
 
     def to_python(self, value):
         if not value or (value in self.falsy):
@@ -465,9 +471,8 @@ class Boolean(Field):
         html = u'<input %s>' % html_attrs
         return Markup(html)
 
-#------------------------------------------------------------------------------
 
-class Select(Field):
+class _Select(_Field):
     """A field with a fixed list of options for the values
 
     :param items:
@@ -478,17 +483,17 @@ class Select(Field):
         An optional function that takes the value and return a 'cleaned'
         version of it. If the value raise an exception, `None` will be
         returned instead.
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
     Any other named parameter will be stored in `self.extra`.
     """
 
-    def __init__(self, items, clean=None, *validators, **kwargs):
+    def __init__(self, items, clean=None, *validate, **kwargs):
         self.items = items
         self.clean = clean
-        super(Select, self).__init__(*validators, **kwargs)
+        super(_Select, self).__init__(*validate, **kwargs)
 
     def get_items(self):
         return self.items() if callable(self.items) else self.items
@@ -560,7 +565,7 @@ class Select(Field):
         return Markup('\n'.join(html))
 
 
-class SelectMulti(Field):
+class _SelectMulti(_Field):
     """A field with a fixed list of options for the values.
     Similar to `Select`, except this one can take (and validate)
     multiple choices.
@@ -573,17 +578,17 @@ class SelectMulti(Field):
         An optional function that takes a value and return a 'cleaned' version
         of it. If a value raise an exception it'll be filtered out from the
         final result.
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate each of the selected values
         when the method `validate` is called.
 
     Any other named parameter will be stored in `self.extra`.
     """
 
-    def __init__(self, items, clean=None, *validators, **kwargs):
+    def __init__(self, items, clean=None, *validate, **kwargs):
         self.items = items
         self.clean = clean
-        super(SelectMulti, self).__init__(*validators, **kwargs)
+        super(_SelectMulti, self).__init__(*validate, **kwargs)
 
     def _get_value(self):
         return self._value if self._value and not self.hide_value else []
@@ -669,7 +674,7 @@ class SelectMulti(Field):
         return Markup('\n'.join(html))
 
 
-class Collection(Text):
+class _Collection(_Text):
     """A field that takes an open number of values of the same kind.
     For example, a list of comma separated tags or email addresses.
 
@@ -685,7 +690,7 @@ class Collection(Text):
         An optional function that takes a value and return a 'cleaned' version
         of it. If a value raise an exception it'll be filtered out from the
         final result.
-    :param *validators:
+    :param *validate:
         An list of validators. This will evaluate each of the selected values
         when the method `validate` is called.
 
@@ -693,12 +698,12 @@ class Collection(Text):
     """
 
     def __init__(self, sep=', ', filters=None, clean=None,
-            *validators, **kwargs):
+            *validate, **kwargs):
         self.sep = sep
         filters = filters or []
         self.filters = [f() if inspect.isclass(f) else f for f in filters]
         self.clean = clean
-        super(Collection, self).__init__(*validators, **kwargs)
+        super(_Collection, self).__init__(*validate, **kwargs)
 
     def _get_value(self):
         return self.sep.join(self._value) \
@@ -728,4 +733,64 @@ class Collection(Text):
                     pass
             values = values_
         return values
+
+
+
+#- Field factories
+#------------------------------------------------------------------------------#
+
+class Field(object):
+    """A form field factory. All field factories must inherit from this class.
+    """
+    _class = _Field
+
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    def make(self):
+        return self._class(*self.args, **self.kwargs)
+
+
+class Text(Field):
+    _class = _Text
+
+class Password(Field):
+    _class = _Password
+
+class Number(Field):
+    _class = _Number
+
+class NaturalNumber(Field):
+    _class = _NaturalNumber    
+
+class Email(Field):
+    _class = _Email
+
+class URL(Field):
+    _class = _URL
+
+class Date(Field):
+    _class = _Date
+
+class DateTime(Field):
+    _class = _DateTime
+
+class Color(Field):
+    _class = _Color
+
+class File(Field):
+    _class = _File    
+
+class Boolean(Field):
+    _class = _Boolean
+
+class Select(Field):
+    _class = _Select
+
+class SelectMulti(Field):
+    _class = _SelectMulti
+
+class Collection(Text):
+    _class = _Collection
 

@@ -6,6 +6,12 @@ import urlparse
 from .utils import to_unicode
 
 
+__all__ = ['Required', 'IsNumber', 'IsNaturalNumber', 'IsDate',
+    'LongerThan', 'ShorterThan', 'LessThan', 'MoreThan', 'InRange', 'Match',
+    'IsColor', 'ValidEmail', 'ValidURL', 'Before', 'After',
+    'BeforeNow', 'AfterNow', 'FormValidator', 'AreEqual',]
+
+
 class Required(object):
     """Validates that the field contains data.
 

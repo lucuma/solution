@@ -18,7 +18,4 @@ Aunque se puede generar, validar y procesar la información de un formulario a m
 Por suerte, el sistema de formularios de _Solution_ se encarga de hacer la mayoría del trabajo por tí. Tu le das una descripción de los campos del formulario, reglas de validación y una plantilla simple, y *Solution* hace el resto por ti. El resultado es un “formulario perfecto” con muy poco esfuerzo.
 
 
-Hay dos formas de declarar un formulario: "manual", heredando [Objetos Form](/forms/form_class.md); y [a partir de un modelo existente](/forms/model_forms.md).
-
-
 

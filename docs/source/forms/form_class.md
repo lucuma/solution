@@ -4,48 +4,60 @@ template: page.html
 
 # Clase Form
 
+```python
+class Form (data=None, obj=None, files=None):
+```
+
 Para definir un formulario basta declarar una clase que herede de `Form`. Cada campo está definido con un tipo de clase `Field` como atributo de la clase `Form`.
 
 ```python
-from solution import forms
+from solution import forms as f
 
-class MyForm(forms.Form):
-    field_name = forms.FieldType(option1, option2, ...
-        validate=[field_validator1, field_validator2, ... ]
+class MyForm(Form):
+    field_name = f.FieldType(
+      option_name=option_value, ...
+      validate=[v.validator1, v.validator2, ... ]
     )
     ...
-    _validate = [form_validator1, form_validator2, ... ]
 ```
 
 Por ejemplo, un clásico formulario de “contáctanos” en una página podría ser:
 
 ```python
-from solution import forms
+from solution import forms as f
 
-class ContactForm(forms.Form):
-    subject = forms.TextField()
-    email = forms.EmailField(required=False)
-    message = forms.TextField()
+class ContactForm(f.Form):
+    subject = f.Text(f.Required)
+    email = f.Email()
+    message = f.Text(f.Required)
 ```
 
-Aquí solo se usan dos `TextField` y un `EmailField`; puedes ver una lista completa de los tipos disponibles [en esta página](/forms/fields.md).
+Aquí solo se usan dos tipos de campos: `Text` y `Email`; puedes ver una lista completa de los tipos disponibles [en esta página](/forms/fields.md).
 
-<div class="note" markdown="1">
+{#<div class="note" markdown="1">
 Si vas a a usar un formulario para editar un modelo, puedes crear [formularios a partir de modelos](/forms/model_forms.md) para ahorrate el trabajo de repetir la lista de campos.
-</div>
+</div>#}
 
-Los nombres de campos pueden ser cualquier identificador válido de Python, salvo que no pueden empezar con “_” (guión bajo). Por defecto todos son obligatorios, asi que especifiamos `require=False` para hacer opcional el campo `email`.
+Los nombres de campos pueden ser cualquier identificador válido de Python, salvo que no pueden empezar con “_” (guión bajo). Por defecto son opcionales, asi que añadimos el validador `Required` para hacer obligartorios los campo `subject` y `message`.
 
-Cada campo puede tener un argumento `validate` con una lista de funciones de validación. El formulario también tiene un campo `_validate` para listar validadores que prueben relaciones entre varios campos. Puedes leer más en la sección de [validadores](/forms/validators.md).
+Cada campo acepta una lista de funciones de validación y algunos algunas opciones más. Puedes usar las funciones de validación predefinidas o definir las tuyas. La lista de todos los validadores predefinidos los puedes ver en la [página de validadores](/forms/validators.md).
+
+Puedes pasarle cualquier otro argumento con nombre al declarar un campo, por ejemplo un `label` y este se guardará dentro de la propiedad `extra` del campo:
+
+```python
+>>> email = f.Email(label=u'foobar')
+>>> email.extra
+{'label': u'foobar'}
+```
 
 
-## Usando un formulario en un controlador
+## Usando un formulario
 
 El patrón estándar para procesar un formulario se ve así:
 
 ```python
 def contact(request):
-    form = ContactForm(request)
+    form = ContactForm(request.form)
 
     # If the form has been submitted and all validation rules pass
     if request.is_post and form.is_valid():
@@ -63,12 +75,13 @@ Hay tres posibles rutas en este código:
 2. Si el formulario ha sido enviado, `request` contendrá la información. Si esta es válida, es procesada y al usuario se le redirige a una página de “gracias”.
 3. Si el formulario ha sido enviado pero es inválido, la instancia llena de ContactForm es pasada a la plantilla.
 
-Al instanciar un formulario se le puede pasar dos argumentos opcionales con datos:
+Al instanciar un formulario se le puede pasar tres argumentos opcionales con datos:
 
-* el primero contiene los valores proporcionados por el usuario. Este puede ser un un objeto `request` o un diccionario.
-* el segundo le da los valores *iniciales* del formulario y puede ser un diccionario o la instancia de un modelo.
+* el primero contiene los valores proporcionados por el usuario. Este puede ser un un diccionario `request.data`, `request.POST` o equivalente (o incluso un diccionario).
+* el segundo (`obj`) le da los valores *iniciales* del formulario y puede ser la instancia de un modelo o un diccionario.
+* el tercero (`files`) puede contener el diccionario de archivos subidos por el usuario en ese formulario, `request.files` o equivalente.
 
-Al mostar un formulario, entonces, _Solution_ intentará obtener un valor de uno de estas dos fuentes (en orden) y si no mostrará el campo vacío.
+Al mostar un formulario, entonces, _Solution_ intentará obtener un valor de una de estas fuentes y si no, mostrará el campo vacío.
 
 
 ## Mostrando un formulario en una plantilla
@@ -79,20 +92,19 @@ _Solution_ no se mete en como diseñas tus formularios, solo te ayuda a llenarlo
 
 ```html
 <form action="/contact/" method="post">
-  {{ form._errors }}
   <fieldset>
     <label>Subject</label>
-    {{ form.subject }}
+    {{ form.subject() }}
     {{ form.subject.errors }}
   </fieldset>
   <fieldset>
     <label>E-mail</label>
-    {{ form.email }}
+    {{ form.email() }}
     {{ form.email.errors }}
   </fieldset>
   <fieldset>
     <label>Message</label>
-    {{ form.message.as_textarea }}
+    {{ form.message.as_textarea() }}
     {{ form.message.errors }}
   </fieldset>
   <fieldset class="form-actions">
@@ -103,7 +115,7 @@ _Solution_ no se mete en como diseñas tus formularios, solo te ayuda a llenarlo
 
 ### Campos
 
-El HTML por defecto de cada campo depende de su tipo declarado, pero también puede modificarse. Por ejemplo, un `TextField` se muestra por defecto como un `<input>`, pero puede forzarse a mostarse como un `<textarea>` símplemente agregando `as_textarea`, como en el ejemplo.
+El HTML por defecto de cada campo depende de su tipo declarado, pero también puede modificarse. Por ejemplo, un campo `Text` se muestra por defecto como un `<input>`, pero puede forzarse a mostarse como un `<textarea>` símplemente agregando `as_textarea`, como en el ejemplo.
 
 Además, los atributos de estas elementos, como `class`, `type` o cualquier otro, pueden personalizarse también, pasándolos como argumentos al reproducir los campos.
 
@@ -122,13 +134,12 @@ Para definir atributos con guiones “-”, pásalos con guiones bajos en vez �
 '<textarea name="message" class="xlarge col12">Hello world!</textarea>'
 ```
 
-Si por algún motivo necesitas insertar en la página solo el valor actual de algún campo específico, puedes usar `form.nombre_del_campo.value`. También puedes iterar la lista de campos usando `form._fields`.
+Si por algún motivo necesitas insertar en la página solo el valor actual de algún campo específico, puedes usar `form.nombre_del_campo.value`. También puedes iterar la lista de campos desde el formulario.
 
 ```html
 <form action="/contact/" method="post">
   <fieldset>
-  {{ form._errors }}
-  {% for field in form._fields %}
+  {% for field in form %}
     {{ field }}
   {% endfor %}
   </fieldset>
@@ -165,7 +176,7 @@ generará
 
 Once is_valid() returns True, you can process the form submission safe in the knowledge that it conforms to the validation rules defined by your form. While you could access request.POST directly at this point, it is better to access form.cleaned_data. This data has not only been validated but will also be converted in to the relevant Python types for you. In the above example, cc_myself will be a boolean value. Likewise, fields such as IntegerField and FloatField convert values to a Python int and float respectively. Note that read-only fields are not available in form.cleaned_data (and setting a value in a custom clean() method won't have any effect) because these fields are displayed as text rather than as input elements, and thus are not posted back to the server.
 
-Extendiendo el ejemplo anterior, así es como este formulario de conacto podria procesarse:
+Extendiendo el ejemplo anterior, así es como este formulario de contacto podria procesarse:
 
 ```python
 def contact(request):

@@ -2,13 +2,13 @@
 import datetime
 import pytest
 
-from solution.forms import validators as v
+from solution import forms as f
 
 
 def test_required():
     """Test the field validator `Required`.
     """
-    validator = v.Required()
+    validator = f.Required()
     assert validator(u'abc')
     assert validator(True)
     assert not validator(u'')
@@ -18,7 +18,7 @@ def test_required():
 def test_isnumber():
     """Test the field validator `IsNumber`.
     """
-    validator = v.IsNumber()
+    validator = f.IsNumber()
     assert validator(33)
     assert validator(2.4)
     assert not validator(u'as2')
@@ -27,7 +27,7 @@ def test_isnumber():
 def test_isnaturalnumber():
     """Test the field validator `IsNaturalNumber`.
     """
-    validator = v.IsNaturalNumber()
+    validator = f.IsNaturalNumber()
     assert validator(33)
     assert not validator(2.4)
     assert not validator(-10)
@@ -37,7 +37,7 @@ def test_isnaturalnumber():
 def test_isdate():
     """Test the field validator `IsDate`.
     """
-    validator = v.IsDate()
+    validator = f.IsDate()
     assert validator(datetime.date.today())
     assert validator(datetime.datetime.utcnow())
     assert not validator(None)
@@ -47,7 +47,7 @@ def test_isdate():
 def test_longerthan():
     """Test the field validator `LongerThan`.
     """
-    validator = v.LongerThan(4)
+    validator = f.LongerThan(4)
     assert validator(u'12345')
     assert not validator(u'123')
 
@@ -55,7 +55,7 @@ def test_longerthan():
 def test_shorterthan():
     """Test the field validator `ShorterThan`.
     """
-    validator = v.ShorterThan(4)
+    validator = f.ShorterThan(4)
     assert validator(u'123')
     assert not validator(u'12345')
 
@@ -63,7 +63,7 @@ def test_shorterthan():
 def test_lessthan():
     """Test the field validator `LessThan`.
     """
-    validator = v.LessThan(4)
+    validator = f.LessThan(4)
     assert validator(3)
     assert not validator(5)
 
@@ -71,7 +71,7 @@ def test_lessthan():
 def test_morethan():
     """Test the field validator `MoreThan`.
     """
-    validator = v.MoreThan(4)
+    validator = f.MoreThan(4)
     assert validator(5)
     assert not validator(3)
 
@@ -79,7 +79,7 @@ def test_morethan():
 def test_inrange():
     """Test the field validator `InRange`.
     """
-    validator = v.InRange(4, 10)
+    validator = f.InRange(4, 10)
     assert validator(4)
     assert validator(10)
     assert not validator(3)
@@ -89,7 +89,7 @@ def test_inrange():
 def test_match():
     """Test the field validator `Match`.
     """
-    validator = v.Match(r'\+\d{2}-\d')
+    validator = f.Match(r'\+\d{2}-\d')
     assert validator(u'+51-1')
     assert not validator(u'33')
 
@@ -97,7 +97,7 @@ def test_match():
 def test_iscolor():
     """Test the field validator `IsColor`.
     """
-    validator = v.IsColor()
+    validator = f.IsColor()
     assert validator(u'#ffaf2e')
     assert not validator(u'33')
 
@@ -105,7 +105,7 @@ def test_iscolor():
 def test_validemail():
     """Test the field validator `ValidEmail`.
     """
-    validator = v.ValidEmail()
+    validator = f.ValidEmail()
     assert validator(u'juan+pablo@example.net')
     assert validator(u'juanpablo.scaletti@nic.pe')
     assert not validator(u'lalala')
@@ -115,7 +115,7 @@ def test_validemail():
 def test_isurl():
     """Test the field validator `ValidURL`.
     """
-    validator = v.ValidURL()
+    validator = f.ValidURL()
     assert validator(u'http://example.com')
     assert validator(u'www.archive.org')
     assert validator(u'http://españa.es')
@@ -129,7 +129,7 @@ def test_before():
     """
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=1)
-    validator = v.Before(now)
+    validator = f.Before(now)
     assert validator(now - delta)
     assert not validator(now + delta)
 
@@ -139,7 +139,7 @@ def test_after():
     """
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=1)
-    validator = v.After(now)
+    validator = f.After(now)
     assert validator(now + delta)
     assert not validator(now - delta)
 
@@ -149,7 +149,7 @@ def test_beforenow():
     """
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=1)
-    validator = v.BeforeNow()
+    validator = f.BeforeNow()
     assert validator(now - delta)
     assert not validator(now + delta)
 
@@ -159,7 +159,7 @@ def test_afternow():
     """
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=1)
-    validator = v.AfterNow()
+    validator = f.AfterNow()
     assert validator(now + delta)
     assert not validator(now - delta)
 
@@ -171,7 +171,7 @@ def test_areequal():
         'password': u'lalala',
         're_password': u'lalala',
     }
-    validator = v.AreEqual(*data.keys())
+    validator = f.AreEqual(*data.keys())
     assert validator(data)
     data['re_password'] = u''
     assert not validator(data)
