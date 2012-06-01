@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import inspect
 
+from pytz import utc
+
 from .. import Model
 from .fields import Field, File
 from .utils import FakeMultiDict
@@ -16,15 +18,22 @@ class Form(object):
     :param data:
         Used to pass data coming from the enduser, usually `request.form`,
         `request.POST` or equivalent.
-    :param files:
-        Used to pass files coming from the enduser, usually `request.files`,
-        or equivalent.
     :param obj:
         If `data` is empty or not provided, this object is checked for
         attributes matching field names.
+    :param files:
+        Used to pass files coming from the enduser, usually `request.files`,
+        or equivalent.
+    :param locale:
+        .
+    :param tz:
+        .
     :param prefix:
         If provided, all fields will have their name prefixed with the
         value.
+    :param parent:
+        .
+
     """
 
     _model = None
@@ -38,7 +47,9 @@ class Form(object):
     cleaned_data = None
     changed_fields = None
 
-    def __init__(self, data=None, obj=None, files=None, prefix=u''):
+    def __init__(self, data=None, obj=None, files=None, locale='en', tz=utc,
+            prefix=u'', parent=None):
+        assert (self._model is None) or issubclass(self._model, Model)
         data = data or {}
         if not hasattr(data, 'getlist'):
             data = FakeMultiDict(data)
@@ -51,11 +62,13 @@ class Form(object):
         if isinstance(obj, dict):
             obj = FakeMultiDict(obj)
 
-        assert (self._model is None) or issubclass(self._model, Model)
+        self._locale = locale
+        self._tz = tz
         prefix = prefix or u''
         if prefix and not prefix.endswith(('_', '-', '.', '+', '|')):
             prefix += u'-'
         self._prefix = prefix
+        self._parent = parent
 
         self.cleaned_data = {}
         self.changed_fields = []
@@ -66,11 +79,10 @@ class Form(object):
         self._init_data(data, obj, files)
     
     def _init_fields(self):
-        """Creates the `_fields` and `_forms` dicts, which are dicts of `Field`
-        instances and sub `Form` subclasses keyed by name.
+        """Creates the `_fields`, `_forms` asn `_sets` dicts.
 
-        Any properties which begin with an underscore or are not `Field`
-        instances or `Form` subclasses are ignored by this method.
+        Any properties which begin with an underscore or are not `Field`,
+        `Form` or `FormSet` **instances** are ignored by this method.
         """
         fields = {}
         forms = {}
@@ -110,17 +122,21 @@ class Form(object):
         for name, subform in self._forms.items():
             subobj = getattr(obj, name, None)
             fclass = subform.__class__
-            subform = fclass(data, subobj, files=files, prefix=self._prefix)
+            subform = fclass(data, subobj, files=files,
+                locale=self._locale, tz=self._tz,
+                prefix=self._prefix, parent=subform._parent)
             self._forms[name] = subform
             setattr(self, name, subform)
 
         ## Initialize sub-sets
         for name, subset in self._sets.items():
             subobj = getattr(obj, name, None)
-            subset._init(data, subobj, files=files)
+            subset._init(data, subobj, files=files,
+                locale=self._locale, tz=self._tz)
 
         ## Initialize fields
         for name, field in self._fields.items():
+            field.set_locale(self._locale, self._tz)
             value = data.getlist(self._prefix + name)
             if not value:
                 value = files.getlist(self._prefix + name)
@@ -197,29 +213,36 @@ class Form(object):
         self.changed_fields = changed_fields
         return True
 
-    def save(self):
+    def save(self, parent_obj=None):
         """Save the cleaned data to the initial object or creating a new one
         (if a `model_class` was provided)."""
         if not self.cleaned_data:
             assert self.is_valid
 
+        if self._model and not self._obj:
+            obj = self._save_new_object(parent_obj)
+        else:
+            obj = self.save_to(self._obj)
+
         for subform in self._forms.values():
-            subform.save()
+            subform.save(obj)
 
         for subset in self._sets.values():
-            subset.save()
+            subset.save(obj)
 
-        if self._model and not self._obj:
-            return self._save_new_object()
-        return self.save_to(self._obj)
+        return obj
 
-    def _save_new_object(self):
+    def _save_new_object(self, parent_obj=None):
         db = self._model.db
         colnames = self._model.__table__.columns.keys()
         data = {}
         for colname in colnames:
             if colname in self.cleaned_data:
                 data[colname] = self.cleaned_data[colname]
+        
+        if self._parent and parent_obj:
+            data[self._parent] = parent_obj
+
         obj = self._model(**data)
         db.add(obj)
         return obj
@@ -267,8 +290,11 @@ class FormSet(object):
     _errors = None
     has_changed = False
 
-    def __init__(self, form_class, data=None, objs=None, files=None):
+    def __init__(self, form_class, parent=None, create_new=True,
+            data=None, objs=None, files=None):
         self._form_class = form_class
+        self._parent = parent
+        self._create_new = bool(create_new)
         self._forms = []
         self._errors = {}
         self.has_changed = False
@@ -284,7 +310,7 @@ class FormSet(object):
     def form(self):
         return self._form_class()
 
-    def _init(self, data=None, objs=None, files=None):
+    def _init(self, data=None, objs=None, files=None, locale='en', tz=utc):
         self._errors = {}
         self.has_changed = False
 
@@ -304,21 +330,25 @@ class FormSet(object):
 
         _prefix = 0
         for prefix, obj in enumerate(objs, 1):
-            f = self._form_class(data, obj=obj, files=files, prefix=str(prefix))
+            f = self._form_class(data, obj=obj, files=files, locale=locale,
+                tz=tz, prefix=str(prefix), parent=self._parent)
             forms.append(f)
             _prefix = prefix
 
         _prefix += 1
-        forms = self._find_new_forms(forms, _prefix, data, files)
+        if self._create_new:
+            forms = self._find_new_forms(forms, _prefix, data, files,
+                locale, tz)
         self._forms = forms
 
-    def _find_new_forms(self, forms, prefix, data, files):
+    def _find_new_forms(self, forms, prefix, data, files, locale, tz):
         """Acknowledge new forms created client-side.
         """
         first_field_name = self._form_class()._first
         pname = '%i-%s' % (prefix, first_field_name)
         while data.get(pname) or files.get(pname):
-            f = self._form_class(data, files=files, prefix=str(prefix))
+            f = self._form_class(data, files=files, locale=locale, tz=tz,
+                prefix=str(prefix), parent=self._parent)
             forms.append(f)
             prefix += 1
             pname = '%i-%s' % (prefix, first_field_name)
@@ -340,7 +370,7 @@ class FormSet(object):
             return False
         return True
 
-    def save(self):
+    def save(self, parent_obj):
         for form in self._forms:
-            form.save()
+            form.save(parent_obj)
 

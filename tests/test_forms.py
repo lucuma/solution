@@ -360,5 +360,68 @@ def test_formset_new_forms():
 
 
 def test_formset_model():
-    pass
+    db = SQLAlchemy()
+
+    class User(db.Model):
+        __tablename__ = 'users'
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String)
+
+    class Address(db.Model):
+        __tablename__ = 'addresses'
+        id = db.Column(db.Integer, primary_key=True)
+        email = db.Column(db.String)
+        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+        user = db.relationship('User',
+            backref=db.backref('addresses', lazy='dynamic'))
+
+    db.create_all()
+
+    class FormAddress(f.Form):
+        _model = Address
+        email = f.Email()
+
+    class FormUser(f.Form):
+        _model = User
+        name = f.Text()
+        addresses = f.FormSet(FormAddress, parent='user')
+
+    ## Save
+
+    data = {
+        'name': u'John Doe',
+        '1-email': u'one@example.com',
+        '2-email': u'two@example.com',
+        '3-email': u'three@example.com',
+    }
+    form = FormUser(data)
+    assert form.is_valid()
+    user = form.save()
+    db.commit()
+
+    assert db.query(User).count() == 1
+    assert db.query(Address).count() == 3
+    addr = db.query(Address).first()
+    assert addr.email == data['1-email']
+    assert addr.user == user
+
+    ## Update
+
+    user = db.query(User).first()
+    data = {
+        'name': u'Max Smart',
+        '1-email': u'one+1@example.com',
+        '2-email': u'two+2@example.com',
+        '3-email': u'three+3@example.com',
+    }
+    form = FormUser(data, obj=user)
+    assert form.is_valid()
+    form.save()
+    db.commit()
+
+    assert user.name == data['name']
+    assert db.query(Address).count() == 3
+    addr = db.query(Address).first()
+    assert addr.email == data['1-email']
+    assert addr.user == user
 

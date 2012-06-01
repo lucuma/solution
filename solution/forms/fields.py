@@ -6,10 +6,13 @@ from xml.sax.saxutils import quoteattr
 from . import validators as v
 from .utils import to_unicode
 
+from babel.dates import (format_date, format_datetime, format_time,
+    parse_date, parse_datetime, parse_time)
 try:
     from jinja2 import Markup
 except ImportError:
     Markup = unicode
+from pytz import utc
 
 
 __all__ = (
@@ -67,6 +70,10 @@ class _Field(object):
             if (v == validator) or isinstance(v, validator):
                 return True
         return False
+
+    def set_locale(self, locale='en', tz=utc):
+        self.locale = locale
+        self.tz = tz
 
     def load_value(self, python_value):
         self._value = self.to_html(python_value)
@@ -327,6 +334,22 @@ class _Date(_Text):
     _type = 'datetime'
     _default_validator = v.IsDate
 
+    def to_html(self, python_value, locale=None):
+        locale = locale or self.locale or 'en'
+        try:
+            return format_date(python_value, locale=locale)
+        except Exception:
+            return u''
+
+    def to_python(locale=None):
+        if not self._value:
+            return None
+        locale = locale or self.locale or 'en'
+        try:
+            return parse_date(self._value, locale=locale)
+        except Exception:
+            return None
+
 
 class _DateTime(_Text):
     """A datetime field.
@@ -339,6 +362,25 @@ class _DateTime(_Text):
     """
     _type = 'datetime'
     _default_validator = v.IsDate
+
+    def to_html(self, python_value, locale=None, tz=None):
+        locale = locale or self.locale
+        tz = tz or self.tz
+        try:
+            dt = python_value.astimezone(tz) if tz else python_value
+            return format_datetime(dt, locale=locale)
+        except Exception:
+            return u''
+
+    def to_python(locale=None):
+        if not self._value:
+            return None
+        locale = locale or self.locale
+        try:
+            dt = parse_datetime(self._value, locale=locale)
+            dt.astimezone(utc)
+        except Exception:
+            return None
 
 
 class _Color(_Text):
@@ -362,7 +404,7 @@ class _Color(_Text):
     def to_python():
         if not self._value:
             return None
-        m = self._re_colors(self._value.replace(' ', ''))
+        m = self._re_colors.match(self._value.replace(' ', ''))
         if not m:
             return None
         md = m.groupdict()

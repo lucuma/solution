@@ -5,3 +5,5 @@
 #     pip install -r requirements.txt
 
 SQLAlchemy
+babel
+pytz
