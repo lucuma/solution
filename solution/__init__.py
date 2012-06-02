@@ -61,7 +61,7 @@ from .serializers import to_json
 from .types import JSONEncodedType
 
 
-__version__ = '1.1.2'
+__version__ = '1.1.4'
 
 
 def _create_scoped_session(db):
@@ -184,6 +184,8 @@ class SQLAlchemy(object):
         db.init_app(app)
 
     """
+    
+    JSONEncodedType = JSONEncodedType
 
     def __init__(self, uri='sqlite://', app=None, echo=False, pool_size=None,
             pool_timeout=None, pool_recycle=None):
