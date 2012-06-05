@@ -17,7 +17,7 @@ def test_html_attrs():
 def test_validate():
     field = f._Email()
     email = u'foo@bar.com'
-    field.load_value(email)
+    field.python_value = email
     value = field.validate()
     assert not field.error
     assert value == email
@@ -30,9 +30,8 @@ def test_validate():
 def test_hide_value():
     field = f._Password(hide_value=True)
     passw = u'qwertyuiop'
-    field.load_value(passw)
+    field.python_value = passw
     assert field.value == u''
-    assert field._value == passw
     assert field.validate() == passw
 
 
@@ -139,25 +138,24 @@ def test_select_multi_field_select():
 def test_collection_field():
     field = f._Collection()
     data = '1, 2, c, 3, 4'
-    field.load_value(data.split(', '))
+    field.python_value = data.split(', ')
     assert field.value == data
-    assert field._value == data.split(', ')
 
 
 def test_collection_field_filters():
     field = f._Collection(filters=[f.IsNumber])
     data = '1, 2, c, 3, 4'.split(', ')
-    field.load_value(data)
+    field.python_value = data
     result = field.validate()
     assert result == ['1', '2', '3', '4']
 
     field = f._Collection(filters=[f.IsNumber()])
-    field.load_value(data)
+    field.python_value = data
     result = field.validate()
     assert result == ['1', '2', '3', '4']
 
     field = f._Collection(filters=[f.ValidEmail])
-    field.load_value(data)
+    field.python_value = data
     result = field.validate()
     assert result == []
 
@@ -165,13 +163,13 @@ def test_collection_field_filters():
 def test_collection_field_clean():
     field = f._Collection(clean=int)
     data = '1, 2, c, 3, 4'.split(', ')
-    field.load_value(data)
+    field.python_value = data
     result = field.validate()
     assert result == [1, 2, 3, 4]
 
     # Test filters + clean
     field = f._Collection(filters=[f.IsNumber], clean=int)
-    field.load_value(data)
+    field.python_value = data
     result = field.validate()
     assert result == [1, 2, 3, 4]
 

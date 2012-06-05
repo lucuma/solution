@@ -32,10 +32,10 @@ class ValidationError(object):
 
     def __init__(self, code, message):
         self.code = code
-        self.message = message
+        self.message = to_unicode(message) or u''
 
     def __repr__(self):
-        return '<ValidationError %s: %s>' % (self.code, self.message)
+        return self.message
 
 
 #- Real fields
@@ -51,12 +51,14 @@ class _Field(object):
     Any other named parameter will be stored in `self.extra`.
     """
 
-    _value = u''
+    _value = None
+    python_value = None
+    original_value = None
     error = None
     name = 'unnamed'
 
-    hide_value = False
     has_changed = False
+    hide_value = False
 
     def __init__(self, *validate, **kwargs):
         self.validators = [val() if inspect.isclass(val) else val
@@ -71,47 +73,61 @@ class _Field(object):
                 return True
         return False
 
-    def set_locale(self, locale='en', tz=utc):
+    def _init(self, data=None, original_value=None, files=None,
+            locale='en', tz=utc):
+        self.value = data or files
+        self.python_value = original_value
+        self.original_value = original_value
         self.locale = locale
         self.tz = tz
 
-    def load_value(self, python_value):
-        self._value = self.to_html(python_value)
-
     def _get_value(self):
-        return self._value if self._value and not self.hide_value else u''
+        if self.hide_value:
+            return u''
+        if not self._value:
+            return self.to_html()
+        return self._value
 
     def _set_value(self, value):
         if isinstance(value, list):
             value = value[0] if value else u''
         elif value is None:
             value = u''
-        self._value = value.strip()
+        if isinstance(value, basestring):
+            value = value.strip()
+        self._value = value
 
     value = property(_get_value, _set_value)
 
-    def to_html(self, python_value):
-        return to_unicode(python_value or u'')
+    def to_html(self):
+        return to_unicode(self.python_value or u'')
 
     def to_python(self):
-        if self._value is None:
+        if not self._value:
             return None
-        value = self._value.strip()
-        if value == u'':
-            return None 
-        return to_unicode(value)
+        return self._value
+
+    def clean_value(self, python_value):
+        return python_value
 
     def validate(self, cleaned_data=None):
         """Validates the current value of a field.
         """
-        self.error = None
         if cleaned_data is None:
-            python_value = self.to_python()
+            self.error = None
+            python_value = self.to_python() or self.python_value
+            python_value = self.clean_value(python_value)
+
+            if isinstance(python_value, ValidationError):
+                self.error = python_value
+                return
+
+            self.has_changed = python_value != self.original_value
             # Do not validate optional fields
             if (python_value is None) and self.optional:
                 return None
-            self._validate_value(python_value)
-            return python_value
+
+            return self._validate_value(python_value)
         self._validate_form(cleaned_data)
 
     def _validate_value(self, python_value):
@@ -120,13 +136,14 @@ class _Field(object):
                 continue
             if not val(python_value):
                 self.error = ValidationError(val.code, val.message)
-                break
+                return
+        return python_value
 
     def _validate_form(self, cleaned_data):
         for val in self.validators:
             if not isinstance(val, v.FormValidator):
                 continue
-            if not val(python_value):
+            if not val(cleaned_data):
                 self.error = ValidationError(val.code, val.message)
                 break
 
@@ -334,10 +351,10 @@ class _Date(_Text):
     _type = 'datetime'
     _default_validator = v.IsDate
 
-    def to_html(self, python_value, locale=None):
+    def to_html(self, locale=None):
         locale = locale or self.locale or 'en'
         try:
-            return format_date(python_value, locale=locale)
+            return format_date(self.python_value, locale=locale)
         except Exception:
             return u''
 
@@ -363,11 +380,11 @@ class _DateTime(_Text):
     _type = 'datetime'
     _default_validator = v.IsDate
 
-    def to_html(self, python_value, locale=None, tz=None):
+    def to_html(self, locale=None, tz=None):
         locale = locale or self.locale
         tz = tz or self.tz
         try:
-            dt = python_value.astimezone(tz) if tz else python_value
+            dt = self.python_value.astimezone(tz) if tz else self.python_value
             return format_datetime(dt, locale=locale)
         except Exception:
             return u''
@@ -460,12 +477,18 @@ class _File(_Field):
         self.upload = upload
         super(_File, self).__init__(*validate, **kwargs)
 
-    def to_python(self, value):
-        if not self.value:
-            return None
-        if self.upload:
-            return self.upload(value)
-        return value
+    def to_html(self):
+        return self.python_value
+
+    def to_python(self):
+        if not self._value:
+            return self.original_value
+        if not self.upload:
+            return self._value
+        try:
+            return self.upload(self._value)
+        except Exception, e:
+            return ValidationError('invalid_file', str(e))
 
     def __call__(self, **kwargs):
         return self.as_input(**kwargs)
@@ -645,6 +668,11 @@ class _SelectMulti(_Field):
     def get_items(self):
         return self.items() if callable(self.items) else self.items
 
+    def __iter__(self):
+        items = self.get_items()
+        for item in items:
+            yield item
+
     def to_python(self):
         values = self._value
         if self.clean:
@@ -748,22 +776,24 @@ class _Collection(_Text):
         super(_Collection, self).__init__(*validate, **kwargs)
 
     def _get_value(self):
-        return self.sep.join(self._value) \
-            if self._value and not self.hide_value else u''
+        if self.hide_value:
+            return u''
+        if self._value:
+            return self.sep.join(self._value)
+        return self.to_html()
 
     def _set_value(self, value):
-        if not isinstance(value, list):
-            value = [value]
-        self._value = value
+        self._value = list(value)
 
     value = property(_get_value, _set_value)
     
-    def to_html(self, python_value):
-        return python_value or []
+    def to_html(self):
+        value = self.python_value or []
+        return self.sep.join(value)
 
-    def to_python(self):
+    def clean_value(self, python_value):
         sep = r'/s*%s/s*' % self.sep.replace(' ', '')
-        values = self._value
+        values = python_value or []
         for f in self.filters:
             values = filter(f, values)
         if self.clean:
@@ -775,7 +805,6 @@ class _Collection(_Text):
                     pass
             values = values_
         return values
-
 
 
 #- Field factories
@@ -833,6 +862,6 @@ class Select(Field):
 class SelectMulti(Field):
     _class = _SelectMulti
 
-class Collection(Text):
+class Collection(Field):
     _class = _Collection
 

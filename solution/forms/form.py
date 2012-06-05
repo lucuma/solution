@@ -120,9 +120,9 @@ class Form(object):
         """
         ## Initialize sub-forms
         for name, subform in self._forms.items():
-            subobj = getattr(obj, name, None)
+            original_value = getattr(obj, name, None)
             fclass = subform.__class__
-            subform = fclass(data, subobj, files=files,
+            subform = fclass(data, original_value, files=files,
                 locale=self._locale, tz=self._tz,
                 prefix=self._prefix, parent=subform._parent)
             self._forms[name] = subform
@@ -130,21 +130,17 @@ class Form(object):
 
         ## Initialize sub-sets
         for name, subset in self._sets.items():
-            subobj = getattr(obj, name, None)
-            subset._init(data, subobj, files=files,
+            original_value = getattr(obj, name, None)
+            subset._init(data, original_value, files=files,
                 locale=self._locale, tz=self._tz)
 
         ## Initialize fields
         for name, field in self._fields.items():
-            field.set_locale(self._locale, self._tz)
-            value = data.getlist(self._prefix + name)
-            if not value:
-                value = files.getlist(self._prefix + name)
-            if value:
-                # `value` is iterable
-                field.value = value
-            elif obj:
-                field.load_value(getattr(obj, name, None))
+            subdata = data.getlist(self._prefix + name)
+            subfiles = files.getlist(self._prefix + name)
+            original_value = getattr(obj, name, None)
+            field._init(subdata, original_value, files=subfiles,
+                locale=self._locale, tz=self._tz)
 
     def __iter__(self):
         """Iterate form fields in arbitrary order.
@@ -188,13 +184,12 @@ class Form(object):
 
         ## Validate each field
         for name, field in self._fields.items():
+            field.error = None
             python_value = field.validate()
             if field.error:
                 errors[name] = field.error
                 continue
-
             cleaned_data[name] = python_value
-            field.has_changed = (python_value != getattr(self._obj, name, None))
             if field.has_changed:
                 changed_fields.append(name)
 
@@ -254,13 +249,16 @@ class Form(object):
         if isinstance(obj, Model):
             colnames = obj.__table__.columns.keys()
             for colname in colnames:
-                if colname in self.cleaned_data:
-                    setattr(obj, colname, self.cleaned_data[colname])
-        elif isinstance(obj, dict):
-            obj.update(self.cleaned_data)
+                if colname in self.changed_fields:
+                    setattr(obj, colname, self.cleaned_data.get(colname))
+            return obj
+
+        if isinstance(obj, dict):
+            for key in self.changed_fields:
+                obj[key] = self.cleaned_data.get(key)
         else:
-            for key, value in self.cleaned_data:
-                setattr(obj, key, value)
+            for key in self.changed_fields:
+                setattr(obj, key, self.cleaned_data.get(key))
         return obj
 
     def __repr__(self):
