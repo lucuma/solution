@@ -15,6 +15,11 @@ def test_html_attrs():
 
 
 def test_validate():
+    field = f._Field(validate=[f.ValidEmail(u'invalid')])
+    field.value = 'email'
+    field.validate()
+    assert field.error and field.error.message == u'invalid'
+
     field = f._Email()
     email = u'foo@bar.com'
     field.python_value = email

@@ -6,11 +6,11 @@ from solution import SQLAlchemy
 
 
 class ContactForm(f.Form):
-    subject = f.Text(f.Required)
+    subject = f.Text(validate=[f.Required])
     email = f.Email()
-    message = f.Text(
+    message = f.Text(validate=[
         f.Required(message=u'write something!')
-    )
+    ])
 
 
 def test_declaration():
@@ -120,11 +120,11 @@ def test_save():
     class MyContactForm(f.Form):
         _model = Contact
 
-        subject = f.Text(f.Required)
+        subject = f.Text(validate=[f.Required])
         email = f.Email()
-        message = f.Text(
+        message = f.Text(validate=[
             f.Required(message=u'write something!')
-        )
+        ])
 
     # Create new object
     data = {
@@ -171,13 +171,13 @@ def test_cascade_save():
     class FormA(f.Form):
         _model = ModelA
 
-        a1 = f.Text(f.Required)
+        a1 = f.Text(validate=[f.Required])
         a2 = f.Text()
 
     class FormB(f.Form):
         _model = ModelB
 
-        b1 = f.Text(f.Required)
+        b1 = f.Text(validate=[f.Required])
         b2 = f.Text()
 
     class WrapForm(f.Form):
@@ -270,11 +270,11 @@ def test_prefix_save():
     class MyContactForm(f.Form):
         _model = Contact
 
-        subject = f.Text(f.Required)
+        subject = f.Text(validate=[f.Required])
         email = f.Email()
-        message = f.Text(
+        message = f.Text(validate=[
             f.Required(message=u'write something!')
-        )
+        ])
 
     data = {
         'meh-subject': u'Hello',
@@ -303,8 +303,8 @@ def test_prefix_save():
 
 def test_formset_as_field():
     class MyForm(f.Form):
-        a = f.Text(f.Required)
-        b = f.Text(f.Required)
+        a = f.Text(validate=[f.Required])
+        b = f.Text(validate=[f.Required])
 
     class WrapForm(f.Form):
         s = f.FormSet(MyForm)
@@ -323,8 +323,8 @@ def test_formset_as_field():
 
 def test_formset_objs():
     class MyForm(f.Form):
-        a = f.Text(f.Required)
-        b = f.Text(f.Required)
+        a = f.Text(validate=[f.Required])
+        b = f.Text(validate=[f.Required])
 
     objs=[
         {'a': 'A1', 'b': 'B1'},
@@ -343,8 +343,8 @@ def test_formset_objs():
 
 def test_formset_new_forms():
     class MyForm(f.Form):
-        a = f.Text(f.Required)
-        b = f.Text(f.Required)
+        a = f.Text(validate=[f.Required])
+        b = f.Text(validate=[f.Required])
 
     data={
         '1-a': 'a first',

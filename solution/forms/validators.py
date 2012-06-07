@@ -8,9 +8,14 @@ from .utils import to_unicode
 
 __all__ = ['Required', 'IsNumber', 'IsNaturalNumber', 'IsDate',
     'LongerThan', 'ShorterThan', 'LessThan', 'MoreThan', 'InRange', 'Match',
-    'IsColor', 'ValidEmail', 'ValidURL', 'Before', 'After',
-    'BeforeNow', 'AfterNow', 'FormValidator', 'AreEqual',]
+    'IsColor', 'ValidEmail', 'ValidURL',
+    'Before', 'After', 'BeforeNow', 'AfterNow',
+    'FormValidator', 'AreEqual', 'AtLeastOne', 'ValidSplitDate',
+    ]
 
+#------------------------------------------------------------------------------#
+#- Field validators
+#------------------------------------------------------------------------------#
 
 class Required(object):
     """Validates that the field contains data.
@@ -440,6 +445,9 @@ class AfterNow(After):
         self.date = datetime.datetime.utcnow()
         return super(AfterNow, self).__call__(python_value)
 
+#------------------------------------------------------------------------------#
+#- Form validators
+#------------------------------------------------------------------------------#
 
 class FormValidator(object):
     """Base Form Validator."""
@@ -469,4 +477,69 @@ class AreEqual(FormValidator):
 
     def __call__(self, data):
         return data.get(self.name1) == data.get(self.name2)
+
+
+class AtLeastOne(FormValidator):
+    """Form validator that assert that at least of these fields have
+    have been filled.
+
+    :param fields:
+        Name of the fields.
+    :param message:
+        Error message to raise in case of a validation error.
+
+    """
+    code = 'not_equal'
+    
+    def __init__(self, fields, message=None):
+        self.fields = fields
+        if message is None:
+            message = u'Fill at least one of these fields.'
+        self.message = message
+
+    def __call__(self, data):
+        for field in self.fields:
+            if data.get(field):
+                return True
+        return False
+
+
+class ValidSplitDate(FormValidator):
+    """Form validator that assert that date splitted in two or three separate
+    fields is valid.
+
+    :param day:
+        Name of the day field.
+    :param month:
+        Name of the month field.
+    :param year:
+        Name of the year field (optional),
+    :param message:
+        Error message to raise in case of a validation error.
+    
+    """
+    code = 'not_equal'
+    
+    def __init__(self, day, month, year=None, message=None):
+        self.day = day
+        self.month = month
+        self.year = year
+        if message is None:
+            message = u'Fill at least one of these fields.'
+        self.message = message
+
+    def __call__(self, data):
+        now = datetime.datetime.today()
+        try:
+            day = int(data.get(self.day))
+            month = int(data.get(self.month))
+            year = int(data.get(self.year)) if self.year else None
+            if year:
+                d = datetime.datetime(year, month, day)
+            else:
+                d = datetime.date(now.year, month, day)
+        except Exception:
+            return False
+        return True
+
 

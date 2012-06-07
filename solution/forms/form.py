@@ -142,6 +142,19 @@ class Form(object):
             field._init(subdata, original_value, files=subfiles,
                 locale=self._locale, tz=self._tz)
 
+    def reset(self):
+        ## Reset sub-forms
+        for subform in self._forms.values():
+            subform.reset()
+
+        ## Reset sub-sets
+        for subset in self._sets.values():
+            subset.reset()
+
+        ## Reset fields
+        for field in self._fields.values():
+            field.reset()
+
     def __iter__(self):
         """Iterate form fields in arbitrary order.
         """
@@ -299,6 +312,11 @@ class FormSet(object):
         if (data or objs or files):
             self._init(data, objs, files)
 
+    def reset(self):
+        ## Reset sub-forms
+        for subform in self._forms:
+            subform.reset()
+
     def __iter__(self):
         """Iterate the bound forms of this set.
         """
@@ -306,7 +324,7 @@ class FormSet(object):
 
     @property
     def form(self):
-        return self._form_class()
+        return self._form_class(prefix='1')
 
     def _init(self, data=None, objs=None, files=None, locale='en', tz=utc):
         self._errors = {}

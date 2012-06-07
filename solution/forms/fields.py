@@ -44,7 +44,7 @@ class ValidationError(object):
 class _Field(object):
     """The real form field class.
 
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -60,12 +60,18 @@ class _Field(object):
     has_changed = False
     hide_value = False
 
-    def __init__(self, *validate, **kwargs):
+    def __init__(self, validate=None, **kwargs):
+        validate = validate or []
         self.validators = [val() if inspect.isclass(val) else val
             for val in validate]
         self.optional = not self._validator_in(v.Required, validate)
         # Extensibility FTW
         self.extra = kwargs
+
+    def reset(self):
+        self._value = None
+        self.python_value = None
+        self.original_value = None
 
     def _validator_in(self, validator, validators):
         for v in validators:
@@ -126,7 +132,6 @@ class _Field(object):
             # Do not validate optional fields
             if (python_value is None) and self.optional:
                 return None
-
             return self._validate_value(python_value)
         self._validate_form(cleaned_data)
 
@@ -220,7 +225,7 @@ class _Text(_Field):
         An optional function that takes the value and return a 'cleaned'
         version of it. If the value raise an exception, `None` will be
         returned instead.
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -229,13 +234,14 @@ class _Text(_Field):
     _type = 'text'
     _default_validator = None
 
-    def __init__(self, *validate, **kwargs):
+    def __init__(self, validate=None, **kwargs):
+        validate = validate or []
         defval = self._default_validator
         validate = list(validate)
         if defval and not self._validator_in(defval, validate):
             validate.append(defval())
 
-        super(_Text, self).__init__(*validate, **kwargs)
+        super(_Text, self).__init__(validate=validate, **kwargs)
 
     def __call__(self, **kwargs):
         return self.as_input(**kwargs)
@@ -262,7 +268,7 @@ class _Password(_Text):
     :param hide_value:
         If `True` this field will not reproduce the value on a form
         submit by default. This is the default for security purposes.
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -270,15 +276,16 @@ class _Password(_Text):
     """
     _type = 'password'
 
-    def __init__(self, hide_value=True, *validate, **kwargs):
+    def __init__(self, hide_value=True, validate=None, **kwargs):
+        validate = validate or []
         self.hide_value = hide_value
-        super(_Password, self).__init__(*validate, **kwargs)
+        super(_Password, self).__init__(validate=validate, **kwargs)
 
 
 class _Number(_Text):
     """A number field.
 
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -297,7 +304,7 @@ class _Number(_Text):
 class _NaturalNumber(_Text):
     """A natural number (positive integer including zero) field.
 
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -316,7 +323,7 @@ class _NaturalNumber(_Text):
 class _Email(_Text):
     """An email field.
 
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -329,7 +336,7 @@ class _Email(_Text):
 class _URL(_Text):
     """An URL field.
 
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -342,13 +349,13 @@ class _URL(_Text):
 class _Date(_Text):
     """A date field.
 
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
     Any other named parameter will be stored in `self.extra`.
     """
-    _type = 'datetime'
+    _type = 'date'
     _default_validator = v.IsDate
 
     def to_html(self, locale=None):
@@ -358,7 +365,7 @@ class _Date(_Text):
         except Exception:
             return u''
 
-    def to_python(locale=None):
+    def to_python(self, locale=None):
         if not self._value:
             return None
         locale = locale or self.locale or 'en'
@@ -371,7 +378,7 @@ class _Date(_Text):
 class _DateTime(_Text):
     """A datetime field.
 
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -389,7 +396,7 @@ class _DateTime(_Text):
         except Exception:
             return u''
 
-    def to_python(locale=None):
+    def to_python(self, locale=None):
         if not self._value:
             return None
         locale = locale or self.locale
@@ -403,7 +410,7 @@ class _DateTime(_Text):
 class _Color(_Text):
     """A color field.
 
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -418,7 +425,7 @@ class _Color(_Text):
         r'(?:,(?P<a>[0-9]+))?\)',
         re.IGNORECASE)
 
-    def to_python():
+    def to_python(self):
         if not self._value:
             return None
         m = self._re_colors.match(self._value.replace(' ', ''))
@@ -465,7 +472,7 @@ class _File(_Field):
     :param upload:
         Optional function to be call for doing the actual file upload. It must
         return a python value ready for validation.
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
@@ -473,9 +480,10 @@ class _File(_Field):
     """
     hide_value = True
 
-    def __init__(self, upload=None, *validate, **kwargs):
+    def __init__(self, upload=None, validate=None, **kwargs):
+        validate = validate or []
         self.upload = upload
-        super(_File, self).__init__(*validate, **kwargs)
+        super(_File, self).__init__(validate=validate, **kwargs)
 
     def to_html(self):
         return self.python_value
@@ -508,16 +516,17 @@ class _Boolean(_Field):
 
     :param falsy:
         A list of raw values considered `False`.
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
     Any other named parameter will be stored in `self.extra`.
     """
 
-    def __init__(self, falsy=FALSY_VALUES, *validate, **kwargs):
+    def __init__(self, falsy=FALSY_VALUES, validate=None, **kwargs):
+        validate = validate or []
         self.falsy = falsy
-        super(_Boolean, self).__init__(*validate, **kwargs)
+        super(_Boolean, self).__init__(validate=validate, **kwargs)
 
     def to_python(self, value):
         if not value or (value in self.falsy):
@@ -548,17 +557,18 @@ class _Select(_Field):
         An optional function that takes the value and return a 'cleaned'
         version of it. If the value raise an exception, `None` will be
         returned instead.
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
     Any other named parameter will be stored in `self.extra`.
     """
 
-    def __init__(self, items, clean=None, *validate, **kwargs):
+    def __init__(self, items, clean=None, validate=None, **kwargs):
+        validate = validate or []
         self.items = items
         self.clean = clean
-        super(_Select, self).__init__(*validate, **kwargs)
+        super(_Select, self).__init__(validate=validate, **kwargs)
 
     def get_items(self):
         return self.items() if callable(self.items) else self.items
@@ -643,17 +653,18 @@ class _SelectMulti(_Field):
         An optional function that takes a value and return a 'cleaned' version
         of it. If a value raise an exception it'll be filtered out from the
         final result.
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate each of the selected values
         when the method `validate` is called.
 
     Any other named parameter will be stored in `self.extra`.
     """
 
-    def __init__(self, items, clean=None, *validate, **kwargs):
+    def __init__(self, items, clean=None, validate=None, **kwargs):
+        validate = validate or []
         self.items = items
         self.clean = clean
-        super(_SelectMulti, self).__init__(*validate, **kwargs)
+        super(_SelectMulti, self).__init__(validate=validate, **kwargs)
 
     def _get_value(self):
         return self._value if self._value and not self.hide_value else []
@@ -760,20 +771,21 @@ class _Collection(_Text):
         An optional function that takes a value and return a 'cleaned' version
         of it. If a value raise an exception it'll be filtered out from the
         final result.
-    :param *validate:
+    :param validate:
         An list of validators. This will evaluate each of the selected values
         when the method `validate` is called.
 
     Any other named parameter will be stored in `self.extra`.
     """
 
-    def __init__(self, sep=', ', filters=None, clean=None,
-            *validate, **kwargs):
+    def __init__(self, sep=', ', filters=None, clean=None, validate=None,
+            **kwargs):
+        validate = validate or []
         self.sep = sep
         filters = filters or []
         self.filters = [f() if inspect.isclass(f) else f for f in filters]
         self.clean = clean
-        super(_Collection, self).__init__(*validate, **kwargs)
+        super(_Collection, self).__init__(validate=validate, **kwargs)
 
     def _get_value(self):
         if self.hide_value:
@@ -800,11 +812,14 @@ class _Collection(_Text):
             values_ = []
             for value in values:
                 try:
-                    values_.append(self.clean(value))
+                    val = self.clean(value)
                 except Exception:
-                    pass
+                    continue
+                if val:
+                    values_.append(val)
             values = values_
-        return values
+        
+        return filter(lambda v: bool(v), values)
 
 
 #- Field factories
