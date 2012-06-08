@@ -782,20 +782,31 @@ class _Collection(_Text):
             **kwargs):
         validate = validate or []
         self.sep = sep
+        self.rxsep = r'\s*%s\s*' % self.sep.replace(' ', '')
         filters = filters or []
         self.filters = [f() if inspect.isclass(f) else f for f in filters]
         self.clean = clean
         super(_Collection, self).__init__(validate=validate, **kwargs)
 
+    # Copied from _Field
     def _get_value(self):
         if self.hide_value:
             return u''
-        if self._value:
-            return self.sep.join(self._value)
-        return self.to_html()
+        if not self._value:
+            return self.to_html()
+        return self._value
 
     def _set_value(self, value):
-        self._value = list(value)
+        if not value:
+            self._value = []
+            return
+        value = value[0]
+        if not value:
+            self._value = []
+            return
+        if isinstance(value, basestring):
+            value = re.split(self.rxsep, value)
+        self._value = value
 
     value = property(_get_value, _set_value)
     
@@ -804,7 +815,6 @@ class _Collection(_Text):
         return self.sep.join(value)
 
     def clean_value(self, python_value):
-        sep = r'/s*%s/s*' % self.sep.replace(' ', '')
         values = python_value or []
         for f in self.filters:
             values = filter(f, values)

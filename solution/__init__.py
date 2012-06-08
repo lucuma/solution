@@ -61,7 +61,7 @@ from .serializers import to_json
 from .types import JSONEncodedType
 
 
-__version__ = '1.1.5'
+__version__ = '1.1.6'
 
 
 def _create_scoped_session(db):
