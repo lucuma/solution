@@ -145,7 +145,7 @@ def test_save():
 
     # Update object
     data['message'] = u'lalala'
-    form = ContactForm(data, obj=contact)
+    form = MyContactForm(data, obj=contact)
     assert form.is_valid()
     contact = form.save()
     assert contact.id is not None

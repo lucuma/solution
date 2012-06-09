@@ -52,7 +52,7 @@ class _Field(object):
     """
 
     _value = None
-    python_value = None
+    _python_value = None
     original_value = None
     error = None
     name = 'unnamed'
@@ -82,33 +82,57 @@ class _Field(object):
     def _init(self, data=None, original_value=None, files=None,
             locale='en', tz=utc):
         self.value = data or files
-        self.python_value = original_value
+        if not self._value:
+            self.python_value = original_value
         self.original_value = original_value
         self.locale = locale
         self.tz = tz
 
-    def _get_value(self):
+    def get_value(self):
         if self.hide_value:
             return u''
-        if not self._value:
-            return self.to_html()
-        return self._value
+        if self._value:
+            return self._value
+        return self.to_html()
 
-    def _set_value(self, value):
-        if isinstance(value, list):
-            value = value[0] if value else u''
+    def set_value(self, value):
+        if isinstance(value, list) and value:
+            value = value[0] or u''
         elif value is None:
             value = u''
         if isinstance(value, basestring):
             value = value.strip()
         self._value = value
+        self._python_value = None
+
+    def _get_value(self):
+        return self.get_value()
+
+    def _set_value(self, value):
+        self.set_value(value)
 
     value = property(_get_value, _set_value)
 
-    def to_html(self):
-        return to_unicode(self.python_value or u'')
+    def get_python_value(self, locale=None, tz=None):
+        if self._python_value:
+            return self._python_value
+        return self.to_python(locale, tz)
 
-    def to_python(self):
+    def set_python_value(self, python_value):
+        self._python_value = python_value
+
+    def _get_python_value(self):
+        return self.get_python_value()
+
+    def _set_python_value(self, value):
+        self.set_python_value(value)
+
+    python_value = property(_get_python_value, _set_python_value)
+
+    def to_html(self):
+        return to_unicode(self._python_value or u'')
+
+    def to_python(self, locale=None, tz=None):
         if not self._value:
             return None
         return self._value
@@ -121,7 +145,7 @@ class _Field(object):
         """
         if cleaned_data is None:
             self.error = None
-            python_value = self.to_python() or self.python_value
+            python_value = self.python_value
             python_value = self.clean_value(python_value)
 
             if isinstance(python_value, ValidationError):
@@ -666,15 +690,16 @@ class _SelectMulti(_Field):
         self.clean = clean
         super(_SelectMulti, self).__init__(validate=validate, **kwargs)
 
-    def _get_value(self):
+    def get_value(self):
         return self._value if self._value and not self.hide_value else []
 
-    def _set_value(self, value):
+    def set_value(self, value):
         if not isinstance(value, list):
             value = [value]
+        elif value is None:
+            value = []
         self._value = value
-
-    value = property(_get_value, _set_value)
+        self._python_value = None
 
     def get_items(self):
         return self.items() if callable(self.items) else self.items
@@ -787,32 +812,15 @@ class _Collection(_Text):
         self.filters = [f() if inspect.isclass(f) else f for f in filters]
         self.clean = clean
         super(_Collection, self).__init__(validate=validate, **kwargs)
-
-    # Copied from _Field
-    def _get_value(self):
-        if self.hide_value:
-            return u''
-        if not self._value:
-            return self.to_html()
-        return self._value
-
-    def _set_value(self, value):
-        if not value:
-            self._value = []
-            return
-        value = value[0]
-        if not value:
-            self._value = []
-            return
-        if isinstance(value, basestring):
-            value = re.split(self.rxsep, value)
-        self._value = value
-
-    value = property(_get_value, _set_value)
     
     def to_html(self):
         value = self.python_value or []
         return self.sep.join(value)
+
+    def to_python(self, locale=None, tz=None):
+        if not self._value:
+            return []
+        return self._value.split(self.rxsep)
 
     def clean_value(self, python_value):
         values = python_value or []
