@@ -318,7 +318,7 @@ class _Number(_Text):
     _type = 'number'
     _default_validator = v.IsNumber
 
-    def to_python(self):
+    def to_python(self, locale=None, tz=None):
         try:
             return float(self._value)
         except Exception:
@@ -337,7 +337,7 @@ class _NaturalNumber(_Text):
     _type = 'number'
     _default_validator = v.IsNaturalNumber
 
-    def to_python(self):
+    def to_python(self, locale=None, tz=None):
         try:
             return int(str(self._value), 10)
         except Exception:
@@ -389,7 +389,7 @@ class _Date(_Text):
         except Exception:
             return u''
 
-    def to_python(self, locale=None):
+    def to_python(self, locale=None, tz=None):
         if not self._value:
             return None
         locale = locale or self.locale or 'en'
@@ -420,7 +420,7 @@ class _DateTime(_Text):
         except Exception:
             return u''
 
-    def to_python(self, locale=None):
+    def to_python(self, locale=None, tz=None):
         if not self._value:
             return None
         locale = locale or self.locale
@@ -449,7 +449,7 @@ class _Color(_Text):
         r'(?:,(?P<a>[0-9]+))?\)',
         re.IGNORECASE)
 
-    def to_python(self):
+    def to_python(self, locale=None, tz=None):
         if not self._value:
             return None
         m = self._re_colors.match(self._value.replace(' ', ''))
@@ -512,7 +512,7 @@ class _File(_Field):
     def to_html(self):
         return self.python_value
 
-    def to_python(self):
+    def to_python(self, locale=None, tz=None):
         if not self._value:
             return self.original_value
         if not self.upload:
@@ -552,7 +552,8 @@ class _Boolean(_Field):
         self.falsy = falsy
         super(_Boolean, self).__init__(validate=validate, **kwargs)
 
-    def to_python(self, value):
+    def to_python(self, locale=None, tz=None):
+        value = self._value
         if not value or (value in self.falsy):
             return False
         return True
@@ -597,7 +598,7 @@ class _Select(_Field):
     def get_items(self):
         return self.items() if callable(self.items) else self.items
 
-    def to_python(self):
+    def to_python(self, locale=None, tz=None):
         value = self._value
         if self.clean:
             try:
@@ -709,7 +710,7 @@ class _SelectMulti(_Field):
         for item in items:
             yield item
 
-    def to_python(self):
+    def to_python(self, locale=None, tz=None):
         values = self._value
         if self.clean:
             values_ = []
