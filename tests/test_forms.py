@@ -21,9 +21,9 @@ def test_declaration():
 def test_fields():
     form = ContactForm()
     expected = {
-        'message': '<input name="message" type="text" value="">',
+        'subject': '<input name="subject" type="text" value="" required>',
         'email': '<input name="email" type="email" value="">',
-        'subject': '<input name="subject" type="text" value="">',
+        'message': '<input name="message" type="text" value="" required>',
     }
     for field in form:
         assert expected[field.name] == str(field)
@@ -36,9 +36,9 @@ def test_initial_data():
     }
     form = ContactForm(data)
     expected = {
-        'message': '<input name="message" type="text" value="%s">' % data['message'],
+        'subject': '<input name="subject" type="text" value="%s" required>' % data['subject'],
         'email': '<input name="email" type="email" value="">',
-        'subject': '<input name="subject" type="text" value="%s">' % data['subject'],
+        'message': '<input name="message" type="text" value="%s" required>' % data['message'],
     }
     for field in form:
         assert expected[field.name] == str(field)
@@ -54,9 +54,9 @@ def test_obj_data():
     }
     form = ContactForm(data, obj=obj)
     expected = {
-        'message': '<input name="message" type="text" value="%s">' % data['message'],
+        'subject': '<input name="subject" type="text" value="%s" required>' % data['subject'],
         'email': '<input name="email" type="email" value="%s">' % obj['email'],
-        'subject': '<input name="subject" type="text" value="%s">' % data['subject'],
+        'message': '<input name="message" type="text" value="%s" required>' % data['message'],
     }
     for field in form:
         assert expected[field.name] == str(field)
@@ -244,7 +244,7 @@ def test_prefix():
         'email': u'foo@bar.com',
     }
     form = ContactForm(data, obj=obj, prefix='meh')
-    expected = '<input name="meh-subject" type="text" value="%s">' % data['meh-subject']
+    expected = '<input name="meh-subject" type="text" value="%s" required>' % data['meh-subject']
     assert str(form.subject) == expected
     expected = '<input name="meh-email" type="email" value="%s">' % obj['email']
     assert str(form.email) == expected
@@ -335,7 +335,7 @@ def test_formset_objs():
     fset = f.FormSet(MyForm, data={}, objs=objs)
     assert len(fset._forms) == 4
     for i, form in enumerate(fset):
-        expected = '<input name="%i-a" type="text" value="%s">' % (i+1, objs[i]['a'])
+        expected = '<input name="%i-a" type="text" value="%s" required>' % (i+1, objs[i]['a'])
         assert str(form.a) == expected
         assert form.is_valid()
     assert fset.is_valid()

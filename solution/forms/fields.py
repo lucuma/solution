@@ -271,16 +271,19 @@ class _Text(_Field):
         return self.as_input(**kwargs)
 
     def as_input(self, **kwargs):
-        if not 'type' in kwargs:
-            kwargs['type'] = self._type
+        kwargs['type'] = kwargs.get('type', self._type)
         kwargs['name'] = self.name
         kwargs['value'] = self.value
+        if not self.optional:
+            kwargs['required'] = True
         html_attrs = self._get_html_attrs(kwargs)
         html = u'<input %s>' % html_attrs
         return Markup(html)
 
     def as_textarea(self, **kwargs):
         kwargs['name'] = self.name
+        if not self.optional:
+            kwargs['required'] = True
         html_attrs = self._get_html_attrs(kwargs)
         html = u'<textarea %s>%s</textarea>' % (html_attrs, self.value)
         return Markup(html)
@@ -528,6 +531,8 @@ class _File(_Field):
     def as_input(self, **kwargs):
         kwargs['type'] = 'file'
         kwargs['name'] = self.name
+        if not self.optional:
+            kwargs['required'] = True
         html_attrs = self._get_html_attrs(kwargs)
         html = u'<input %s>' % html_attrs
         return Markup(html)
@@ -566,6 +571,8 @@ class _Boolean(_Field):
         kwargs['name'] = self.name
         if self.value:
             kwargs['checked'] = True
+        if not self.optional:
+            kwargs['required'] = True
         html_attrs = self._get_html_attrs(kwargs)
         html = u'<input %s>' % html_attrs
         return Markup(html)
@@ -622,6 +629,8 @@ class _Select(_Field):
         
         """
         kwargs['name'] = self.name
+        if not self.optional:
+            kwargs['required'] = True
         html_attrs = self._get_html_attrs(kwargs)
         html = [u'<select %s>' % html_attrs]
 
@@ -738,6 +747,8 @@ class _SelectMulti(_Field):
         """
         kwargs['name'] = self.name
         kwargs['multiple'] = True
+        if not self.optional:
+            kwargs['required'] = True
         html_attrs = self._get_html_attrs(kwargs)
         html = [u'<select %s>' % html_attrs]
 
