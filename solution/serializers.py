@@ -35,6 +35,8 @@ class JSONEncoder(json.JSONEncoder):
             return obj.strftime(DATETIME_FORMAT)
         elif isinstance(obj, datetime.date):
             return obj.strftime(DATE_FORMAT)
+        elif hasattr(obj, '__dict__'):
+            return obj.__dict__
         else:
             return json.JSONEncoder.default(self, obj)
 

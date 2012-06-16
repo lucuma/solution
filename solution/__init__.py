@@ -40,6 +40,7 @@ See `AUTHORS.md` for more details.
 """
 from __future__ import absolute_import
 
+import os
 import re
 import threading
 
@@ -56,12 +57,13 @@ from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
 
+from . import fixtures
 from .query import Query, Future, NotFound
 from .serializers import to_json
 from .types import JSONEncodedType
 
 
-__version__ = '1.1.8'
+__version__ = '1.1.9'
 
 
 def _create_scoped_session(db):
@@ -128,29 +130,24 @@ class Model(object):
     """Baseclass for custom user models."""
 
     __tablename__ = _ModelTableNameDescriptor()
-
-    def to_dict(self):
-        d = {}
-        for c in self.__mapper__.columns:
-            value = getattr(self, c.name)
-            yield(c.name, value)
-    
-    def to_json(self, *fields):
-        data = dict(self.to_dict())
-        if fields:
-            for field in data.keys():
-                if field not in fields:
-                    del data[field]
-        return to_json(data)
     
     def __iter__(self):
         """Returns an iterable that supports .next()
         so we can do dict(sa_instance).
         """
-        return self.to_dict()
+        for k in self.__dict__.keys():
+            if not k.startswith('_'):
+                yield (k, getattr(self, k))
     
     def __repr__(self):
         return '<%s>' % self.__class__.__name__
+
+    def to_dict(self):
+        return dict([(k, getattr(self, k)) for k in self.__dict__.keys()
+            if not k.startswith('_')])
+    
+    def to_json(self):
+        return to_json(self.to_dict())
 
 
 class SQLAlchemy(object):
@@ -302,6 +299,18 @@ class SQLAlchemy(object):
         meta = meta or MetaData()
         meta.reflect(bind=self.engine)
         return meta
+
+    def dump_data(self, fixtures_path=fixtures.FIXTURES_PATH, *models):
+        models = models or self.Model.__subclasses__()
+        fixtures.dump_data(self, models, fixtures_path)
+
+    def load_data(self, fixtures_path=fixtures.FIXTURES_PATH, *models):
+        models = models or self.Model.__subclasses__()
+        fixtures.load_data(self, models, fixtures_path)
+        self.session.commit()
+
+    def load_media(self, fixtures_path=fixtures.FIXTURES_PATH):
+        fixtures.load_media(fixtures_path)
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.uri)
