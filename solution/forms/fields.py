@@ -60,11 +60,12 @@ class _Field(object):
     has_changed = False
     hide_value = False
 
-    def __init__(self, validate=None, **kwargs):
+    def __init__(self, validate=None, default=u'', **kwargs):
         validate = validate or []
         self.validators = [val() if inspect.isclass(val) else val
             for val in validate]
         self.optional = not self._validator_in(v.Required, validate)
+        self.default = default
         # Extensibility FTW
         self.extra = kwargs
 
@@ -150,12 +151,12 @@ class _Field(object):
 
             if isinstance(python_value, ValidationError):
                 self.error = python_value
-                return
+                return None
 
             self.has_changed = python_value != self.original_value
             # Do not validate optional fields
             if (python_value is None) and self.optional:
-                return None
+                return self.default
             return self._validate_value(python_value)
         self._validate_form(cleaned_data)
 
@@ -165,7 +166,7 @@ class _Field(object):
                 continue
             if not val(python_value):
                 self.error = ValidationError(val.code, val.message)
-                return
+                return self.default
         return python_value
 
     def _validate_form(self, cleaned_data):

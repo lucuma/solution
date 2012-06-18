@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 """
+import datetime
 import errno
 import io
 import os
@@ -13,6 +14,8 @@ from .serializers import json
 
 
 FIXTURES_PATH = 'fixtures'
+DATE_FORMAT = '%Y-%m-%d'
+DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
 def make_dirs(path):
@@ -41,9 +44,27 @@ def load_data(db, models, fixtures_path):
         print 'Loading %s' % filepath
         with io.open(filepath, 'r+t', encoding='utf-8') as f:
             data = json.loads(f.read())
+
+        ids = set([r.id for r in db.query(m.id)])
+        columns = m.__table__.columns
+        date_fields = [c.name for c in columns if isinstance(c.type, db.Date)]
+        datetime_fields = [c.name for c in columns if isinstance(c.type, db.DateTime)]
+
         for row in data:
+            row_id = row.get('id')
+            if row_id and row_id in ids:
+                continue
+            for c in date_fields:
+                if c not in row:
+                    continue
+                row[c] = datetime.datetime.strptime(row[c], DATE_FORMAT).date()
+            for c in datetime_fields:
+                if c not in row:
+                    continue
+                row[c] = datetime.datetime.strptime(row[c], DATETIME_FORMAT)
             sys.stdout.write('.')
             db.add(m(**row))
+        print ''
 
 
 def load_media(fixtures_path):

@@ -63,7 +63,7 @@ from .serializers import to_json
 from .types import JSONEncodedType
 
 
-__version__ = '1.1.9'
+__version__ = '1.1.10'
 
 
 def _create_scoped_session(db):
@@ -300,12 +300,20 @@ class SQLAlchemy(object):
         meta.reflect(bind=self.engine)
         return meta
 
-    def dump_data(self, fixtures_path=fixtures.FIXTURES_PATH, *models):
-        models = models or self.Model.__subclasses__()
+    def dump_data(self, fixtures_path=fixtures.FIXTURES_PATH, models=None):
+        _models = self.Model.__subclasses__()
+        if models:
+            models = map(str.lower, models)
+            _models = [m for m in _models if m.__name__.lower() in models]
+        models = _models
         fixtures.dump_data(self, models, fixtures_path)
 
-    def load_data(self, fixtures_path=fixtures.FIXTURES_PATH, *models):
-        models = models or self.Model.__subclasses__()
+    def load_data(self, fixtures_path=fixtures.FIXTURES_PATH, models=None):
+        _models = self.Model.__subclasses__()
+        if models:
+            models = map(str.lower, models)
+            _models = [m for m in _models if m.__name__.lower() in models]
+        models = _models
         fixtures.load_data(self, models, fixtures_path)
         self.session.commit()
 

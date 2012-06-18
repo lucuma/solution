@@ -97,7 +97,7 @@ def test_changed_data():
     data = {
         'subject': u'Lalala',
         'message': u'Lalala',
-        'email': None
+        'email': u''
     }
     form.subject.value = data['subject']
     form.message.value = data['message']
