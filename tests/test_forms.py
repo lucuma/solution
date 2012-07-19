@@ -103,7 +103,9 @@ def test_changed_data():
     form.message.value = data['message']
     assert form.is_valid()
     assert form.changed_fields == ['message', 'subject']
-    assert form.cleaned_data == data
+    assert form.cleaned_data['subject'] == data['subject']
+    assert form.cleaned_data['message'] == data['message']
+    assert form.cleaned_data['email'] == None
 
 
 def test_save():
@@ -335,7 +337,7 @@ def test_formset_objs():
     fset = f.FormSet(MyForm, data={}, objs=objs)
     assert len(fset._forms) == 4
     for i, form in enumerate(fset):
-        expected = '<input name="%i-a" type="text" value="%s" required>' % (i+1, objs[i]['a'])
+        expected = '<input name="myform.%i-a" type="text" value="%s" required>' % (i+1, objs[i]['a'])
         assert str(form.a) == expected
         assert form.is_valid()
     assert fset.is_valid()
@@ -347,10 +349,10 @@ def test_formset_new_forms():
         b = f.Text(validate=[f.Required])
 
     data={
-        '1-a': 'a first',
-        '1-b': 'b first',
-        '2-a': 'a second',
-        '2-b': 'b second',
+        'myform.1-a': 'a first',
+        'myform.1-b': 'b first',
+        'myform.2-a': 'a second',
+        'myform.2-b': 'b second',
     }
     fset = f.FormSet(MyForm, data=data)
     assert len(fset._forms) == 2
@@ -390,9 +392,9 @@ def test_formset_model():
 
     data = {
         'name': u'John Doe',
-        '1-email': u'one@example.com',
-        '2-email': u'two@example.com',
-        '3-email': u'three@example.com',
+        'formaddress.1-email': u'one@example.com',
+        'formaddress.2-email': u'two@example.com',
+        'formaddress.3-email': u'three@example.com',
     }
     form = FormUser(data)
     assert form.is_valid()
@@ -402,7 +404,7 @@ def test_formset_model():
     assert db.query(User).count() == 1
     assert db.query(Address).count() == 3
     addr = db.query(Address).first()
-    assert addr.email == data['1-email']
+    assert addr.email == data['formaddress.1-email']
     assert addr.user == user
 
     ## Update
@@ -410,9 +412,9 @@ def test_formset_model():
     user = db.query(User).first()
     data = {
         'name': u'Max Smart',
-        '1-email': u'one+1@example.com',
-        '2-email': u'two+2@example.com',
-        '3-email': u'three+3@example.com',
+        'formaddress.1-email': u'one+1@example.com',
+        'formaddress.2-email': u'two+2@example.com',
+        'formaddress.3-email': u'three+3@example.com',
     }
     form = FormUser(data, obj=user)
     assert form.is_valid()
@@ -422,6 +424,62 @@ def test_formset_model():
     assert user.name == data['name']
     assert db.query(Address).count() == 3
     addr = db.query(Address).first()
-    assert addr.email == data['1-email']
+    assert addr.email == data['formaddress.1-email']
     assert addr.user == user
+
+
+def test_formset_autodelete():
+    db = SQLAlchemy()
+
+    class User(db.Model):
+        __tablename__ = 'users'
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String)
+
+    class Address(db.Model):
+        __tablename__ = 'addresses'
+        id = db.Column(db.Integer, primary_key=True)
+        email = db.Column(db.String)
+        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+        user = db.relationship('User',
+            backref=db.backref('addresses', lazy='dynamic'))
+
+    db.create_all()
+
+    class FormAddress(f.Form):
+        _model = Address
+        id = f.Integer()
+        email = f.Email()
+
+    class FormUser(f.Form):
+        _model = User
+        id = f.Integer()
+        name = f.Text()
+        addresses = f.FormSet(FormAddress, parent='user')
+
+    user = User(name=u'John Doe')
+    db.add(user)
+    db.add(Address(email=u'one@example.com', user=user))
+    db.add(Address(email=u'two@example.com', user=user))
+    db.add(Address(email=u'three@example.com', user=user))
+    db.commit()
+
+    data = {
+        'name': u'Jane Doe',
+        'formaddress.1-id': u'1',
+        'formaddress.1-email': u'one@example.org',
+        'formaddress.3-id': u'3',
+        'formaddress.3-email': u'three@example.org',
+        'formaddress.4-email': u'four@example.org',
+    }
+    form = FormUser(data, user)
+    assert form.is_valid()
+    form.save()
+    db.commit()
+
+    assert db.query(Address).count() == 3
+    addrs = db.query(Address).all()
+    assert addrs[0].email == data['formaddress.1-email']
+    assert addrs[1].email == data['formaddress.3-email']
+    assert addrs[2].email == data['formaddress.4-email']
 

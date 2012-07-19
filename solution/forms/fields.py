@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import inspect
 import re
 from xml.sax.saxutils import quoteattr
-
-from . import validators as v
-from .utils import to_unicode
 
 from babel.dates import (format_date, format_datetime, format_time,
     parse_date, parse_datetime, parse_time)
@@ -14,6 +13,9 @@ except ImportError:
     Markup = unicode
 from pytz import utc
 
+from . import validators as v
+from ..serializers import to_unicode
+
 
 __all__ = (
     'Markup', 'ValidationError',
@@ -22,7 +24,7 @@ __all__ = (
     '_URL', '_Date', '_DateTime', '_Color', '_File', '_Boolean',
     '_Select', '_SelectMulti', '_Collection',
 
-    'Field', 'Text', 'Password', 'Number', 'NaturalNumber', 'Email',
+    'Field', 'Text', 'Password', 'Number', 'NaturalNumber', 'Integer', 'Email',
     'URL', 'Date', 'DateTime', 'Color', 'File', 'Boolean',
     'Select', 'SelectMulti', 'Collection',
 )
@@ -59,6 +61,8 @@ class _Field(object):
 
     has_changed = False
     hide_value = False
+    # Indicates that the user hasn't sent data for this field
+    empty = True
 
     def __init__(self, validate=None, default=u'', **kwargs):
         validate = validate or []
@@ -82,6 +86,7 @@ class _Field(object):
 
     def _init(self, data=None, original_value=None, files=None,
             locale='en', tz=utc):
+        self.empty = not bool(data or files)
         self.value = data or files
         if not self._value:
             self.python_value = original_value
@@ -156,7 +161,7 @@ class _Field(object):
             self.has_changed = python_value != self.original_value
             # Do not validate optional fields
             if (python_value is None) and self.optional:
-                return self.default
+                return self.default or None
             return self._validate_value(python_value)
         self._validate_form(cleaned_data)
 
@@ -321,6 +326,7 @@ class _Number(_Text):
     """
     _type = 'number'
     _default_validator = v.IsNumber
+    default = None
 
     def to_python(self, locale=None, tz=None):
         try:
@@ -340,6 +346,7 @@ class _NaturalNumber(_Text):
     """
     _type = 'number'
     _default_validator = v.IsNaturalNumber
+    default = None
 
     def to_python(self, locale=None, tz=None):
         try:
@@ -880,6 +887,9 @@ class Number(Field):
 
 class NaturalNumber(Field):
     _class = _NaturalNumber    
+
+class Integer(Field):
+    _class = _NaturalNumber 
 
 class Email(Field):
     _class = _Email

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-"""
+from __future__ import absolute_import
+
 import datetime
 import errno
 import io
@@ -8,9 +8,7 @@ import os
 import shutil
 import sys
 
-from shake import to_unicode
-
-from .serializers import json
+from .serializers import json, to_unicode
 
 
 FIXTURES_PATH = 'fixtures'
@@ -45,23 +43,28 @@ def load_data(db, models, fixtures_path):
         with io.open(filepath, 'r+t', encoding='utf-8') as f:
             data = json.loads(f.read())
 
-        ids = set([r.id for r in db.query(m.id)])
+        ids = frozenset([r.id for r in db.query(m.id)])
         columns = m.__table__.columns
-        date_fields = [c.name for c in columns if isinstance(c.type, db.Date)]
-        datetime_fields = [c.name for c in columns if isinstance(c.type, db.DateTime)]
+        date_fields = [c.name for c in columns
+            if isinstance(c.type, db.Date)]
+        datetime_fields = [c.name for c in columns
+            if isinstance(c.type, db.DateTime)]
 
         for row in data:
             row_id = row.get('id')
             if row_id and row_id in ids:
                 continue
-            for c in date_fields:
-                if c not in row:
+
+            for name in date_fields:
+                if name not in row:
                     continue
-                row[c] = datetime.datetime.strptime(row[c], DATE_FORMAT).date()
-            for c in datetime_fields:
-                if c not in row:
+                row[name] = datetime.datetime.strptime(row[name], DATE_FORMAT).date()
+
+            for name in datetime_fields:
+                if name not in row:
                     continue
-                row[c] = datetime.datetime.strptime(row[c], DATETIME_FORMAT)
+                row[name] = datetime.datetime.strptime(row[name], DATETIME_FORMAT)
+            
             sys.stdout.write('.')
             db.add(m(**row))
         print ''

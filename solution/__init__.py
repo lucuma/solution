@@ -60,10 +60,10 @@ from sqlalchemy.schema import MetaData
 from . import fixtures
 from .query import Query, Future, NotFound
 from .serializers import to_json
-from .types import JSONEncodedType
+from .custom_types import JSONEncodedType
 
 
-__version__ = '1.1.10'
+__version__ = '1.1.15'
 
 
 def _create_scoped_session(db):
@@ -167,7 +167,7 @@ class SQLAlchemy(object):
     ∫In a web application you need to call `db.session.remove()`
     after each response, and `db.session.rollback()` if an error occurs.
     
-    If your application object has a `before_response` decorator, you can
+    If your application object has a `after_request` decorator, you can
     fo it automatically binding it::
 
         app = Shake(settings)
@@ -231,7 +231,9 @@ class SQLAlchemy(object):
         environment, never use a database without initialize it first, 
         or connections will leak.
         """
-        if hasattr(app, 'databases') and isinstance(app.databases, list):
+        if not hasattr(app, 'databases'):
+            app.databases = []
+        if isinstance(app.databases, list):
             if self in app.databases:
                 return
             app.databases.append(self)
@@ -246,12 +248,8 @@ class SQLAlchemy(object):
             except (Exception), e:
                 pass
 
-        if hasattr(app, 'before_response'):
-            app.before_response(shutdown_session)
-
-        if hasattr(app, 'teardown_request'):
-            app.teardown_request(shutdown_session)
-
+        if hasattr(app, 'after_request'):
+            app.after_request(shutdown_session)
         if hasattr(app, 'on_exception'):
             app.on_exception(rollback)
     
