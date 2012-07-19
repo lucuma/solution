@@ -158,7 +158,8 @@ class _Field(object):
                 self.error = python_value
                 return None
 
-            self.has_changed = python_value != self.original_value
+            hs = (python_value or '') != (self.original_value or '')
+            self.has_changed = hs
             # Do not validate optional fields
             if (python_value is None) and self.optional:
                 return self.default or None

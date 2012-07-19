@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-import inspect
-
 from pytz import utc
 
 from .. import Model
@@ -44,7 +42,6 @@ class Form(object):
     _forms = None
     _sets = None
     _errors = None
-    _first = None
 
     cleaned_data = None
     changed_fields = None
@@ -99,9 +96,6 @@ class Form(object):
             is_form = isinstance(field, Form)
             is_set = isinstance(field, FormSet)
 
-            if not first and (is_field or is_form or is_set):
-                first = name
-
             if is_field:
                 field = field.make()
                 field.name = self._prefix + name
@@ -115,7 +109,6 @@ class Form(object):
         self._fields = fields
         self._forms = forms
         self._sets = sets
-        self._first = first
 
     def _init_data(self, data, obj, files):
         """Load the data into the form.
@@ -227,7 +220,7 @@ class Form(object):
         """Save the cleaned data to the initial object or creating a new one
         (if a `model_class` was provided)."""
         if not self.cleaned_data:
-            assert self.is_valid    
+            assert self.is_valid
         if self._model and not self._obj:
             obj = self._save_new_object(parent_obj)
         else:
@@ -261,7 +254,7 @@ class Form(object):
         if not self.cleaned_data:
             return
         if isinstance(obj, Model):
-            colnames = obj.__table__.columns.keys()
+            colnames = self._model.__table__.columns.keys()
             for colname in colnames:
                 if colname in self.changed_fields:
                     setattr(obj, colname, self.cleaned_data.get(colname))
@@ -303,12 +296,10 @@ class FormSet(object):
     has_changed = False
 
     def __init__(self, form_class, parent=None,
-            create_new=True, delete_old=True,
-            data=None, objs=None, files=None):
+            create_new=True, data=None, objs=None, files=None):
         self._form_class = form_class
         self._parent = parent
         self._create_new = bool(create_new)
-        self._delete_old = bool(delete_old)
         self._forms = []
         self._errors = {}
         self.has_changed = False
@@ -346,20 +337,26 @@ class FormSet(object):
             objs = [objs]
 
         forms = []
-
+        missing_objs = []
         _prefix = 0
+
         for num, obj in enumerate(objs, 1):
             _prefix = num
             prefix = self._get_prefix(_prefix)
-            f = self._form_class(data, obj=obj, files=files, locale=locale,
-                tz=tz, prefix=prefix, parent=self._parent)
+            if data and self._form_class._model and not has_data(data, prefix):
+                missing_objs.append(obj)
+                continue
+            f = self._form_class(data, obj=obj, files=files,
+                locale=locale, tz=tz, prefix=prefix, parent=self._parent)
             forms.append(f)
 
         _prefix += 1
         if data and self._create_new:
             forms = self._find_new_forms(forms, _prefix, data, files,
                 locale, tz)
+
         self._forms = forms
+        self.missing_objs = missing_objs
 
     def _get_prefix(self, num):
         return '%s.%s' % (self._form_class.__name__.lower(), num)
@@ -367,16 +364,13 @@ class FormSet(object):
     def _find_new_forms(self, forms, _prefix, data, files, locale, tz):
         """Acknowledge new forms created client-side.
         """
-        first_field_name = self._form_class()._first
         prefix = self._get_prefix(_prefix)
-        pname = '%s-%s' % (prefix, first_field_name)
-        while data.get(pname) or files.get(pname):
+        while has_data(data, prefix) or has_data(files, prefix):
             f = self._form_class(data, files=files, locale=locale, tz=tz,
                 prefix=prefix, parent=self._parent)
             forms.append(f)
             _prefix += 1
             prefix = self._get_prefix(_prefix)
-            pname = '%s-%s' % (prefix, first_field_name)
         return forms
 
     def is_valid(self):
@@ -396,14 +390,14 @@ class FormSet(object):
 
     def save(self, parent_obj):
         for form in self._forms:
-            is_old = (form._model and form._obj and
-                hasattr(form._obj, 'id') and
-                hasattr(form, 'id') and form.id.empty
-            )
-            if self._delete_old and is_old:
-                db = form._model.db
-                db.query(form._model).filter(form._model.id == form._obj.id) \
-                    .delete(synchronize_session='fetch')
-            else:
-                form.save(parent_obj)
+            form.save(parent_obj)
+
+
+def has_data(d, prefix):
+    """Test if any of the `keys` of the `d` dictionary starts with `prefix`.
+    """
+    prefix = r'%s-' % (prefix, )
+    dkeys = d.keys()
+    i = filter(lambda k: k.startswith(prefix), dkeys)
+    return len(i) > 0
 

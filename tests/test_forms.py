@@ -137,7 +137,7 @@ def test_save():
     form = MyContactForm(data)
     assert form.is_valid()
     contact = form.save()
-    print contact
+    print 'contact', contact.to_dict()
     assert isinstance(contact, Contact)
     assert contact.id is None
     assert contact.subject == data['subject']
@@ -377,11 +377,17 @@ def test_formset_model():
         user = db.relationship('User',
             backref=db.backref('addresses', lazy='dynamic'))
 
+        def __repr__(self):
+            return '<Address %s>' % (self.email,)
+
     db.create_all()
 
     class FormAddress(f.Form):
         _model = Address
         email = f.Email()
+
+        def __repr__(self):
+            return '<FormAddress %s>' % (self.email.value,)
 
     class FormUser(f.Form):
         _model = User
@@ -428,7 +434,7 @@ def test_formset_model():
     assert addr.user == user
 
 
-def test_formset_autodelete():
+def test_formset_missing_objs():
     db = SQLAlchemy()
 
     class User(db.Model):
@@ -444,12 +450,18 @@ def test_formset_autodelete():
         user = db.relationship('User',
             backref=db.backref('addresses', lazy='dynamic'))
 
+        def __repr__(self):
+            return self.email
+
     db.create_all()
 
     class FormAddress(f.Form):
         _model = Address
         id = f.Integer()
         email = f.Email()
+
+        def __repr__(self):
+            return '<FormAddress %s>' % (self.email.value,)
 
     class FormUser(f.Form):
         _model = User
@@ -459,27 +471,22 @@ def test_formset_autodelete():
 
     user = User(name=u'John Doe')
     db.add(user)
-    db.add(Address(email=u'one@example.com', user=user))
-    db.add(Address(email=u'two@example.com', user=user))
-    db.add(Address(email=u'three@example.com', user=user))
+    a1 = Address(id=1, email=u'one@example.com', user=user)
+    db.add(a1)
+    a2 = Address(id=2, email=u'two@example.com', user=user)
+    db.add(a2)
+    a3 = Address(id=3, email=u'three@example.com', user=user)
+    db.add(a3)
     db.commit()
 
     data = {
         'name': u'Jane Doe',
-        'formaddress.1-id': u'1',
         'formaddress.1-email': u'one@example.org',
-        'formaddress.3-id': u'3',
         'formaddress.3-email': u'three@example.org',
         'formaddress.4-email': u'four@example.org',
     }
+    print [(a.id, a.email) for a in user.addresses]
     form = FormUser(data, user)
     assert form.is_valid()
-    form.save()
-    db.commit()
-
-    assert db.query(Address).count() == 3
-    addrs = db.query(Address).all()
-    assert addrs[0].email == data['formaddress.1-email']
-    assert addrs[1].email == data['formaddress.3-email']
-    assert addrs[2].email == data['formaddress.4-email']
+    assert form.addresses.missing_objs == [a2]
 

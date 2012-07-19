@@ -7,6 +7,7 @@ clean: clean-pyc
 	rm -rf dist
 	rm -rf *.egg-info
 	rm -rf tests/res/t
+	rm -rf tests/__pycache__
 	find . -name '.DS_Store' -exec rm -f {} \;
 
 clean-pyc:
