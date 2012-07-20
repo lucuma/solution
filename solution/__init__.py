@@ -63,7 +63,7 @@ from .serializers import to_json
 from .custom_types import JSONEncodedType
 
 
-__version__ = '1.1.16'
+__version__ = '1.1.17'
 
 
 def _create_scoped_session(db):
@@ -250,6 +250,8 @@ class SQLAlchemy(object):
 
         if hasattr(app, 'after_request'):
             app.after_request(shutdown_session)
+        elif hasattr(app, 'before_response'):
+            app.before_response(shutdown_session)
         if hasattr(app, 'on_exception'):
             app.on_exception(rollback)
     
