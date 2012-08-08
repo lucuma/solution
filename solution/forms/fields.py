@@ -524,7 +524,7 @@ class _File(_Field):
     def to_html(self):
         return self.python_value
 
-    def to_python(self, locale=None, tz=None):
+    def to_python(self, *args, **kwargs):
         if not self._value:
             return self.original_value
         if not self.upload:

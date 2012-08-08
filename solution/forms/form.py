@@ -343,7 +343,8 @@ class FormSet(object):
         for num, obj in enumerate(objs, 1):
             _prefix = num
             prefix = self._get_prefix(_prefix)
-            if data and self._form_class._model and not has_data(data, prefix):
+            if (data or files) and self._form_class._model and \
+                    not has_data(data, prefix) and not has_data(files, prefix):
                 missing_objs.append(obj)
                 continue
             f = self._form_class(data, obj=obj, files=files,
@@ -378,7 +379,7 @@ class FormSet(object):
         self.has_changed = False
         errors = {}
 
-        for form in self._forms:
+        for name, form in enumerate(self._forms, 1):
             if not form.is_valid():
                 errors[name] = form._errors
                 continue
@@ -397,7 +398,9 @@ def has_data(d, prefix):
     """Test if any of the `keys` of the `d` dictionary starts with `prefix`.
     """
     prefix = r'%s-' % (prefix, )
-    dkeys = d.keys()
-    i = filter(lambda k: k.startswith(prefix), dkeys)
-    return len(i) > 0
+    for k in d:
+        if not k.startswith(prefix):
+            continue
+        return True
+    return False
 
