@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from datetime import datetime, date
 import inspect
 import re
 from xml.sax.saxutils import quoteattr
 
-from babel.dates import (format_date, format_datetime, format_time,
+from babel.dates import (format_datetime, format_time,
     parse_date, parse_datetime, parse_time)
 try:
     from jinja2 import Markup
 except ImportError:
     Markup = unicode
-from pytz import utc
+from pytz import timezone, utc
 
 from . import validators as v
 from ..serializers import to_unicode
@@ -21,11 +22,11 @@ __all__ = (
     'Markup', 'ValidationError',
 
     '_Field', '_Text', '_Password', '_Number', '_NaturalNumber', '_Email',
-    '_URL', '_Date', '_DateTime', '_Color', '_File', '_Boolean',
+    '_URL', '_Date', '_Color', '_File', '_Boolean',
     '_Select', '_SelectMulti', '_Collection',
 
     'Field', 'Text', 'Password', 'Number', 'NaturalNumber', 'Integer', 'Email',
-    'URL', 'Date', 'DateTime', 'Color', 'File', 'Boolean',
+    'URL', 'Date', 'Color', 'File', 'Boolean',
     'Select', 'SelectMulti', 'Collection',
 )
 
@@ -58,6 +59,8 @@ class _Field(object):
     original_value = None
     error = None
     name = 'unnamed'
+    locale = 'en'
+    tz = utc
 
     has_changed = False
     hide_value = False
@@ -99,7 +102,7 @@ class _Field(object):
             return u''
         if self._value:
             return self._value
-        return self.to_html()
+        return self.to_html(locale=self.locale, tz=self.tz)
 
     def set_value(self, value):
         if isinstance(value, list) and value:
@@ -135,7 +138,7 @@ class _Field(object):
 
     python_value = property(_get_python_value, _set_python_value)
 
-    def to_html(self):
+    def to_html(self, locale=None, tz=None):
         return to_unicode(self._python_value or u'')
 
     def to_python(self, locale=None, tz=None):
@@ -391,55 +394,57 @@ class _Date(_Text):
 
     Any other named parameter will be stored in `self.extra`.
     """
-    _type = 'date'
-    _default_validator = v.IsDate
-
-    def to_html(self, locale=None):
-        locale = locale or self.locale or 'en'
-        try:
-            return format_date(self.python_value, locale=locale)
-        except Exception:
-            return u''
-
-    def to_python(self, locale=None, tz=None):
-        if not self._value:
-            return None
-        locale = locale or self.locale or 'en'
-        try:
-            return parse_date(self._value, locale=locale)
-        except Exception:
-            return None
-
-
-class _DateTime(_Text):
-    """A datetime field.
-
-    :param validate:
-        An list of validators. This will evaluate the current `value` when
-        the method `validate` is called.
-
-    Any other named parameter will be stored in `self.extra`.
-    """
     _type = 'datetime'
     _default_validator = v.IsDate
+    format = 'short'
+
+    def __init__(self, format=None, *args, **kwargs):
+        self.format = format
+        return super(_Date, self).__init__(*args, **kwargs)
+
+    def set_value(self, value):
+        if isinstance(value, list) and value:
+            value = value[0] or u''
+        if isinstance(value, date) and not isinstance(value, datetime):
+            now = datetime.utcnow()
+            value = datetime(value.year, value.month, value.day,
+                now.hour, now.minute, now.second)
+        return super(_Date, self).set_value(value)
 
     def to_html(self, locale=None, tz=None):
-        locale = locale or self.locale
+        locale = locale or self.locale or 'en'
         tz = tz or self.tz
+        if isinstance(tz, basestring):
+            tz = timezone(tz)
         try:
-            dt = self.python_value.astimezone(tz) if tz else self.python_value
-            return format_datetime(dt, locale=locale)
+            return format_datetime(self.python_value, format=self.format,
+                tzinfo=tz, locale=locale)
         except Exception:
+            # raise
             return u''
 
     def to_python(self, locale=None, tz=None):
         if not self._value:
             return None
-        locale = locale or self.locale
+        locale = locale or self.locale or 'en'
+        tz = tz or self.tz
+        if isinstance(tz, basestring):
+            tz = timezone(tz)
+
         try:
-            dt = parse_datetime(self._value, locale=locale)
-            dt.astimezone(utc)
+            try:
+                dt = parse_datetime(self._value, locale=locale)
+            except NotImplementedError:
+                dt = parse_date(self._value, locale=locale)
+            if isinstance(dt, date) and not isinstance(dt, datetime):
+                now = datetime.utcnow()
+                dt = datetime(dt.year, dt.month, dt.day,
+                    now.hour, now.minute, now.second)
+            if tz:
+                dt = dt - tz.utcoffset(dt, is_dst=True)
+            return dt
         except Exception:
+            # raise
             return None
 
 
@@ -521,10 +526,10 @@ class _File(_Field):
         self.upload = upload
         super(_File, self).__init__(validate=validate, **kwargs)
 
-    def to_html(self):
+    def to_html(self, locale=None, tz=None):
         return self.python_value
 
-    def to_python(self, *args, **kwargs):
+    def to_python(self, locale=None, tz=None):
         if not self._value:
             return self.original_value
         if not self.upload:
@@ -834,7 +839,7 @@ class _Collection(_Text):
         self.clean = clean
         super(_Collection, self).__init__(validate=validate, **kwargs)
     
-    def to_html(self):
+    def to_html(self, locale=None, tz=None):
         value = self.python_value or []
         return self.sep.join(value)
 
@@ -900,9 +905,6 @@ class URL(Field):
 
 class Date(Field):
     _class = _Date
-
-class DateTime(Field):
-    _class = _DateTime
 
 class Color(Field):
     _class = _Color

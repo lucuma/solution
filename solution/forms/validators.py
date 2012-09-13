@@ -72,8 +72,10 @@ class IsNaturalNumber(object):
         self.message = message
 
     def __call__(self, python_value):
+        if not isinstance(python_value, basestring):
+            python_value = str(python_value or u'')
         try:
-            n = int(str(python_value), 10)
+            n = int(python_value, 10)
         except Exception:
             return False
         return n >= 0
@@ -115,7 +117,9 @@ class LongerThan(object):
         self.message = message
 
     def __call__(self, python_value):
-        return len(str(python_value or u'')) >= self.length
+        if not isinstance(python_value, basestring):
+            python_value = str(python_value or u'')
+        return len(python_value) >= self.length
 
 
 class ShorterThan(object):
@@ -137,7 +141,9 @@ class ShorterThan(object):
         self.message = message
 
     def __call__(self, python_value):
-        return len(str(python_value or u'')) <= self.length
+        if not isinstance(python_value, basestring):
+            python_value = str(python_value or u'')
+        return len(python_value) <= self.length
 
 
 class LessThan(object):
