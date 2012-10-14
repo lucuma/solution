@@ -203,7 +203,7 @@ class Form(object):
 
         ## Validate relation between fields
         for name, field in self._fields.items():
-            field.validate(self, cleaned_data=cleaned_data)
+            field.validate(self, cleaned_data)
             if field.error:
                 errors[name] = field.error
                 continue

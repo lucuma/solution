@@ -149,7 +149,7 @@ class _Field(object):
     def clean_value(self, python_value):
         return python_value
 
-    def validate(self, form, cleaned_data=None):
+    def validate(self, form=None, cleaned_data=None):
         """Validates the current value of a field.
         """
         if cleaned_data is None:
@@ -166,23 +166,24 @@ class _Field(object):
             # Do not validate optional fields
             if (python_value is None) and self.optional:
                 return self.default or None
-            return self._validate_value(form, python_value)
-        self._validate_form(form, cleaned_data)
 
-    def _validate_value(self, form, python_value):
+            return self._validate_value(python_value, form)
+        self._validate_form(cleaned_data, form)
+
+    def _validate_value(self, python_value, form):
         for val in self.validators:
             if isinstance(val, v.FormValidator):
                 continue
-            if not val(form, python_value):
+            if not val(python_value, form):
                 self.error = ValidationError(val.code, val.message)
                 return self.default
         return python_value
 
-    def _validate_form(self, form, cleaned_data):
+    def _validate_form(self, cleaned_data, form):
         for val in self.validators:
             if not isinstance(val, v.FormValidator):
                 continue
-            if not val(form, cleaned_data):
+            if not val(cleaned_data, form):
                 self.error = ValidationError(val.code, val.message)
                 break
 
