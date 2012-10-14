@@ -32,7 +32,7 @@ class Required(object):
             message = u'This field is required.'
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         return bool(python_value)
 
 
@@ -49,7 +49,7 @@ class IsNumber(object):
             message = u'Enter a number.'
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         try:
             float(python_value)
         except Exception:
@@ -71,7 +71,7 @@ class IsNaturalNumber(object):
             message = u'Enter a positive integer number.'
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         if not isinstance(python_value, basestring):
             python_value = str(python_value or u'')
         try:
@@ -94,7 +94,7 @@ class IsDate(object):
             message = u'Enter a valid date.'
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         return isinstance(python_value, datetime.date)
 
 
@@ -116,7 +116,7 @@ class LongerThan(object):
             message = u'Field must be at least %d character long.' % length
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         if not isinstance(python_value, basestring):
             python_value = str(python_value or u'')
         return len(python_value) >= self.length
@@ -140,7 +140,7 @@ class ShorterThan(object):
             message = u'Field cannot be longer than %d character.' % length
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         if not isinstance(python_value, basestring):
             python_value = str(python_value or u'')
         return len(python_value) <= self.length
@@ -165,7 +165,7 @@ class LessThan(object):
             message = u'Number must be less than %d.' % value
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         value = python_value or 0
         return value <= self.value
 
@@ -189,7 +189,7 @@ class MoreThan(object):
             message = u'Number must be greater than %s.' % value
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         value = python_value or 0
         return value >= self.value
 
@@ -216,7 +216,7 @@ class InRange(object):
             message = u'Number must be between %s and %s.' % (minval, maxval)
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         value = python_value or 0
         if value < self.minval:
             self.code = 'too_small'
@@ -252,7 +252,7 @@ class Match(object):
             message = u'This value doesn\'t seem to be valid.'
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         return self.regex.match(python_value or u'')
 
 
@@ -293,7 +293,7 @@ class ValidEmail(object):
             message = u'Enter a valid e-mail address.'
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         value = python_value or ''
         if self.regex.match(value):
             return True
@@ -334,7 +334,7 @@ class ValidURL(object):
         if message is None:
             message = u'Enter a valid URL.'
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         value = python_value or ''
         if self.regex.match(value):
             return True
@@ -376,7 +376,7 @@ class Before(object):
             message = u'Enter a valid date before %s.' % str_date
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         value = python_value
         if not isinstance(value, datetime.date):
             return False
@@ -409,7 +409,7 @@ class After(object):
             message = u'Enter a valid date after %s.' % str_date
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         value = python_value
         if not isinstance(value, datetime.date):
             return False
@@ -431,7 +431,7 @@ class BeforeNow(Before):
             message = u'Enter a valid date in the past.'
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         self.date = datetime.datetime.utcnow()
         return super(BeforeNow, self).__call__(python_value)
 
@@ -449,7 +449,7 @@ class AfterNow(After):
             message = u'Enter a valid date in the future.'
         self.message = message
 
-    def __call__(self, python_value):
+    def __call__(self, form, python_value):
         self.date = datetime.datetime.utcnow()
         return super(AfterNow, self).__call__(python_value)
 
@@ -483,7 +483,7 @@ class AreEqual(FormValidator):
             message = u'The %s doesn\'t match.' % plural
         self.message = message
 
-    def __call__(self, data):
+    def __call__(self, form, data):
         return data.get(self.name1) == data.get(self.name2)
 
 
@@ -505,7 +505,7 @@ class AtLeastOne(FormValidator):
             message = u'Fill at least one of these fields.'
         self.message = message
 
-    def __call__(self, data):
+    def __call__(self, form, data):
         for field in self.fields:
             if data.get(field):
                 return True
@@ -536,7 +536,7 @@ class ValidSplitDate(FormValidator):
             message = u'Fill at least one of these fields.'
         self.message = message
 
-    def __call__(self, data):
+    def __call__(self, form, data):
         now = datetime.datetime.today()
         try:
             day = int(data.get(self.day))

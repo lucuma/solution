@@ -149,7 +149,7 @@ class _Field(object):
     def clean_value(self, python_value):
         return python_value
 
-    def validate(self, cleaned_data=None):
+    def validate(self, form, cleaned_data=None):
         """Validates the current value of a field.
         """
         if cleaned_data is None:
@@ -166,23 +166,23 @@ class _Field(object):
             # Do not validate optional fields
             if (python_value is None) and self.optional:
                 return self.default or None
-            return self._validate_value(python_value)
-        self._validate_form(cleaned_data)
+            return self._validate_value(form, python_value)
+        self._validate_form(form, cleaned_data)
 
-    def _validate_value(self, python_value):
+    def _validate_value(self, form, python_value):
         for val in self.validators:
             if isinstance(val, v.FormValidator):
                 continue
-            if not val(python_value):
+            if not val(form, python_value):
                 self.error = ValidationError(val.code, val.message)
                 return self.default
         return python_value
 
-    def _validate_form(self, cleaned_data):
+    def _validate_form(self, form, cleaned_data):
         for val in self.validators:
             if not isinstance(val, v.FormValidator):
                 continue
-            if not val(cleaned_data):
+            if not val(form, cleaned_data):
                 self.error = ValidationError(val.code, val.message)
                 break
 
@@ -416,9 +416,13 @@ class _Date(_Text):
         tz = tz or self.tz
         if isinstance(tz, basestring):
             tz = timezone(tz)
+        value = self.python_value
+        if isinstance(value, date) and not isinstance(value, datetime):
+            now = datetime.utcnow()
+            value = datetime(value.year, value.month, value.day,
+                now.hour, now.minute, now.second)
         try:
-            return format_datetime(self.python_value, format=self.format,
-                tzinfo=tz, locale=locale)
+            return format_datetime(value, format=self.format, tzinfo=tz, locale=locale)
         except Exception:
             # raise
             return u''
