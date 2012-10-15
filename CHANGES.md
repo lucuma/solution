@@ -1,5 +1,10 @@
 # Solution Changelog
 
+
+## 1.5
+
+- Improve the `Collection` field.
+
 ## 1.4
 
 - Validators now take a `form` argument.

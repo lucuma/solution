@@ -823,6 +823,8 @@ class _Collection(_Text):
     :param filters:
         List of validators. If a value do not pass one of these it'll be
         filtered out from the final result.
+    :param prepare:
+        An optional function that preprocess the value before loading.
     :param clean:
         An optional function that takes a value and return a 'cleaned' version
         of it. If a value raise an exception it'll be filtered out from the
@@ -834,24 +836,27 @@ class _Collection(_Text):
     Any other named parameter will be stored in `self.extra`.
     """
 
-    def __init__(self, sep=', ', filters=None, clean=None, validate=None,
-            **kwargs):
+    def __init__(self, sep=', ', filters=None, prepare=None, clean=None,
+            validate=None, **kwargs):
         validate = validate or []
         self.sep = sep
         self.rxsep = r'\s*%s\s*' % self.sep.replace(' ', '')
         filters = filters or []
         self.filters = [f() if inspect.isclass(f) else f for f in filters]
+        self.prepare = prepare
         self.clean = clean
         super(_Collection, self).__init__(validate=validate, **kwargs)
     
     def to_html(self, locale=None, tz=None):
         value = self.python_value or []
+        if self.prepare:
+            value = self.prepare(value)
         return self.sep.join(value)
 
     def to_python(self, locale=None, tz=None):
         if not self._value:
             return []
-        return self._value.split(self.rxsep)
+        return re.split(self.rxsep, self._value)
 
     def clean_value(self, python_value):
         values = python_value or []
