@@ -639,7 +639,7 @@ class _Select(_Field):
             return self.as_select(_items=items, **kwargs)    
         return self.as_radiobuttons(_items=items, **kwargs)
 
-    def as_select(self, _items=None, **kwargs):
+    def as_select(self, _items=None, no_value=None, **kwargs):
         """Render the field as `<select>` element.
         
         :param **kwargs:
@@ -656,6 +656,9 @@ class _Select(_Field):
         if _items is None:
             _items = self.get_items()
         curr_value = self.value
+        if no_value:
+            _items.insert(('', no_value))
+        
         for value, label in _items:
             item_attrs = {'value': value}
             if str(value) == curr_value:

@@ -31,7 +31,7 @@ class Form(object):
     :param prefix:
         If provided, all fields will have their name prefixed with the
         value.
-    :param parent:
+    :param backref:
         .
 
     """
@@ -47,7 +47,8 @@ class Form(object):
     changed_fields = None
 
     def __init__(self, data=None, obj=None, files=None, locale='en', tz=utc,
-            prefix=u'', parent=None):
+            prefix=u'', backref=None, parent=None):
+        backref = backref or parent
         assert (self._model is None) or issubclass(self._model, Model)
         data = data or {}
         if not hasattr(data, 'getlist'):
@@ -67,7 +68,7 @@ class Form(object):
         if prefix and not prefix.endswith(('_', '-', '.', '+', '|')):
             prefix += u'-'
         self._prefix = prefix
-        self._parent = parent
+        self._backref = backref
 
         self.cleaned_data = {}
         self.changed_fields = []
@@ -119,7 +120,7 @@ class Form(object):
             fclass = subform.__class__
             subform = fclass(data, original_value, files=files,
                 locale=self._locale, tz=self._tz,
-                prefix=self._prefix, parent=subform._parent)
+                prefix=self._prefix, backref=subform._backref)
             self._forms[name] = subform
             setattr(self, name, subform)
 
@@ -216,13 +217,14 @@ class Form(object):
         self.changed_fields = changed_fields
         return True
 
-    def save(self, parent_obj=None):
+    def save(self, backref_obj=None):
         """Save the cleaned data to the initial object or creating a new one
         (if a `model_class` was provided)."""
         if not self.cleaned_data:
             assert self.is_valid
+        # print 'Form.save', backref_obj, self._obj
         if self._model and not self._obj:
-            obj = self._save_new_object(parent_obj)
+            obj = self._save_new_object(backref_obj)
         else:
             obj = self.save_to(self._obj)
 
@@ -234,7 +236,8 @@ class Form(object):
 
         return obj
 
-    def _save_new_object(self, parent_obj=None):
+    def _save_new_object(self, backref_obj=None):
+        # print 'Form._save_new_object', backref_obj
         db = self._model.db
         colnames = self._model.__table__.columns.keys()
         data = {}
@@ -242,8 +245,8 @@ class Form(object):
             if colname in self.cleaned_data:
                 data[colname] = self.cleaned_data[colname]
         
-        if self._parent and parent_obj:
-            data[self._parent] = parent_obj
+        if self._backref and backref_obj:
+            data[self._backref] = backref_obj
 
         obj = self._model(**data)
         db.add(obj)
@@ -251,8 +254,9 @@ class Form(object):
 
     def save_to(self, obj):
         """Save the cleaned data to an object."""
+        # print 'Form.save_to', obj
         if not self.cleaned_data:
-            return
+            return obj
         if isinstance(obj, Model):
             colnames = self._model.__table__.columns.keys()
             for colname in colnames:
@@ -295,10 +299,11 @@ class FormSet(object):
     _errors = None
     has_changed = False
 
-    def __init__(self, form_class, parent=None,
+    def __init__(self, form_class, backref=None, parent=None,
             create_new=True, data=None, objs=None, files=None):
+        backref = backref or parent
         self._form_class = form_class
-        self._parent = parent
+        self._backref = backref
         self._create_new = bool(create_new)
         self._forms = []
         self._errors = {}
@@ -348,7 +353,7 @@ class FormSet(object):
                 missing_objs.append(obj)
                 continue
             f = self._form_class(data, obj=obj, files=files,
-                locale=locale, tz=tz, prefix=prefix, parent=self._parent)
+                locale=locale, tz=tz, prefix=prefix, backref=self._backref)
             forms.append(f)
 
         _prefix += 1
@@ -368,7 +373,7 @@ class FormSet(object):
         prefix = self._get_prefix(_prefix)
         while has_data(data, prefix) or has_data(files, prefix):
             f = self._form_class(data, files=files, locale=locale, tz=tz,
-                prefix=prefix, parent=self._parent)
+                prefix=prefix, backref=self._backref)
             forms.append(f)
             _prefix += 1
             prefix = self._get_prefix(_prefix)
@@ -389,9 +394,10 @@ class FormSet(object):
             self._errors = errors
         return True
 
-    def save(self, parent_obj):
+    def save(self, backref_obj):
+        # print 'FormSet.save', backref_obj
         for form in self._forms:
-            form.save(parent_obj)
+            form.save(backref_obj)
 
 
 def has_data(d, prefix):
