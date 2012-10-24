@@ -19,7 +19,17 @@ __all__ = ['Required', 'IsNumber', 'IsNaturalNumber', 'IsDate',
 #- Field validators
 #------------------------------------------------------------------------------#
 
-class Required(object):
+class Validator(object):
+    """Base field Validator.
+
+    :param message:
+        Error message to raise in case of a validation error.
+    """
+    code = 'error'
+    message = u'Invalid value.'
+
+
+class Required(Validator):
     """Validates that the field contains data.
 
     :param message:
@@ -36,7 +46,7 @@ class Required(object):
         return bool(python_value)
 
 
-class IsNumber(object):
+class IsNumber(Validator):
     """Validates that the field is a number (integer or floating point).
 
     :param message:
@@ -57,7 +67,7 @@ class IsNumber(object):
         return True
 
 
-class IsNaturalNumber(object):
+class IsNaturalNumber(Validator):
     """Validates that the field is a natural number (positive integer
     including zero).
 
@@ -81,7 +91,7 @@ class IsNaturalNumber(object):
         return n >= 0
 
 
-class IsDate(object):
+class IsDate(Validator):
     """Validates that the field is a date or a datetime.
 
     :param message:
@@ -98,7 +108,7 @@ class IsDate(object):
         return isinstance(python_value, datetime.date)
 
 
-class LongerThan(object):
+class LongerThan(Validator):
     """Validates the length of a string is longer or equal than minimum.
 
     :param length:
@@ -122,7 +132,7 @@ class LongerThan(object):
         return len(python_value) >= self.length
 
 
-class ShorterThan(object):
+class ShorterThan(Validator):
     """Validates the length of a string is shorter or equal than maximum.
 
     :param length:
@@ -146,7 +156,7 @@ class ShorterThan(object):
         return len(python_value) <= self.length
 
 
-class LessThan(object):
+class LessThan(Validator):
     """Validates that a number is less or equal than a value.
     This will work with any comparable number type, such as floats and
     decimals, not just integers.
@@ -170,7 +180,7 @@ class LessThan(object):
         return value <= self.value
 
 
-class MoreThan(object):
+class MoreThan(Validator):
     """Validates that a number is greater or equal than a value.
     This will work with any comparable number type, such as floats and
     decimals, not just integers.
@@ -194,7 +204,7 @@ class MoreThan(object):
         return value >= self.value
 
 
-class InRange(object):
+class InRange(Validator):
     """Validates that a number is of a minimum and/or maximum value.
     This will work with any comparable number type, such as floats and
     decimals, not just integers.
@@ -227,7 +237,7 @@ class InRange(object):
         return True
 
 
-class Match(object):
+class Match(Validator):
     """Validates the field against a regular expression.
 
     :param regex:
@@ -271,7 +281,7 @@ class IsColor(Match):
         self.message = message
 
 
-class ValidEmail(object):
+class ValidEmail(Validator):
     """Validates an email address. Note that this uses a very primitive regular
     expression and should only be used in instances where you later verify by
     other means, or wen it doesn't matters very much the email is real.
@@ -311,7 +321,7 @@ class ValidEmail(object):
         return False
 
 
-class ValidURL(object):
+class ValidURL(Validator):
     """Simple regexp based URL validation. Much like the IsEmail validator, you
     probably want to validate the URL later by other means if the URL must
     resolve.
@@ -352,7 +362,7 @@ class ValidURL(object):
         return False
 
 
-class Before(object):
+class Before(Validator):
     """Validates than the date happens before another.
     This will work with both date and datetime values.
 
@@ -385,7 +395,7 @@ class Before(object):
         return value <= self.date
 
 
-class After(object):
+class After(Validator):
     """Validates than the date happens after another.
     This will work with both date and datetime values.
 

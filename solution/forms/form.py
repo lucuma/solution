@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from pytz import utc
 
 from .. import Model
-from .fields import Field, File
+from .fields import Field
 from .utils import FakeMultiDict
 
 
@@ -116,9 +116,9 @@ class Form(object):
         """
         ## Initialize sub-forms
         for name, subform in self._forms.items():
-            original_value = getattr(obj, name, None)
+            obj_value = getattr(obj, name, None)
             fclass = subform.__class__
-            subform = fclass(data, original_value, files=files,
+            subform = fclass(data, obj_value, files=files,
                 locale=self._locale, tz=self._tz,
                 prefix=self._prefix, backref=subform._backref)
             self._forms[name] = subform
@@ -126,16 +126,16 @@ class Form(object):
 
         ## Initialize sub-sets
         for name, subset in self._sets.items():
-            original_value = getattr(obj, name, None)
-            subset._init(data, original_value, files=files,
+            obj_value = getattr(obj, name, None)
+            subset._init(data, obj_value, files=files,
                 locale=self._locale, tz=self._tz)
 
         ## Initialize fields
         for name, field in self._fields.items():
             subdata = data.getlist(self._prefix + name)
             subfiles = files.getlist(self._prefix + name)
-            original_value = getattr(obj, name, None)
-            field._init(subdata, original_value, files=subfiles,
+            obj_value = getattr(obj, name, None)
+            field.load_value(subdata, files=subfiles, obj_value=obj_value,
                 locale=self._locale, tz=self._tz)
 
     def reset(self):
@@ -221,7 +221,7 @@ class Form(object):
         """Save the cleaned data to the initial object or creating a new one
         (if a `model_class` was provided)."""
         if not self.cleaned_data:
-            assert self.is_valid
+            assert self.is_valid()
         # print 'Form.save', backref_obj, self._obj
         if self._model and not self._obj:
             obj = self._save_new_object(backref_obj)
@@ -255,8 +255,6 @@ class Form(object):
     def save_to(self, obj):
         """Save the cleaned data to an object."""
         # print 'Form.save_to', obj
-        if not self.cleaned_data:
-            return obj
         if isinstance(obj, Model):
             colnames = self._model.__table__.columns.keys()
             for colname in colnames:

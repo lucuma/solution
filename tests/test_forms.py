@@ -77,6 +77,34 @@ def test_is_valid():
     assert not form._errors  
 
 
+def test_empty_data():
+
+    class MyForm(f.Form):
+        meh = f.Text()
+
+    data = {
+        'meh': u'',
+    }
+    obj = {
+        'meh': u'lalala',
+    }
+    form = MyForm(data, obj=obj)
+    assert form.is_valid()
+    assert form.cleaned_data['meh'] == u''
+
+
+def test_dict_save():
+    data = {
+        'subject': u'Hello',
+        'message': u'Welcome',
+    }
+    form = ContactForm(data)
+    obj = form.save()
+    print obj.keys()
+    assert obj['subject'] == data['subject']
+    assert obj['message'] == data['message']
+
+
 def test_has_changed():
     form = ContactForm()
     assert not form.is_valid()
@@ -106,6 +134,27 @@ def test_changed_data():
     assert form.cleaned_data['subject'] == data['subject']
     assert form.cleaned_data['message'] == data['message']
     assert form.cleaned_data['email'] == None
+
+
+def test_prefix():
+    data = {
+        'meh-subject': u'Hello',
+        'meh-message': u'Welcome',
+    }
+    obj = {
+        'email': u'foo@bar.com',
+    }
+    form = ContactForm(data, obj=obj, prefix='meh')
+    expected = '<input name="meh-subject" type="text" value="%s" required>' % data['meh-subject']
+    assert str(form.subject) == expected
+    expected = '<input name="meh-email" type="email" value="%s">' % obj['email']
+    assert str(form.email) == expected
+
+    assert form.is_valid()
+    obj = form.save()
+    print obj.keys()
+    assert obj['subject'] == data['meh-subject']
+    assert obj['message'] == data['meh-message']
 
 
 def test_save():
@@ -153,6 +202,51 @@ def test_save():
     assert contact.id is not None
     assert contact.message == data['message']
     db.commit()
+
+
+def test_prefix_save():
+    db = SQLAlchemy()
+
+    class Contact(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        subject = db.Column(db.Unicode, nullable=False)
+        email = db.Column(db.Unicode)
+        message = db.Column(db.UnicodeText, nullable=False)
+
+    db.create_all()
+
+    class MyContactForm(f.Form):
+        _model = Contact
+
+        subject = f.Text(validate=[f.Required])
+        email = f.Email()
+        message = f.Text(validate=[
+            f.Required(message=u'write something!')
+        ])
+
+    data = {
+        'meh-subject': u'Hello',
+        'meh-message': u'Welcome',
+    }
+    form = MyContactForm(data, prefix='meh')
+    assert form.is_valid()
+    contact = form.save()
+    assert isinstance(contact, Contact)
+    db.commit()
+    assert contact.subject == data['meh-subject']
+    assert contact.message == data['meh-message']
+    
+    data = {
+        'meh-subject': u'foo',
+        'meh-message': u'bar',
+    }
+    form = MyContactForm(data, obj=contact, prefix='meh')
+    assert form.is_valid()
+    assert form.has_changed
+    form.save()
+    db.commit()
+    assert contact.subject == data['meh-subject']
+    assert contact.message == data['meh-message']
 
 
 def test_cascade_save():
@@ -236,71 +330,6 @@ def test_cascade_save():
     assert objb.b1 == data['b1']
     assert objb.b2 == data['b2']
 
-
-def test_prefix():
-    data = {
-        'meh-subject': u'Hello',
-        'meh-message': u'Welcome',
-    }
-    obj = {
-        'email': u'foo@bar.com',
-    }
-    form = ContactForm(data, obj=obj, prefix='meh')
-    expected = '<input name="meh-subject" type="text" value="%s" required>' % data['meh-subject']
-    assert str(form.subject) == expected
-    expected = '<input name="meh-email" type="email" value="%s">' % obj['email']
-    assert str(form.email) == expected
-
-    assert form.is_valid()
-    obj = form.save()
-    print obj.keys()
-    assert obj['subject'] == data['meh-subject']
-    assert obj['message'] == data['meh-message']
-
-
-def test_prefix_save():
-    db = SQLAlchemy()
-
-    class Contact(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        subject = db.Column(db.Unicode, nullable=False)
-        email = db.Column(db.Unicode)
-        message = db.Column(db.UnicodeText, nullable=False)
-
-    db.create_all()
-
-    class MyContactForm(f.Form):
-        _model = Contact
-
-        subject = f.Text(validate=[f.Required])
-        email = f.Email()
-        message = f.Text(validate=[
-            f.Required(message=u'write something!')
-        ])
-
-    data = {
-        'meh-subject': u'Hello',
-        'meh-message': u'Welcome',
-    }
-    form = MyContactForm(data, prefix='meh')
-    assert form.is_valid()
-    contact = form.save()
-    assert isinstance(contact, Contact)
-    db.commit()
-    assert contact.subject == data['meh-subject']
-    assert contact.message == data['meh-message']
-    
-    data = {
-        'meh-subject': u'foo',
-        'meh-message': u'bar',
-    }
-    form = MyContactForm(data, obj=contact, prefix='meh')
-    assert form.is_valid()
-    assert form.has_changed
-    form.save()
-    db.commit()
-    assert contact.subject == data['meh-subject']
-    assert contact.message == data['meh-message']
 
 
 def test_formset_as_field():
