@@ -872,6 +872,13 @@ class _Select(MultiValue):
         values = self.get_value()
         return self.prepare(values, locale, tz)
 
+    def to_python(self, locale=None, tz=None):
+        values = self.get_value()
+        values = self.clean(values, locale, tz)
+        if self.multiple:
+            return values
+        return values[0]
+
     def __call__(self, **kwargs):
         items = self.get_items()
         if len(items) > 5:
@@ -933,7 +940,7 @@ class _Select(MultiValue):
             if value in curr_values or str(value) in curr_values:
                 item_attrs['checked'] = True
             html_attrs = self._get_html_attrs(item_attrs)
-            html.append(tmpl % {'attrs': html_attrs, 'label': label})
+            html.append(tmpl % {'attrs': html_attrs, 'label': label, 'value': value})
         return Markup('\n'.join(html))
 
     def as_radiobuttons(self, _items=None, 
@@ -964,7 +971,7 @@ class _Select(MultiValue):
             if value in curr_values or str(value) in curr_values:
                 item_attrs['checked'] = True
             html_attrs = self._get_html_attrs(item_attrs)
-            html.append(tmpl % {'attrs': html_attrs, 'label': label})
+            html.append(tmpl % {'attrs': html_attrs, 'label': label, 'value': value})
         return Markup('\n'.join(html))
 
 
