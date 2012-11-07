@@ -107,6 +107,9 @@ class _Field(object):
         self.locale = kwargs.pop('locale', self.locale)
         self.tz = kwargs.pop('tz', self.tz)
         self.extra = kwargs
+    
+    def __nonzero__(self):
+        return not self.empty
 
     def reset(self):
         self.value = None
@@ -121,7 +124,7 @@ class _Field(object):
 
     def load_value(self, data=None, files=None, obj_value=None, locale=None, tz=None):
         self.reset()
-        self.empty = not bool(data or files)
+        self.empty = not bool(data or files or obj_value)
         self.value = data or files
         self.obj_value = obj_value
         self.locale = locale or self.locale
@@ -501,7 +504,7 @@ class _Date(_Text):
         Default timezone
 
     """
-    _type = 'datetime'
+    _type = 'text'
     _default_validator = v.IsDate
     format = 'short'
 
@@ -523,7 +526,7 @@ class _Date(_Text):
         tz = tz or self.tz
         if isinstance(tz, basestring):
             tz = timezone(tz)
-        value = self.value
+        value = self.get_value()
         if isinstance(value, date) and not isinstance(value, datetime):
             now = datetime.utcnow()
             value = datetime(value.year, value.month, value.day,
@@ -534,6 +537,48 @@ class _Date(_Text):
             # raise
             return u''
 
+    def parse_date(self, string, format='yyyy-MM-dd'):
+        """Parse a date from a string.
+        
+        This function is a fork of `babel.dates.parse_date`.
+        
+        >>> parse_date('4/1/04', format='M/d/yy')
+        datetime.date(2004, 4, 1)
+        >>> parse_date('01.04.2004', format='dd.MM.yyyy')
+        datetime.date(2004, 4, 1)
+
+        :param string:
+        :param format: 
+        :return: the parsed date
+        :rtype: `date`
+
+        """
+        format = format.lower()
+        year_idx = format.index('y')
+        month_idx = format.index('m')
+        if month_idx < 0:
+            month_idx = format.index('l')
+        day_idx = format.index('d')
+
+        indexes = [(year_idx, 'Y'), (month_idx, 'M'), (day_idx, 'D')]
+        indexes.sort()
+        indexes = dict([(item[1], idx) for idx, item in enumerate(indexes)])
+
+        # FIXME: this currently only supports numbers, but should also support month
+        #        names, both in the requested locale, and english
+
+        numbers = re.findall('(\d+)', string)
+        year = numbers[indexes['Y']]
+        if len(year) == 2:
+            year = 2000 + int(year)
+        else:
+            year = int(year)
+        month = int(numbers[indexes['M']])
+        day = int(numbers[indexes['D']])
+        if month > 12:
+            month, day = day, month
+        return date(year, month, day)
+
     def clean(self, value, locale=None, tz=None):
         if not value:
             return None
@@ -542,19 +587,20 @@ class _Date(_Text):
         if isinstance(tz, basestring):
             tz = timezone(tz)
         try:
-            try:
-                dt = parse_datetime(value, locale=locale)
-            except NotImplementedError:
-                dt = parse_date(value, locale=locale)
+            # dt = self.parse_datetime(value, self.format)
+            dt = self.parse_date(value, self.format)
             if isinstance(dt, date) and not isinstance(dt, datetime):
                 now = datetime.utcnow()
                 dt = datetime(dt.year, dt.month, dt.day,
                     now.hour, now.minute, now.second)
             if tz:
-                dt = dt - tz.utcoffset(dt, is_dst=True)
+                if tz == utc:
+                    dt = dt - tz.utcoffset(dt)
+                else:
+                    dt = dt - tz.utcoffset(dt, is_dst=True)
             return dt
         except Exception:
-            # raise
+            raise
             return None
 
 
@@ -730,7 +776,7 @@ class _Boolean(_Field):
         super(_Boolean, self).__init__(**kwargs)
 
     def to_python(self, locale=None, tz=None):
-        value = self.value
+        value = self.get_value()
         if not value or (value in self.falsy):
             return False
         return True
@@ -739,9 +785,9 @@ class _Boolean(_Field):
         return self.as_checkbox(**kwargs)
 
     def as_checkbox(self, **kwargs):
-        kwargs['type'] = 'checkbox'
+        kwargs.setdefault('type', 'checkbox')
         kwargs['name'] = self.name
-        if self.value:
+        if self.to_html() and kwargs['type'] == 'checkbox':
             kwargs['checked'] = True
         if not self.optional:
             kwargs['required'] = True
@@ -754,17 +800,50 @@ class _Boolean(_Field):
 #- Multivalue
 #------------------------------------------------------------------------------#
 
+class _Select(_Field):
+    """A field with a fixed list of options for the values
 
-class MultiValue(_Field):
-    """
+    :param items:
+        Either: 
+        - An list of tuples with the format `(value, label)`; or
+        - A function that return a list of items in that format.
+
+    :param multiple:
+        Whether or not more than one value can be selected
+
     :param filters:
         List of validators. If a value do not pass one of these it'll be
         filtered out from the final result.
+
+    :param validate:
+        An list of validators. This will evaluate the current `value` when
+        the method `validate` is called.
+
+    :param default:
+        Default value.
+
+    :param prepare:
+        An optional function that preprocess the value before loading.
+
+    :param clean:
+        An optional function that takes the value and return a 'cleaned'
+        version of it. If the value raise an exception, `None` must be
+        returned instead.
+
+    :param locale:
+        Default locale
+
+    :param tz:
+        Default timezone
+
     """
-    def __init__(self, filters=None, **kwargs):
+
+    def __init__(self, items, multiple=False, filters=None, **kwargs):
+        self.items = items
+        self.multiple = multiple
         filters = filters or []
         self.filters = [f() if inspect.isclass(f) else f for f in filters]
-        super(MultiValue, self).__init__(**kwargs)
+        super(_Select, self).__init__(**kwargs)
 
     def get_value(self):
         values = self.value or self.obj_value
@@ -809,55 +888,6 @@ class MultiValue(_Field):
             values = values_
         return filter(lambda v: bool(v), values)
 
-    def to_python(self, locale=None, tz=None):
-        values = self.get_value()
-        values = self.clean(values, locale, tz)
-        return values
-
-
-class _Select(MultiValue):
-    """A field with a fixed list of options for the values
-
-    :param items:
-        Either: 
-        - An list of tuples with the format `(value, label)`; or
-        - A function that return a list of items in that format.
-
-    :param multiple:
-        Whether or not more than one value can be selected
-
-    :param filters:
-        List of validators. If a value do not pass one of these it'll be
-        filtered out from the final result.
-
-    :param validate:
-        An list of validators. This will evaluate the current `value` when
-        the method `validate` is called.
-
-    :param default:
-        Default value.
-
-    :param prepare:
-        An optional function that preprocess the value before loading.
-
-    :param clean:
-        An optional function that takes the value and return a 'cleaned'
-        version of it. If the value raise an exception, `None` must be
-        returned instead.
-
-    :param locale:
-        Default locale
-
-    :param tz:
-        Default timezone
-
-    """
-
-    def __init__(self, items, multiple=False, **kwargs):
-        self.items = items
-        self.multiple = multiple
-        super(_Select, self).__init__(**kwargs)
-
     def get_items(self):
         return self.items() if callable(self.items) else self.items
 
@@ -876,8 +906,10 @@ class _Select(MultiValue):
         values = self.get_value()
         values = self.clean(values, locale, tz)
         if self.multiple:
-            return values
-        return values[0]
+            return values or []
+        if isinstance(values, list) and values:
+            return values[0] or None
+        return values or None
 
     def __call__(self, **kwargs):
         items = self.get_items()
@@ -975,7 +1007,7 @@ class _Select(MultiValue):
         return Markup('\n'.join(html))
 
 
-class _Collection(_Text, MultiValue):
+class _Collection(_Text):
     """A field that takes an open number of values of the same kind.
     For example, a list of comma separated tags or email addresses.
 
@@ -1013,23 +1045,78 @@ class _Collection(_Text, MultiValue):
     """
     _type = 'text'
 
-    def __init__(self, sep=', ', **kwargs):
+    def __init__(self, sep=', ', filters=None, **kwargs):
         self.sep = sep
         self.rxsep = r'\s*%s\s*' % self.sep.replace(' ', '')
+        filters = filters or []
+        self.filters = [f() if inspect.isclass(f) else f for f in filters]
         super(_Collection, self).__init__(**kwargs)
 
-    def get_value(self):
+    def get_html_value(self):
         values = self.value or self.obj_value
         if not values:
             return []
         if isinstance(values, list):
+            if isinstance(values[0], list):
+                return values[0]
             return values
         return re.split(self.rxsep, values)
+
+    def get_python_value(self):
+        values = self.value or self.obj_value
+        if not values:
+            return []
+        if isinstance(values, list):
+            if isinstance(values[0], list):
+                return values[0]
+            values = values[0]
+        return re.split(self.rxsep, values)
+
+    def prepare(self, values, locale=None, tz=None):
+        if self.custom_prepare:
+            values_ = []
+            for val in values:
+                try:
+                    val = self.custom_prepare(val, locale, tz)        
+                except (TypeError, ValueError):
+                    try:
+                        val = self.custom_prepare(val)        
+                    except (TypeError, ValueError):
+                        continue
+                if val:
+                    values_.append(val)
+            values = values_
+        return values
+
+    def clean(self, values, locale=None, tz=None):
+        for f in self.filters:
+            values = filter(f, values)
+
+        if self.custom_clean:
+            values_ = []
+            for val in values:
+                try:
+                    val = self.custom_clean(val, locale, tz)        
+                except (TypeError, ValueError):
+                    try:
+                        val = self.custom_clean(val)        
+                    except (TypeError, ValueError):
+                        continue
+                if val:
+                    values_.append(val)
+            values = values_
+        return filter(lambda v: bool(v), values)
+
+    def to_python(self, locale=None, tz=None):
+        values = self.get_python_value()
+        values = self.clean(values, locale, tz)
+        return values
 
     def to_html(self, locale=None, tz=None):
         if self.hide_value:
             return u''
-        values = self.get_value()
+        print
+        values = self.get_html_value()
         values = self.prepare(values, locale, tz)
         html = to_unicode(self.sep.join(values)) or u''
         return html.strip()

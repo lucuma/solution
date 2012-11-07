@@ -314,10 +314,16 @@ class FormSet(object):
         for subform in self._forms:
             subform.reset()
 
+    def __len__(self):
+        return len(self._forms)
+
     def __iter__(self):
         """Iterate the bound forms of this set.
         """
         return iter(self._forms)
+
+    def __nonzero__(self):
+        return len(self._forms) > 0
 
     @property
     def form(self):
@@ -350,6 +356,7 @@ class FormSet(object):
                     not has_data(data, prefix) and not has_data(files, prefix):
                 missing_objs.append(obj)
                 continue
+
             f = self._form_class(data, obj=obj, files=files,
                 locale=locale, tz=tz, prefix=prefix, backref=self._backref)
             forms.append(f)
@@ -361,6 +368,9 @@ class FormSet(object):
 
         self._forms = forms
         self.missing_objs = missing_objs
+        for mo in missing_objs:
+            if getattr(mo, self._backref, None):
+                setattr(mo, self._backref, None)
 
     def _get_prefix(self, num):
         return '%s.%s' % (self._form_class.__name__.lower(), num)
@@ -390,6 +400,7 @@ class FormSet(object):
                 self.has_changed = True
         if errors:
             self._errors = errors
+            return False
         return True
 
     def save(self, backref_obj):
