@@ -239,11 +239,10 @@ class Form(object):
     def _save_new_object(self, backref_obj=None):
         # print 'Form._save_new_object', backref_obj
         db = self._model.db
-        colnames = self._model.__table__.columns.keys()
-        data = {}
-        for colname in colnames:
-            if colname in self.cleaned_data:
-                data[colname] = self.cleaned_data[colname]
+        data = dict([(key, val)
+            for key, val in self.cleaned_data.items()
+            if not isinstance(getattr(self, key), FormSet)
+        ])
         
         if self._backref and backref_obj:
             data[self._backref] = backref_obj
@@ -254,20 +253,14 @@ class Form(object):
 
     def save_to(self, obj):
         """Save the cleaned data to an object."""
-        # print 'Form.save_to', obj
-        if isinstance(obj, Model):
-            colnames = self._model.__table__.columns.keys()
-            for colname in colnames:
-                if colname in self.changed_fields:
-                    setattr(obj, colname, self.cleaned_data.get(colname))
-            return obj
-
         if isinstance(obj, dict):
             for key in self.changed_fields:
-                obj[key] = self.cleaned_data.get(key)
+                if not isinstance(getattr(self, key), FormSet):
+                    obj[key] = self.cleaned_data.get(key)
         else:
             for key in self.changed_fields:
-                setattr(obj, key, self.cleaned_data.get(key))
+                if not isinstance(getattr(self, key), FormSet):
+                    setattr(obj, key, self.cleaned_data.get(key))
         return obj
 
     def __repr__(self):
