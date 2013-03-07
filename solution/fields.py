@@ -15,7 +15,7 @@ except ImportError:
 from pytz import timezone, utc
 
 from . import validators as v
-from ..serializers import to_unicode
+from .utils import to_unicode
 
 
 __all__ = (
@@ -164,6 +164,7 @@ class _Field(object):
         if cleaned_data is None:
             self.error = None
             python_value = self.to_python(locale, tz)
+            print 'python_value', python_value
             if isinstance(python_value, ValidationError):
                 self.error = python_value
                 return None
@@ -171,9 +172,11 @@ class _Field(object):
             self.has_changed = (python_value != self.obj_value)
             # Do not validate optional fields
             if not python_value and self.optional:
-                return self.default or None
+                print 'self.default', self.default
+                return self.default
 
             retval = self._validate_value(form, python_value)
+            print 'retval', retval
             return retval
         self._validate_form(form, cleaned_data)
 
@@ -289,6 +292,7 @@ class _Text(_Field):
     _default_validator = None
 
     def __init__(self, **kwargs):
+        kwargs.setdefault('default', u'')
         super(_Text, self).__init__(**kwargs)
 
     def __call__(self, **kwargs):
@@ -587,8 +591,11 @@ class _Date(_Text):
         if isinstance(tz, basestring):
             tz = timezone(tz)
         try:
-            # dt = self.parse_datetime(value, self.format)
-            dt = self.parse_date(value, self.format)
+            if isinstance(value, date):
+                dt = value
+            else:
+                dt = self.parse_date(value, self.format)
+
             if isinstance(dt, date) and not isinstance(dt, datetime):
                 now = datetime.utcnow()
                 dt = datetime(dt.year, dt.month, dt.day,
@@ -889,7 +896,9 @@ class _Select(_Field):
         return filter(lambda v: bool(v), values)
 
     def get_items(self):
-        return self.items() if callable(self.items) else self.items
+        if callable(self.items):
+            return self.items()
+        return self.items
 
     def __iter__(self):
         items = self.get_items()
@@ -1046,6 +1055,7 @@ class _Collection(_Text):
     _type = 'text'
 
     def __init__(self, sep=', ', filters=None, **kwargs):
+        kwargs.setdefault('default', [])
         self.sep = sep
         self.rxsep = r'\s*%s\s*' % self.sep.replace(' ', '')
         filters = filters or []
@@ -1066,11 +1076,13 @@ class _Collection(_Text):
         values = self.value or self.obj_value
         if not values:
             return []
+        if isinstance(values, basestring):
+            return re.split(self.rxsep, values)
         if isinstance(values, list):
             if isinstance(values[0], list):
                 return values[0]
-            values = values[0]
-        return re.split(self.rxsep, values)
+            return values
+        return []
 
     def prepare(self, values, locale=None, tz=None):
         if self.custom_prepare:
@@ -1115,7 +1127,6 @@ class _Collection(_Text):
     def to_html(self, locale=None, tz=None):
         if self.hide_value:
             return u''
-        print
         values = self.get_html_value()
         values = self.prepare(values, locale, tz)
         html = to_unicode(self.sep.join(values)) or u''

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
-import pytest
 
-from solution import forms as f
+import pytest
+import solution as f
 
 
 def test_required():

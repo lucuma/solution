@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
-
-from solution import forms as f
-from solution import SQLAlchemy
+from orm import SQLAlchemy
+import solution as f
 
 
 class ContactForm(f.Form):
@@ -133,7 +132,7 @@ def test_changed_data():
     assert form.changed_fields == ['message', 'subject']
     assert form.cleaned_data['subject'] == data['subject']
     assert form.cleaned_data['message'] == data['message']
-    assert form.cleaned_data['email'] == None
+    assert form.cleaned_data['email'] == u''
 
 
 def test_prefix():
@@ -186,7 +185,7 @@ def test_save():
     form = MyContactForm(data)
     assert form.is_valid()
     contact = form.save()
-    print 'contact', contact.to_dict()
+    print 'contact', contact.__dict__
     assert isinstance(contact, Contact)
     assert contact.id is None
     assert contact.subject == data['subject']

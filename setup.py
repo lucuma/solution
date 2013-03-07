@@ -3,9 +3,16 @@ import io
 import os
 import re
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
 
 
+NAME = 'Solution'
 PACKAGE = 'solution'
+URL = 'http://github.com/lucuma/solution'
+DESCRIPTION = "An amazing form solution"
+AUTHOR = 'Juan-Pablo Scaletti'
+AUTHOR_EMAIL = 'juanpablo@lucumalabs.com'
+
 THIS_DIR = os.path.dirname(__file__).rstrip('/')
 
 
@@ -50,29 +57,36 @@ def find_packages_data(*roots):
     return dict([(root, find_package_data(root)) for root in roots])
 
 
-def get_requirements():
-    data = read_from(get_path('requirements.txt'))
+def get_requirements(filename='requirements.txt'):
+    data = read_from(get_path(filename))
     lines = map(lambda s: s.strip(), data.splitlines())
     return [l for l in lines if l and not l.startswith('#')]
 
 
-def run_tests():
-    import sys, subprocess
-    errno = subprocess.call([sys.executable, 'runtests.py'])
-    raise SystemExit(errno)
+class PyTest(TestCommand):
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = ['tests']
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+        errno = pytest.main(self.test_args)
+        sys.exit(errno)
 
 
 setup(
-    name = 'Solution',
+    name = NAME,
     version = get_version(),
-    author = 'Juan-Pablo Scaletti',
-    author_email = 'juanpablo@lucumalabs.com',
+    author = AUTHOR,
+    author_email = AUTHOR_EMAIL,
     packages = [PACKAGE],
     package_data = find_packages_data(PACKAGE, 'tests'),
     zip_safe = False,
-    url = 'http://github.com/lucuma/solution',
+    url = URL,
     license = 'MIT license (http://www.opensource.org/licenses/mit-license.php)',
-    description = 'Implements an easy-to-use bridge to SQLAlchemy',
+    description = DESCRIPTION,
     long_description = read_from(get_path('README.rst')),
     install_requires = get_requirements(),
     classifiers = [
@@ -85,6 +99,8 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
+    tests_require = ['pytest-cov', 'orm'],
+    cmdclass = {'test': PyTest},
     test_suite = '__main__.run_tests'
 )
 

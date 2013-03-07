@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 import datetime
 import re
 import urlparse
 
-from ..serializers import to_unicode
+from .utils import to_unicode
 
 
 __all__ = ['Required', 'IsNumber', 'IsNaturalNumber', 'IsDate',

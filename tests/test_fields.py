@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-
-from solution import forms as f
+import solution as f
 
 
 def test_html_attrs():

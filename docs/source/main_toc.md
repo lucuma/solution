@@ -1,7 +1,0 @@
-* [Introducción](/index.md)
-* [Guia rápida](/quickstart.md)
-* [Formularios](/forms/forms.md)
-    * [Clase Form](/forms/form_class.md)
-    * [Campos](/forms/fields.md)
-    * [Validadores](/forms/validators.md)
-    * [Formularios automáticos](/forms/model_forms.md)

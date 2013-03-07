@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
+import inspect
 from pytz import utc
 
-from .. import Model
 from .fields import Field
 from .utils import FakeMultiDict
 
@@ -48,8 +46,11 @@ class Form(object):
 
     def __init__(self, data=None, obj=None, files=None, locale='en', tz=utc,
             prefix=u'', backref=None, parent=None):
+        
         backref = backref or parent
-        assert (self._model is None) or issubclass(self._model, Model)
+        if self._model is not None:
+            assert inspect.isclass(self._model)
+
         data = data or {}
         if not hasattr(data, 'getlist'):
             data = FakeMultiDict(data)
@@ -222,7 +223,7 @@ class Form(object):
         (if a `model_class` was provided)."""
         if not self.cleaned_data:
             assert self.is_valid()
-        # print 'Form.save', backref_obj, self._obj
+        print 'Form.save', backref_obj, self._obj
         if self._model and not self._obj:
             obj = self._save_new_object(backref_obj)
         else:
