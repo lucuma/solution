@@ -9,5 +9,5 @@ from .form import Form, FormSet
 from .fields import *
 from .validators import *
 
-__version__ = '2.0'
+__version__ = '2.0.1'
 

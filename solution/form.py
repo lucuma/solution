@@ -223,7 +223,6 @@ class Form(object):
         (if a `model_class` was provided)."""
         if not self.cleaned_data:
             assert self.is_valid()
-        print 'Form.save', backref_obj, self._obj
         if self._model and not self._obj:
             obj = self._save_new_object(backref_obj)
         else:
@@ -238,7 +237,6 @@ class Form(object):
         return obj
 
     def _save_new_object(self, backref_obj=None):
-        # print 'Form._save_new_object', backref_obj
         db = self._model.db
         data = dict([(key, val)
             for key, val in self.cleaned_data.items()
@@ -398,7 +396,6 @@ class FormSet(object):
         return True
 
     def save(self, backref_obj):
-        # print 'FormSet.save', backref_obj
         for form in self._forms:
             form.save(backref_obj)
 

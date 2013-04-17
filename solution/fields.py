@@ -164,7 +164,6 @@ class _Field(object):
         if cleaned_data is None:
             self.error = None
             python_value = self.to_python(locale, tz)
-            print 'python_value', python_value
             if isinstance(python_value, ValidationError):
                 self.error = python_value
                 return None
@@ -172,11 +171,9 @@ class _Field(object):
             self.has_changed = (python_value != self.obj_value)
             # Do not validate optional fields
             if not python_value and self.optional:
-                print 'self.default', self.default
                 return self.default
 
             retval = self._validate_value(form, python_value)
-            print 'retval', retval
             return retval
         self._validate_form(form, cleaned_data)
 
