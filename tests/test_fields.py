@@ -1,191 +1,285 @@
 # -*- coding: utf-8 -*-
+from datetime import date, datetime
+from decimal import Decimal
+
 import pytest
 import solution as f
 
 
-def test_html_attrs():
-    field = f._Field()
-    expected = u'class="myclass" data-id="1" id="text1" checked'
-    attrs = {'id':'text1', 'classes':'myclass', 'data_id':1, 'checked':True}
-    result = field._get_html_attrs(attrs)
-    print result
-    assert result == expected
-    assert field._get_html_attrs() == u''
+def test_field():
+    field = f.Field()
+    value = u'abc'
+    field.load_data(value)
+    assert field.to_string() == value
+    assert field.validate() == value
+
+
+def test_reset():
+    field = f.Field()
+    field.load_data('a', 'b', 'c')
+    assert (field.str_value and field.obj_value and field.file_data and
+            not field.empty)
+    field.reset()
+    assert not (field.str_value or field.obj_value or field.file_data or
+                not field.empty)
+
+
+def test_field_helpers():
+    field = f.Field()
+
+    assert (field.label_tag(u'Something', classes=u'span2') ==
+            u'<label class="span2">Something</label>')
+
+    assert field.error_tag(classes=u'alert alert-error') == u''
+
+    field.error = f.ValidationError(u'Error message')
+    assert (field.error_tag(classes=u'alert alert-error') ==
+            u'<div class="alert alert-error">Error message</div>')
 
 
 def test_validate():
-    field = f._Field(validate=[f.ValidEmail(u'invalid')])
-    field.value = 'email'
+    field = f.Field(default=u'default value')
     field.validate()
-    assert field.error and field.error.message == u'invalid'
-
-    field = f._Email()
-    email = u'foo@bar.com'
-    field.value = email
-    value = field.validate()
+    assert field.validate() == u'default value'
     assert not field.error
-    assert value == email
 
-    field.value = 'lalala'
-    value = field.validate()
+    field = f.Field(validate=[f.Required])
+    assert field.validate() is None
+    assert field.error.message
+
+
+def test_validate_with_custom_msg():
+    field = f.Field(validate=[f.ValidEmail(u'invalid')])
+    field.load_data('email')
+    field.validate()
+    assert field.error.message == u'invalid'
+
+
+def test_render_text():
+    field = f.Text()
+    field.name = u'abc'
+    field.load_data(u'123')
+
+    assert unicode(field) == field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input foo="bar" name="abc" type="text" value="123">')
+    assert (field.as_textarea(foo='bar') ==
+            u'<textarea foo="bar" name="abc">123</textarea>')
+    assert (field(foo='bar', type='email') ==
+            u'<input foo="bar" name="abc" type="email" value="123">')
+
+    field = f.Text(hide_value=True)
+    field.name = u'abc'
+    field.load_data(u'123')
+    assert (field(foo='bar', type='password') ==
+            u'<input foo="bar" name="abc" type="password" value="">')
+
+
+def test_validate_text():
+    field = f.Text(validate=[f.Required])
+    field.name = u'abc'
+    field.load_data(u'123')
+    assert field.validate() == u'123'
+
+    field = f.Text(hide_value=True, validate=[f.Required])
+    field.name = u'abc'
+    field.load_data(u'123')
+    assert field.validate() == u'123'
+
+
+def test_render_number():
+    field = f.Number()
+    field.name = u'abc'
+    field.load_data('123')
+    assert unicode(field) == field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input foo="bar" name="abc" type="number" value="123">')
+    assert (field.as_textarea(foo='bar') ==
+            u'<textarea foo="bar" name="abc">123</textarea>')
+    assert (field(foo='bar', type='score') ==
+            u'<input foo="bar" name="abc" type="score" value="123">')
+
+    field = f.Number(validate=[f.Required])
+    field.name = u'abc'
+    field.load_data('123')
+    assert (field() ==
+            u'<input name="abc" type="number" value="123" required>')
+    assert (field(required=False) == 
+            u'<input name="abc" type="number" value="123">')
+
+
+def test_validate_number():
+    field = f.Number(validate=[f.Required])
+    field.name = u'abc'
+    
+    field.load_data('123')
+    assert field.validate() == 123
+
+    field.load_data('defg')
+    assert not field.validate()
     assert field.error
 
 
-def test_hide_value():
-    field = f._Password(hide_value=True)
-    passw = u'qwertyuiop'
-    field.value = passw
-    assert field.to_html() == u''
-    assert field.validate() == passw
+def test_number_types():
+    for t in (int, float, Decimal):
+        field = f.Number(type=t)
+        field.load_data('3.02')
+        assert field.validate() == t(float('3.02'))
 
 
+def test_render_color():
+    field = f.Color()
+    field.name = u'abc'
+    field.load_data('#ffaf2e')
+
+    assert unicode(field) == field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input foo="bar" name="abc" type="color" value="#ffaf2e">')
+    assert (field(foo='bar', type='text') ==
+            u'<input foo="bar" name="abc" type="text" value="#ffaf2e">')
+
+    field = f.Color(validate=[f.Required])
+    field.name = u'abc'
+    field.load_data('#ffaf2e')
+    assert (field() == 
+            u'<input name="abc" type="color" value="#ffaf2e" required>')
+    assert (field(required=False) == 
+            u'<input name="abc" type="color" value="#ffaf2e">')
 
 
+def test_validate_color():
+    field = f.Color(validate=[f.Required])
+    field.name = u'abc'
 
-#- Select
-#------------------------------------------------------------------------------#
+    field.load_data('#ffaf2e')
+    assert field.validate() == '#ffaf2e'
 
-def test_select_field():
-    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'),]
-    field = f._Select(items=items)
-    assert field.get_items() == items
+    field.load_data('FFAF2E')
+    assert field.validate() == '#ffaf2e'
 
-    get_items = lambda: items
-    field = f._Select(items=get_items)
-    assert field.get_items() == items
+    field.load_data('#fae')
+    assert field.validate() == '#ffaaee'
 
+    field.load_data('#faef')
+    assert field.validate() == '#ffaaeeff'
 
-def test_select_field_widget():
-    items = list(enumerate([chr(x) for x in range(97, 100)]))
-    field = f._Select(items=items)
-    assert field() == field.as_radiobuttons()
+    field.load_data('rgb(40, 104, 199)')
+    assert field.validate() == '#2868c7'
 
-    items = list(enumerate([chr(x) for x in range(97, 120)]))
-    field = f._Select(items=items)
-    assert field() == field.as_select()
+    field.load_data('rgba(14,98,13,.5)')
+    assert field.validate() == '#0e620d80'
 
+    field.load_data()
+    assert not field.validate()
+    assert field.error
 
-def test_select_field_radiobuttons():
-    items = [(1, 'A'), (2, 'B'), (3, 535), (4, 'D'),]
-    field = f._Select(items=items)
-    field.name = 'x'
-    field.value = 3
-    expected = '''<label><input name="x" type="radio" value="1"> A</label>
-<label><input name="x" type="radio" value="2"> B</label>
-<label><input name="x" type="radio" value="3" checked> 535</label>
-<label><input name="x" type="radio" value="4"> D</label>'''
-    result = field.as_radiobuttons()
-    print result
-    assert result == expected
+    field.load_data('not a color')
+    assert not field.validate()
+    assert field.error
 
+    field.load_data('#ffaf2')
+    assert not field.validate()
+    assert field.error
 
-def test_select_field_select():
-    items = [(1, 'A'), (2, 'B'), (3, 535), (4, 'D'),]
-    field = f._Select(items=items)
-    field.name = 'x'
-    field.value = 3
-    expected = '''<select name="x">
-<option value="1">A</option>
-<option value="2">B</option>
-<option value="3" selected>535</option>
-<option value="4">D</option>
-</select>'''
-    result = field.as_select()
-    print result
-    assert result == expected
+    field.load_data('rgb(300, 300, 300)')
+    assert not field.validate()
+    assert field.error
+
+    field.load_data('rgba(0, 0, 0, 2)')
+    assert not field.validate()
+    assert field.error
 
 
-def test_select_multi_field():
-    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'),]
-    field = f._Select(items=items, multiple=True)
-    assert field.get_items() == items
+def test_render_boolean():
+    field = f.Boolean()
+    field.name = u'abc'
 
-    get_items = lambda: items
-    field = f._Select(items=get_items, multiple=True)
-    assert field.get_items() == items
+    field.load_data(obj_value=True)
+    assert unicode(field) == field() == field.as_checkbox()
+    assert (field(foo='bar') ==
+            u'<input foo="bar" name="abc" type="checkbox" checked>')
 
+    field.load_data(obj_value=False)
+    assert field() == u'<input name="abc" type="checkbox">'
 
-def test_select_multi_field_widget():
-    items = list(enumerate([chr(x) for x in range(97, 100)]))
-    field = f._Select(items=items, multiple=True)
-    assert field() == field.as_checkboxes()
+    field.load_data(u'no')
+    assert field() == u'<input name="abc" type="checkbox">'
 
-    items = list(enumerate([chr(x) for x in range(97, 120)]))
-    field = f._Select(items=items, multiple=True)
-    assert field() == field.as_select()
-
-
-def test_select_multi_field_checkboxes():
-    items = [(1, 'A'), (2, 'B'), (3, 'C'), (4, 'D'),]
-    field = f._Select(items=items, multiple=True)
-    field.name = 'x'
-    field.value = [1, 3]
-    expected = '''<label><input name="x" type="checkbox" value="1" checked> A</label>
-<label><input name="x" type="checkbox" value="2"> B</label>
-<label><input name="x" type="checkbox" value="3" checked> C</label>
-<label><input name="x" type="checkbox" value="4"> D</label>'''
-    result = field.as_checkboxes()
-    print result
-    assert result == expected
+    field = f.Boolean(validate=[f.Required])
+    field.name = u'abc'
+    field.load_data()
+    assert field() == u'<input name="abc" type="checkbox" required>'
+    assert field(required=False) == u'<input name="abc" type="checkbox">'
 
 
-def test_select_multi_field_select():
-    items = [(1, 'A'), (2, 'B'), (3, 'C'), (4, 'D'),]
-    field = f._Select(items=items, multiple=True)
-    field.name = 'x'
-    field.value = [1, 3]
-    expected = '''<select name="x" multiple>
-<option value="1" selected>A</option>
-<option value="2">B</option>
-<option value="3" selected>C</option>
-<option value="4">D</option>
-</select>'''
-    result = field.as_select()
-    print result
-    assert result == expected
+def test_validate_boolean():
+    field = f.Boolean(validate=[f.Required])
+    field.name = u'abc'
+
+    for val in [u'', u'0', u'no', u'off', u'false', u'NO', 'fAlsE']:
+        field.load_data(val)
+        assert field.validate() == False
+
+    for val in [u'yes', u'1', u'ok', u'Of course!!!1', u'whatever']:
+        field.load_data(val)
+        assert field.validate() == True
+
+    field.load_data()
+    assert field.validate() is None
+    assert field.error
 
 
-#- Collection
-#------------------------------------------------------------------------------#
+def test_render_file():
+    field = f.File()
+    field.name = u'abc'
 
-def test_collection_field():
-    field = f._Collection()
-    data = '1, 2, c, 3, 4'
-    field.value = data
-    assert field.to_python() == data.split(', ')
+    assert unicode(field) == field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input foo="bar" name="abc" type="file">')
 
-
-def test_collection_field_filters():
-    field = f._Collection(filters=[f.IsNumber])
-    data = '1, 2, c, 3, 4'.split(', ')
-    field.value = data
-    result = field.validate()
-    assert result == ['1', '2', '3', '4']
-
-    field = f._Collection(filters=[f.IsNumber()])
-    field.value = data
-    result = field.validate()
-    assert result == ['1', '2', '3', '4']
-
-    field = f._Collection(filters=[f.ValidEmail])
-    field.value = data
-    result = field.validate()
-    assert result == []
+    field = f.File(validate=[f.Required])
+    field.name = u'abc'
+    assert (field() ==
+            u'<input name="abc" type="file" required>')
+    assert (field(required=False) ==
+            u'<input name="abc" type="file">')
 
 
-def test_collection_field_clean():
-    def to_number(value, *args, **kwargs):
-        return int(value)
+def test_file_validate_calls_upload():
+    called = []
+    def upload(data):
+        called.append(data)
 
-    field = f._Collection(clean=to_number)
-    data = '1, 2, c, 3, 4'.split(', ')
-    field.value = data
-    result = field.validate()
-    assert result == [1, 2, 3, 4]
+    field = f.File(upload=upload)
+    field.name = u'abc'
+    field.load_data(file_data='data')
 
-    # Test filters + clean
-    field = f._Collection(filters=[f.IsNumber], clean=to_number)
-    field.value = data
-    result = field.validate()
-    assert result == [1, 2, 3, 4]
+    field.validate()
+    assert called[0] == 'data'
+
+
+def test_file_upload_error_make_validation_fail():
+    called = []
+    def upload(data):
+        raise f.ValidationError('test')
+
+    field = f.File(upload=upload)
+    field.name = u'abc'
+    field.load_data(file_data='data')
+
+    assert field.validate() is None
+    assert field.error.message == 'test'
+
+
+def test_validate_file():
+    field = f.File()
+    field.name = u'abc'
+
+    field.load_data(obj_value=u'obj value')
+    assert field.validate() == u'obj value'
+    assert not field.error
+
+    field.load_data(obj_value=u'obj value', file_data=u'file data')
+    assert field.validate() == u'file data'
+    assert not field.error
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from copy import copy
 import inspect
 from pytz import utc
 
@@ -6,29 +7,33 @@ from .fields import Field
 from .utils import FakeMultiDict
 
 
-__all__ = ('Form', 'FormSet')
-
-
 class Form(object):
+
     """Declarative Form base class. Provides core behaviour like field
     construction, validation, and data and error proxying.
 
     :param data:
         Used to pass data coming from the enduser, usually `request.form`,
         `request.POST` or equivalent.
+
     :param obj:
         If `data` is empty or not provided, this object is checked for
         attributes matching field names.
+
     :param files:
         Used to pass files coming from the enduser, usually `request.files`,
         or equivalent.
+
     :param locale:
-        .
+        Default locale for this form. Can be overwrited in each field.
+
     :param tz:
-        .
+        Default timezone for this field. Can be overwrited in each field.
+
     :param prefix:
         If provided, all fields will have their name prefixed with the
-        value.
+        value. Used to repeat the form in the same page.
+
     :param backref:
         .
 
@@ -46,7 +51,7 @@ class Form(object):
 
     def __init__(self, data=None, obj=None, files=None, locale='en', tz=utc,
             prefix=u'', backref=None, parent=None):
-        
+
         backref = backref or parent
         if self._model is not None:
             assert inspect.isclass(self._model)
@@ -78,7 +83,7 @@ class Form(object):
 
         self._init_fields()
         self._init_data(data, obj, files)
-    
+
     def _init_fields(self):
         """Creates the `_fields`, `_forms` asn `_sets` dicts.
 
@@ -99,7 +104,7 @@ class Form(object):
             is_set = isinstance(field, FormSet)
 
             if is_field:
-                field = field.make()
+                field = copy(field)
                 field.name = self._prefix + name
                 fields[name] = field
                 setattr(self, name, field)
@@ -115,40 +120,36 @@ class Form(object):
     def _init_data(self, data, obj, files):
         """Load the data into the form.
         """
-        ## Initialize sub-forms
+        # Initialize sub-forms
         for name, subform in self._forms.items():
             obj_value = getattr(obj, name, None)
             fclass = subform.__class__
-            subform = fclass(data, obj_value, files=files,
-                locale=self._locale, tz=self._tz,
-                prefix=self._prefix, backref=subform._backref)
+            subform = fclass(
+                data, obj_value, files=files, locale=self._locale, tz=self._tz,
+                prefix=self._prefix, backref=subform._backref
+            )
             self._forms[name] = subform
             setattr(self, name, subform)
 
-        ## Initialize sub-sets
+        # Initialize sub-sets
         for name, subset in self._sets.items():
             obj_value = getattr(obj, name, None)
             subset._init(data, obj_value, files=files,
-                locale=self._locale, tz=self._tz)
+                         locale=self._locale, tz=self._tz)
 
-        ## Initialize fields
+        # Initialize fields
         for name, field in self._fields.items():
             subdata = data.getlist(self._prefix + name)
             subfiles = files.getlist(self._prefix + name)
             obj_value = getattr(obj, name, None)
-            field.load_value(subdata, files=subfiles, obj_value=obj_value,
-                locale=self._locale, tz=self._tz)
+            field.load_data(subdata, obj_value, file_data=subfiles,
+                            locale=self._locale, tz=self._tz)
 
     def reset(self):
-        ## Reset sub-forms
         for subform in self._forms.values():
             subform.reset()
-
-        ## Reset sub-sets
         for subset in self._sets.values():
             subset.reset()
-
-        ## Reset fields
         for field in self._fields.values():
             field.reset()
 
@@ -157,9 +158,10 @@ class Form(object):
         """
         return self._fields.itervalues()
 
+    def __getitem__(self, name):
+        return self._fields[name]
+
     def __contains__(self, name):
-        """Returns `True` if the there is a field with that name in the form.
-        """
         return (name in self._fields)
 
     @property
@@ -176,7 +178,7 @@ class Form(object):
         changed_fields = []
         errors = {}
 
-        ## Validate sub forms
+        # Validate sub forms
         for name, subform in self._forms.items():
             if not subform.is_valid():
                 errors[name] = subform._errors
@@ -184,7 +186,7 @@ class Form(object):
             if subform.has_changed:
                 changed_fields.append(name)
 
-        ## Validate sub sets
+        # Validate sub sets
         for name, subset in self._sets.items():
             if not subset.is_valid():
                 errors[name] = subset._errors
@@ -192,18 +194,18 @@ class Form(object):
             if subset.has_changed:
                 changed_fields.append(name)
 
-        ## Validate each field
+        # Validate each field
         for name, field in self._fields.items():
             field.error = None
-            python_value = field.validate(self)
+            py_value = field.validate(self)
             if field.error:
                 errors[name] = field.error
                 continue
-            cleaned_data[name] = python_value
+            cleaned_data[name] = py_value
             if field.has_changed:
                 changed_fields.append(name)
 
-        ## Validate relation between fields
+        # Validate relation between fields
         for name, field in self._fields.items():
             field.validate(self, cleaned_data)
             if field.error:
@@ -220,7 +222,8 @@ class Form(object):
 
     def save(self, backref_obj=None):
         """Save the cleaned data to the initial object or creating a new one
-        (if a `model_class` was provided)."""
+        (if a `model_class` was provided).
+        """
         if not self.cleaned_data:
             assert self.is_valid()
         if self._model and not self._obj:
@@ -238,11 +241,11 @@ class Form(object):
 
     def _save_new_object(self, backref_obj=None):
         db = self._model.db
-        data = dict([(key, val)
-            for key, val in self.cleaned_data.items()
+        data = dict([
+            (key, val) for key, val in self.cleaned_data.items()
             if not isinstance(getattr(self, key), FormSet)
         ])
-        
+
         if self._backref and backref_obj:
             data[self._backref] = backref_obj
 
@@ -251,7 +254,8 @@ class Form(object):
         return obj
 
     def save_to(self, obj):
-        """Save the cleaned data to an object."""
+        """Save the cleaned data to an object.
+        """
         if isinstance(obj, dict):
             for key in self.changed_fields:
                 if not isinstance(getattr(self, key), FormSet):
@@ -267,10 +271,11 @@ class Form(object):
 
 
 class FormSet(object):
+
     """Open set of forms. This is intended to be used as in two different ways:
     A. As a field in another form
     B. As a independent form generator
-    
+
     :param form_class:
         The base form class.
     :param data:
@@ -284,7 +289,6 @@ class FormSet(object):
         or equivalent.
 
     """
-
     _forms = None
     _errors = None
     has_changed = False
@@ -302,7 +306,7 @@ class FormSet(object):
             self._init(data, objs, files)
 
     def reset(self):
-        ## Reset sub-forms
+        # Reset sub-forms
         for subform in self._forms:
             subform.reset()
 
@@ -349,14 +353,16 @@ class FormSet(object):
                 missing_objs.append(obj)
                 continue
 
-            f = self._form_class(data, obj=obj, files=files,
-                locale=locale, tz=tz, prefix=prefix, backref=self._backref)
+            f = self._form_class(
+                data, obj=obj, files=files, locale=locale, tz=tz,
+                prefix=prefix, backref=self._backref
+            )
             forms.append(f)
 
         _prefix += 1
         if data and self._create_new:
             forms = self._find_new_forms(forms, _prefix, data, files,
-                locale, tz)
+                                         locale, tz)
 
         self._forms = forms
         self.missing_objs = missing_objs
@@ -372,8 +378,10 @@ class FormSet(object):
         """
         prefix = self._get_prefix(_prefix)
         while has_data(data, prefix) or has_data(files, prefix):
-            f = self._form_class(data, files=files, locale=locale, tz=tz,
-                prefix=prefix, backref=self._backref)
+            f = self._form_class(
+                data, files=files, locale=locale, tz=tz,
+                prefix=prefix, backref=self._backref
+            )
             forms.append(f)
             _prefix += 1
             prefix = self._get_prefix(_prefix)
@@ -409,4 +417,3 @@ def has_data(d, prefix):
             continue
         return True
     return False
-

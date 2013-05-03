@@ -6,7 +6,7 @@ import solution as f
 
 class ContactForm(f.Form):
     subject = f.Text(validate=[f.Required])
-    email = f.Email()
+    email = f.Text(validate=[f.ValidEmail])
     message = f.Text(validate=[
         f.Required(message=u'write something!')
     ])
@@ -21,11 +21,11 @@ def test_fields():
     form = ContactForm()
     expected = {
         'subject': '<input name="subject" type="text" value="" required>',
-        'email': '<input name="email" type="email" value="">',
+        'email': '<input name="email" type="text" value="">',
         'message': '<input name="message" type="text" value="" required>',
     }
     for field in form:
-        assert expected[field.name] == str(field)
+        assert expected[field.name] == field()
 
 
 def test_initial_data():
@@ -36,11 +36,11 @@ def test_initial_data():
     form = ContactForm(data)
     expected = {
         'subject': '<input name="subject" type="text" value="%s" required>' % data['subject'],
-        'email': '<input name="email" type="email" value="">',
+        'email': '<input name="email" type="text" value="">',
         'message': '<input name="message" type="text" value="%s" required>' % data['message'],
     }
     for field in form:
-        assert expected[field.name] == str(field)
+        assert expected[field.name] == field()
 
 
 def test_obj_data():
@@ -54,11 +54,11 @@ def test_obj_data():
     form = ContactForm(data, obj=obj)
     expected = {
         'subject': '<input name="subject" type="text" value="%s" required>' % data['subject'],
-        'email': '<input name="email" type="email" value="%s">' % obj['email'],
+        'email': '<input name="email" type="text" value="%s">' % obj['email'],
         'message': '<input name="message" type="text" value="%s" required>' % data['message'],
     }
     for field in form:
-        assert expected[field.name] == str(field)
+        assert expected[field.name] == field()
 
 
 def test_is_valid():
@@ -113,26 +113,10 @@ def test_has_changed():
         'subject': u'Lalala',
         'message': u'Lalala',
     }
-    form.subject.value = data['subject']
-    form.message.value = data['message']
+    form = ContactForm(data)
     assert form.is_valid()
     assert form.has_changed
-
-
-def test_changed_data():
-    form = ContactForm()
-    data = {
-        'subject': u'Lalala',
-        'message': u'Lalala',
-        'email': u''
-    }
-    form.subject.value = data['subject']
-    form.message.value = data['message']
-    assert form.is_valid()
     assert form.changed_fields == ['message', 'subject']
-    assert form.cleaned_data['subject'] == data['subject']
-    assert form.cleaned_data['message'] == data['message']
-    assert form.cleaned_data['email'] == u''
 
 
 def test_prefix():
@@ -146,7 +130,7 @@ def test_prefix():
     form = ContactForm(data, obj=obj, prefix='meh')
     expected = '<input name="meh-subject" type="text" value="%s" required>' % data['meh-subject']
     assert str(form.subject) == expected
-    expected = '<input name="meh-email" type="email" value="%s">' % obj['email']
+    expected = '<input name="meh-email" type="text" value="%s">' % obj['email']
     assert str(form.email) == expected
 
     assert form.is_valid()
@@ -171,7 +155,7 @@ def test_save():
         _model = Contact
 
         subject = f.Text(validate=[f.Required])
-        email = f.Email()
+        email = f.Text(validate=[f.ValidEmail])
         message = f.Text(validate=[
             f.Required(message=u'write something!')
         ])
@@ -218,7 +202,7 @@ def test_prefix_save():
         _model = Contact
 
         subject = f.Text(validate=[f.Required])
-        email = f.Email()
+        email = f.Text(validate=[f.ValidEmail])
         message = f.Text(validate=[
             f.Required(message=u'write something!')
         ])
@@ -339,13 +323,13 @@ def test_formset_as_field():
     class WrapForm(f.Form):
         s = f.FormSet(MyForm)
 
-    obj = {
+    data = {
         's': [
             {'a': 'A1', 'b': 'B1'},
             {'a': 'A2', 'b': 'B2'},
         ],
     }
-    form = WrapForm(obj=obj)
+    form = WrapForm(data)
     assert form.is_valid()
     for sf in form.s:
         assert sf.cleaned_data
@@ -367,8 +351,6 @@ def test_formset_objs():
     for i, form in enumerate(fset):
         expected = '<input name="myform.%i-a" type="text" value="%s" required>' % (i+1, objs[i]['a'])
         assert str(form.a) == expected
-        assert form.is_valid()
-    assert fset.is_valid()
 
 
 def test_formset_new_forms():
@@ -412,7 +394,7 @@ def test_formset_model():
 
     class FormAddress(f.Form):
         _model = Address
-        email = f.Email()
+        email = f.Text(validate=[f.ValidEmail])
 
         def __repr__(self):
             return '<FormAddress %s>' % (self.email.value,)
@@ -485,25 +467,23 @@ def test_formset_missing_objs():
 
     class FormAddress(f.Form):
         _model = Address
-        id = f.Integer()
-        email = f.Email()
+        email = f.Text(validate=[f.ValidEmail])
 
         def __repr__(self):
             return '<FormAddress %s>' % (self.email.value,)
 
     class FormUser(f.Form):
         _model = User
-        id = f.Integer()
         name = f.Text()
         addresses = f.FormSet(FormAddress, parent='user')
 
     user = User(name=u'John Doe')
     db.add(user)
-    a1 = Address(id=1, email=u'one@example.com', user=user)
+    a1 = Address(email=u'one@example.com', user=user)
     db.add(a1)
-    a2 = Address(id=2, email=u'two@example.com', user=user)
+    a2 = Address(email=u'two@example.com', user=user)
     db.add(a2)
-    a3 = Address(id=3, email=u'three@example.com', user=user)
+    a3 = Address(email=u'three@example.com', user=user)
     db.add(a3)
     db.commit()
 

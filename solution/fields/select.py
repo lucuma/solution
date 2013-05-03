@@ -1,0 +1,249 @@
+# -*- coding: utf-8 -*-
+from ..utils import Markup, get_html_attrs, to_unicode
+from .field import Field
+
+
+TMPL = u'<label><input {attrs}> {label}</label>'
+
+
+class Select(Field):
+    """A field with a fixed list of options for the possible values
+
+    :param items:
+        Either: 
+        - An list of tuples with the format `(value, label)`; or
+        - A function that return a list of items in that format.
+
+    :param validate:
+        An list of validators. This will evaluate the current `value` when
+        the method `validate` is called.
+
+    :param default:
+        Default value.
+
+    :param prepare:
+        An optional function that takes the current value as a string
+        and preprocess it before rendering.
+
+    :param clean:
+        An optional function that takes the value already converted to
+        python and return a 'cleaned' version of it. If the value can't be
+        cleaned `None` must be returned instead.
+
+    :param hide_value:
+        Do not render the current value a a string. Useful with passwords
+        fields.
+
+    :param locale:
+        Default locale for this field. Overwrite the form locale.
+
+    :param tz:
+        Default timezone for this field. Overwrite the form timezone.
+
+    """
+    
+    def __init__(self, items, **kwargs):
+        self.items = items
+        super(Select, self).__init__(**kwargs)
+
+    def get_items(self):
+        if callable(self.items):
+            return self.items()
+        return self.items
+
+    def __iter__(self):
+        items = self.get_items()
+        for item in items:
+            yield item
+
+    def str_to_py(self, *args):
+        accepted = [str(item[0]) for item in self]
+        if self.str_value in accepted:
+            return self.str_value
+        return None
+
+    def __call__(self, **kwargs):
+        items = self.get_items()
+        if len(items) > 5:
+            return self.as_select(_items=items, **kwargs)
+        return self.as_radios(_items=items, **kwargs)
+
+    def as_select(self, locale=None, tz=None, _items=None, **kwargs):
+        """Render the field as a `<select>` element.
+        
+        :param **kwargs:
+            Named paremeters used to generate the HTML attributes of each item.
+            It follows the same rules as `get_html_attrs`
+        
+        """
+        kwargs['name'] = self.name
+        if not self.optional:
+            kwargs['required'] = True
+        html = [u'<select %s>' % get_html_attrs(kwargs)]
+        value = self.to_string(locale, tz)
+        items = _items or self.get_items()
+
+        for val, label in items:
+            item_attrs = {'value': val}
+            item_attrs['selected'] = (str(val) == str(value))
+            html_attrs = get_html_attrs(item_attrs)
+            html.append(u'<option %s>%s</option>' % (html_attrs, label))
+        html.append(u'</select>')
+
+        return Markup('\n'.join(html))
+
+    def as_radios(self, tmpl=TMPL, locale=None, tz=None, 
+            _items=None, **kwargs):
+        """Render the field as a series of radio buttons, using the `tmpl`
+        parameter as the template for each item.
+        
+        :param tmpl:
+            HTML template to use for rendering each item.
+
+        :param **kwargs:
+            Named paremeters used to generate the HTML attributes of each item.
+            It follows the same rules as `get_html_attrs`
+        
+        """
+        kwargs['type'] = 'radio'
+        kwargs['name'] = self.name
+        html = []
+        value = self.to_string(locale, tz)
+        items = _items or self.get_items()
+        
+        for val, label in items:
+            kwargs['value'] = val
+            kwargs['checked'] = (str(val) == str(value))
+            html_attrs = get_html_attrs(kwargs)
+            html.append(tmpl.format(attrs=html_attrs, label=label))
+
+        return Markup('\n'.join(html))
+
+
+class MultiSelect(Field):
+    """Like a ``:class:solution.Select``but allows to choose more than one
+    option at a time.
+
+    :param items:
+        Either: 
+        - An list of tuples with the format `(value, label)`; or
+        - A function that return a list of items in that format.
+
+    :param filters:
+        List of callables (can be validators). If a value do not pass one
+        of these (the callable return `False`), it is filtered out from the
+        final result.
+
+    :param validate:
+        An list of validators. This will evaluate the current `value` when
+        the method `validate` is called.
+
+    :param default:
+        Default value.
+
+    :param prepare:
+        An optional function that takes the current value as a string
+        and preprocess it before rendering.
+
+    :param clean:
+        An optional function that takes the value already converted to
+        python and return a 'cleaned' version of it. If the value can't be
+        cleaned `None` must be returned instead.
+
+    :param hide_value:
+        Do not render the current value a a string. Useful with passwords
+        fields.
+
+    :param locale:
+        Default locale for this field. Overwrite the form locale.
+
+    :param tz:
+        Default timezone for this field. Overwrite the form timezone.
+
+    """
+
+    def __init__(self, items, **kwargs):
+        kwargs.setdefault('default', [])
+        self.items = items
+        super(MultiSelect, self).__init__(**kwargs)
+
+    def get_items(self):
+        if callable(self.items):
+            return self.items()
+        return self.items
+
+    def __iter__(self):
+        items = self.get_items()
+        for item in items:
+            yield item
+
+    def _clean_data(self, str_value, file_data, obj_value):
+        return (str_value, None, obj_value)
+
+    def py_to_str(self, *args):
+        return self.obj_value
+
+    def str_to_py(self, *args):
+        if self.str_value is None:
+            return None
+        accepted = [str(item[0]) for item in self]
+        py_value = [v for v in self.str_value if v in accepted]
+        return py_value or None
+
+    def __call__(self, **kwargs):
+        items = self.get_items()
+        if len(items) > 5:
+            return self.as_select(_items=items, **kwargs)
+        return self.as_checkboxes(_items=items, **kwargs)
+
+    def as_select(self, locale=None, tz=None, _items=None, **kwargs):
+        """Render the field as a `<select>` element.
+        
+        :param **kwargs:
+            Named paremeters used to generate the HTML attributes of each item.
+            It follows the same rules as `get_html_attrs`
+        
+        """
+        kwargs['name'] = self.name
+        if not self.optional:
+            kwargs['required'] = True
+        html = [u'<select %s>' % get_html_attrs(kwargs)]
+        values = self.to_string(locale, tz) or []
+        items = _items or self.get_items()
+
+        for val, label in items:
+            item_attrs = {'value': val}
+            item_attrs['selected'] = (val in values or str(val) in values)
+            html_attrs = get_html_attrs(item_attrs)
+            html.append(u'<option %s>%s</option>' % (html_attrs, label))
+        html.append(u'</select>')
+
+        return Markup('\n'.join(html))
+
+    def as_checkboxes(self, tmpl=TMPL, locale=None, tz=None, 
+            _items=None, **kwargs):
+        """Render the field as a series of checkboxes, using the `tmpl`
+        parameter as the template for each item.
+
+        :param tmpl:
+            HTML template to use for rendering each item.
+
+        :param **kwargs:
+            Named paremeters used to generate the HTML attributes of each item.
+            It follows the same rules as `get_html_attrs`
+
+        """
+        kwargs['type'] = 'checkbox'
+        kwargs['name'] = self.name
+        html = []
+        values = self.to_string(locale, tz) or []
+        items = _items or self.get_items()
+        
+        for val, label in items:
+            kwargs['value'] = val
+            kwargs['checked'] = (val in values or str(val) in values)
+            html_attrs = get_html_attrs(kwargs)
+            html.append(tmpl.format(attrs=html_attrs, label=label))
+
+        return Markup('\n'.join(html))
+
