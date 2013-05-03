@@ -12,5 +12,5 @@ An amazing form solution.
 
 ---------------------------------------
 [MIT License] (http://www.opensource.org/licenses/mit-license.php).
-© [Lúcuma labs] (http://lucumalabs.com).  
+© [Lúcuma labs] (http://lucumalabs.com).
 

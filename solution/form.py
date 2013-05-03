@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from copy import copy
 import inspect
-from pytz import utc
 
 from .fields import Field
 from .utils import FakeMultiDict
@@ -49,7 +48,7 @@ class Form(object):
     cleaned_data = None
     changed_fields = None
 
-    def __init__(self, data=None, obj=None, files=None, locale='en', tz=utc,
+    def __init__(self, data=None, obj=None, files=None, locale='en', tz='utc',
             prefix=u'', backref=None, parent=None):
 
         backref = backref or parent
@@ -325,7 +324,7 @@ class FormSet(object):
     def form(self):
         return self._form_class(prefix=self._get_prefix(1))
 
-    def _init(self, data=None, objs=None, files=None, locale='en', tz=utc):
+    def _init(self, data=None, objs=None, files=None, locale='en', tz='utc'):
         self._errors = {}
         self.has_changed = False
 
