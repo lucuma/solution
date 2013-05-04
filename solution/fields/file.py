@@ -6,12 +6,9 @@ from .field import Field, ValidationError
 
 
 class File(Field):
-    """ An uploaded file field.
+    """ An upload file field.
 
-    :param upload:
-        Optional function to be call for doing the actual file upload. It must
-        return a python value ready for cleaning and validation or raise a
-        ``solution.ValidationError`` in case of errors.
+    **Does not actually upload the file. Use its ``clean`` method for that.**
 
     :param validate:
         An list of validators. This will evaluate the current `value` when
@@ -38,17 +35,11 @@ class File(Field):
     """
     hide_value = True
 
-    def __init__(self, upload=None, **kwargs):
-        self.upload = upload
+    def __init__(self, **kwargs):
         super(File, self).__init__(**kwargs)
 
     def str_to_py(self, *args):
-        value = self.str_value or self.file_data
-        if not value:
-            return self.obj_value
-        if not self.upload:
-            return value
-        return self.upload(value)
+        return self.str_value or self.file_data or self.obj_value
 
     def __call__(self, **kwargs):
         return self.as_input(**kwargs)

@@ -55,6 +55,18 @@ def test_validate_with_custom_msg():
     assert field.error.message == u'invalid'
 
 
+def test_clean_error_make_validation_fail():
+    def clean(data):
+        raise f.ValidationError('test')
+
+    field = f.Field(clean=clean)
+    field.name = u'abc'
+    field.load_data('foobar')
+
+    assert field.validate() is None
+    assert field.error.message == 'test'
+
+
 def test_render_text():
     field = f.Text()
     field.name = u'abc'
@@ -243,32 +255,6 @@ def test_render_file():
             u'<input name="abc" type="file" required>')
     assert (field(required=False) ==
             u'<input name="abc" type="file">')
-
-
-def test_file_validate_calls_upload():
-    called = []
-    def upload(data):
-        called.append(data)
-
-    field = f.File(upload=upload)
-    field.name = u'abc'
-    field.load_data(file_data='data')
-
-    field.validate()
-    assert called[0] == 'data'
-
-
-def test_file_upload_error_make_validation_fail():
-    called = []
-    def upload(data):
-        raise f.ValidationError('test')
-
-    field = f.File(upload=upload)
-    field.name = u'abc'
-    field.load_data(file_data='data')
-
-    assert field.validate() is None
-    assert field.error.message == 'test'
 
 
 def test_validate_file():

@@ -1,4 +1,19 @@
 # -*- coding: utf-8 -*-
+"""
+Solution
+---------
+
+An amazing form solution.
+
+Features
+`````````
+
+* Subforms. If used with SQLAlchemy it even create or update those as related objects.
+* Extremely flexible in the field representation (altough with default HTML representation that might be good enough).
+* Easy individual field or form-wide validators.
+* Customizable cleanup functions.
+
+"""
 import io
 import os
 import re
@@ -87,7 +102,7 @@ setup(
     url = URL,
     license = 'MIT license (http://www.opensource.org/licenses/mit-license.php)',
     description = DESCRIPTION,
-    long_description = read_from(get_path('README.rst')),
+    long_description = __doc__,
     install_requires = get_requirements(),
     classifiers = [
         'Development Status :: 4 - Beta',
