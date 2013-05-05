@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
-
 from .validator import Validator
 
 
@@ -30,16 +28,4 @@ class IsNumber(Validator):
         except Exception:
             return False
         return True
-
-
-class IsDate(Validator):
-    """Validates that the field is a date or a datetime.
-
-    :param message:
-        Error message to raise in case of a validation error.
-    """
-    message = u'Enter a valid date.'
-
-    def __call__(self, py_value=None, form=None):
-        return isinstance(py_value, datetime.date)
 

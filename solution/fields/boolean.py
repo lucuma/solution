@@ -47,10 +47,10 @@ class Boolean(Field):
         self.falsy = falsy
         super(Boolean, self).__init__(**kwargs)
 
-    def py_to_str(self, *args):
+    def py_to_str(self, **kwargs):
         return u'1' if self.obj_value else u''
 
-    def str_to_py(self, *args):
+    def str_to_py(self, **kwargs):
         if self.str_value is None:
             return None
         if not self.str_value or (self.str_value.lower() in self.falsy):
@@ -63,10 +63,10 @@ class Boolean(Field):
     def __call__(self, **kwargs):
         return self.as_checkbox(**kwargs)
 
-    def as_checkbox(self, locale=None, tz=None, **kwargs):
+    def as_checkbox(self, **kwargs):
         kwargs.setdefault('type', 'checkbox')
         kwargs['name'] = self.name
-        value = self.to_string(locale, tz)
+        value = self.to_string(**kwargs)
         is_true = value and (value.lower() not in self.falsy)
         if is_true and kwargs['type'] == 'checkbox':
             kwargs['checked'] = True

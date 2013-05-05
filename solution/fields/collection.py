@@ -74,7 +74,7 @@ class Collection(Text):
 
         return (str_value, None, obj_value)
 
-    def str_to_py(self, *args):
+    def str_to_py(self, **kwargs):
         if self.str_value is None:
             return None
         py_values = re.split(self.rxsep, self.str_value)

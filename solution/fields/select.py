@@ -56,7 +56,7 @@ class Select(Field):
         for item in items:
             yield item
 
-    def str_to_py(self, *args):
+    def str_to_py(self, **kwargs):
         accepted = [str(item[0]) for item in self]
         if self.str_value in accepted:
             return self.str_value
@@ -68,7 +68,7 @@ class Select(Field):
             return self.as_select(_items=items, **kwargs)
         return self.as_radios(_items=items, **kwargs)
 
-    def as_select(self, locale=None, tz=None, _items=None, **kwargs):
+    def as_select(self, _items=None, **kwargs):
         """Render the field as a `<select>` element.
         
         :param **kwargs:
@@ -80,7 +80,7 @@ class Select(Field):
         if not self.optional:
             kwargs['required'] = True
         html = [u'<select %s>' % get_html_attrs(kwargs)]
-        value = self.to_string(locale, tz)
+        value = self.to_string(**kwargs)
         items = _items or self.get_items()
 
         for val, label in items:
@@ -92,8 +92,7 @@ class Select(Field):
 
         return Markup('\n'.join(html))
 
-    def as_radios(self, tmpl=TMPL, locale=None, tz=None, 
-            _items=None, **kwargs):
+    def as_radios(self, tmpl=TMPL, _items=None, **kwargs):
         """Render the field as a series of radio buttons, using the `tmpl`
         parameter as the template for each item.
         
@@ -108,7 +107,7 @@ class Select(Field):
         kwargs['type'] = 'radio'
         kwargs['name'] = self.name
         html = []
-        value = self.to_string(locale, tz)
+        value = self.to_string(**kwargs)
         items = _items or self.get_items()
         
         for val, label in items:
@@ -180,10 +179,10 @@ class MultiSelect(Field):
     def _clean_data(self, str_value, file_data, obj_value):
         return (str_value, None, obj_value)
 
-    def py_to_str(self, *args):
+    def py_to_str(self, **kwargs):
         return self.obj_value
 
-    def str_to_py(self, *args):
+    def str_to_py(self, **kwargs):
         if self.str_value is None:
             return None
         accepted = [str(item[0]) for item in self]
@@ -196,7 +195,7 @@ class MultiSelect(Field):
             return self.as_select(_items=items, **kwargs)
         return self.as_checkboxes(_items=items, **kwargs)
 
-    def as_select(self, locale=None, tz=None, _items=None, **kwargs):
+    def as_select(self, _items=None, **kwargs):
         """Render the field as a `<select>` element.
         
         :param **kwargs:
@@ -208,7 +207,7 @@ class MultiSelect(Field):
         if not self.optional:
             kwargs['required'] = True
         html = [u'<select %s>' % get_html_attrs(kwargs)]
-        values = self.to_string(locale, tz) or []
+        values = self.to_string(**kwargs) or []
         items = _items or self.get_items()
 
         for val, label in items:
@@ -220,8 +219,7 @@ class MultiSelect(Field):
 
         return Markup('\n'.join(html))
 
-    def as_checkboxes(self, tmpl=TMPL, locale=None, tz=None, 
-            _items=None, **kwargs):
+    def as_checkboxes(self, tmpl=TMPL, _items=None, **kwargs):
         """Render the field as a series of checkboxes, using the `tmpl`
         parameter as the template for each item.
 
@@ -236,7 +234,7 @@ class MultiSelect(Field):
         kwargs['type'] = 'checkbox'
         kwargs['name'] = self.name
         html = []
-        values = self.to_string(locale, tz) or []
+        values = self.to_string(**kwargs) or []
         items = _items or self.get_items()
         
         for val, label in items:

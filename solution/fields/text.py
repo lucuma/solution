@@ -44,21 +44,21 @@ class Text(Field):
     def __call__(self, **kwargs):
         return self.as_input(**kwargs)
 
-    def as_input(self, locale=None, tz=None, **kwargs):
+    def as_input(self, **kwargs):
         kwargs['type'] = kwargs.setdefault('type', self._type)
         kwargs['name'] = self.name
-        kwargs['value'] = self.to_string(locale, tz)
+        kwargs['value'] = self.to_string(**kwargs)
         if not self.optional:
             kwargs.setdefault('required', True)
         html = u'<input %s>' % get_html_attrs(kwargs)
         return Markup(html)
 
-    def as_textarea(self, locale=None, tz=None, **kwargs):
+    def as_textarea(self, **kwargs):
         kwargs['name'] = self.name
         if not self.optional:
             kwargs.setdefault('required', True)
         html_attrs = get_html_attrs(kwargs)
-        value = self.to_string(locale, tz)
+        value = self.to_string(**kwargs)
         html = u'<textarea %s>%s</textarea>' % (html_attrs, value)
         return Markup(html)
 

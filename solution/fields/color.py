@@ -44,7 +44,7 @@ class Color(Text):
         r'(?:\s*,\s*(?P<a>\.?[0-9]+))?\)',
         re.IGNORECASE)
 
-    def str_to_py(self, *args):
+    def str_to_py(self, **kwargs):
         if not self.str_value:
             return None
         str_value = self.str_value.strip().replace(' ', '').lower()

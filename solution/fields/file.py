@@ -38,7 +38,7 @@ class File(Field):
     def __init__(self, **kwargs):
         super(File, self).__init__(**kwargs)
 
-    def str_to_py(self, *args):
+    def str_to_py(self, **kwargs):
         return self.str_value or self.file_data or self.obj_value
 
     def __call__(self, **kwargs):

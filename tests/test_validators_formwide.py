@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
-
 import pytest
 import solution as f
 
@@ -30,29 +28,5 @@ def test_atleastone():
     assert validator(data)
 
     validator = f.AtLeastOne(['z', 'x'])
-    assert not validator(data)
-
-
-def test_validsplitdate():
-    data = {
-        'month': u'3',
-        'day': u'30',
-        'year': u'2013'
-    }
-    validator = f.ValidSplitDate('day', 'month', 'year')
-    assert validator(data)
-
-    data = {
-        'month': u'3',
-        'day': u'30',
-    }
-    validator = f.ValidSplitDate('day', 'month')
-    assert validator(data)
-
-    data = {
-        'month': u'2',
-        'day': u'30',
-    }
-    validator = f.ValidSplitDate('day', 'month')
     assert not validator(data)
 

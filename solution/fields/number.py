@@ -40,7 +40,7 @@ class Number(Text):
         self.type = type
         super(Number, self).__init__(**kwargs)
 
-    def str_to_py(self, *args):
+    def str_to_py(self, **kwargs):
         try:
             num = float(self.str_value)
             if self.type != float:
