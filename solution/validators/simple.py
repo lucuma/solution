@@ -11,7 +11,7 @@ class Required(Validator):
     message = u'This field is required.'
 
     def __call__(self, py_value=None, form=None):
-        return py_value is not None
+        return py_value is not None and len(str(py_value).strip())
 
 
 class IsNumber(Validator):

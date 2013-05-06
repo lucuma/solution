@@ -158,7 +158,7 @@ class Field(object):
             return None
 
     def is_empty(self, py_value):
-        return not py_value
+        return py_value is None or not len(str(py_value).strip())
 
     def validate_value(self, form, py_value):
         for validator in self.validators:

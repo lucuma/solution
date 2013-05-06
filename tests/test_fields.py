@@ -105,6 +105,17 @@ def test_validate_text():
     field.load_data(u'123')
     assert field.validate() == u'123'
 
+    field = f.Text(validate=[f.Required])
+    field.name = u'abc'
+
+    field.load_data(u'')
+    assert field.validate() is None
+    assert field.error
+
+    field.load_data(u' ')
+    assert field.validate() is None
+    assert field.error
+
 
 def test_text_default():
     value = u'abc'
