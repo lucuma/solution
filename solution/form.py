@@ -8,7 +8,6 @@ from .utils import FakeMultiDict
 
 
 class Form(object):
-
     """Declarative Form base class. Provides core behaviour like field
     construction, validation, and data and error proxying.
 
@@ -38,9 +37,7 @@ class Form(object):
         .
 
     """
-
     _model = None
-
     _fields = None
     _forms = None
     _sets = None

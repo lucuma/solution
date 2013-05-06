@@ -3,19 +3,21 @@ from .utils import FakeMultiDict
 
 
 class FormSet(object):
-
     """Open set of forms. This is intended to be used as in two different ways:
     A. As a field in another form
     B. As a independent form generator
 
     :param form_class:
         The base form class.
+
     :param data:
         Used to pass data coming from the enduser, usually `request.form`,
         `request.POST` or equivalent.
+
     :param obj:
         If `data` is empty or not provided, this object is checked for
         attributes matching field names.
+
     :param files:
         Used to pass files coming from the enduser, usually `request.files`,
         or equivalent.
