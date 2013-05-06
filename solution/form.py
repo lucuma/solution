@@ -103,6 +103,7 @@ class Form(object):
             if is_field:
                 field = copy(field)
                 field.name = self._prefix + name
+                field.clean = getattr(self, 'clean_' + name, None)
                 fields[name] = field
                 setattr(self, name, field)
             elif is_form:

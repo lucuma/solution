@@ -140,6 +140,47 @@ def test_prefix():
     assert obj['message'] == data['meh-message']
 
 
+def test_clean_fields():
+
+    class MyContactForm(f.Form):
+        subject = f.Text()
+        email = f.Text()
+        message = f.Text()
+
+        def clean_subject(self, py_value, **kwargs):
+            return 'foobar ' + py_value
+
+        def clean_email(self, py_value, **kwargs):
+            return 'foobar ' + py_value
+
+    form = MyContactForm({
+        'subject': u'abc',
+        'email': u'abc',
+        'message': u'abc',
+    })
+    assert form.is_valid()
+    assert form.cleaned_data['subject'] == 'foobar abc'
+    assert form.cleaned_data['email'] == 'foobar abc'
+
+
+def test_clean_fields_error():
+
+    class MyContactForm(f.Form):
+        subject = f.Text(validate=[f.Required])
+        email = f.Text(validate=[f.Required])
+        message = f.Text(validate=[f.Required])
+
+        def clean_subject(self, py_value, **kwargs):
+            raise f.ValidationError
+
+    form = MyContactForm({
+        'subject': u'abc',
+        'email': u'abc',
+        'message': u'abc',
+    })
+    assert not form.is_valid()
+
+
 def test_save():
     db = SQLAlchemy()
 
