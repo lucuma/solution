@@ -101,7 +101,6 @@ class Field(object):
     def __nonzero__(self):
         return not self.empty
 
-
     def to_string(self, **kwargs):
         if self.hide_value:
             return u''
@@ -114,13 +113,12 @@ class Field(object):
         return self.str_value
 
     def py_to_str(self, **kwargs):
-        return to_unicode(self.obj_value or u'')
+        return to_unicode(self.obj_value or self.default)
 
     def prepare_value(self, str_value, **kwargs):
         if not self.prepare:
             return str_value
         return self.prepare(str_value, **kwargs)
-    
 
     def to_python(self, **kwargs):
         try:

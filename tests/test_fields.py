@@ -14,6 +14,13 @@ def test_field():
     assert field.validate() == value
 
 
+def test_field_default():
+    value = u'abc'
+    field = f.Field(default=value)
+    assert field.to_string() == value
+    assert field.validate() == value
+
+
 def test_reset():
     field = f.Field()
     field.load_data('a', 'b', 'c')
@@ -99,6 +106,13 @@ def test_validate_text():
     assert field.validate() == u'123'
 
 
+def test_text_default():
+    value = u'abc'
+    field = f.Text(default=value)
+    assert field.to_string() == value
+    assert field.validate() == value
+
+
 def test_render_number():
     field = f.Number()
     field.name = u'abc'
@@ -137,6 +151,12 @@ def test_number_types():
         field = f.Number(type=t)
         field.load_data('3.02')
         assert field.validate() == t(float('3.02'))
+
+
+def test_number_default():
+    field = f.Number(default=5)
+    assert field.to_string() == u'5'
+    assert field.validate() == 5
 
 
 def test_render_color():
@@ -202,6 +222,12 @@ def test_validate_color():
     assert field.error
 
 
+def test_color_default():
+    field = f.Color(default='#ffaf2e')
+    assert field.to_string() == u'#ffaf2e'
+    assert field.validate() == u'#ffaf2e'
+
+
 def test_render_boolean():
     field = f.Boolean()
     field.name = u'abc'
@@ -226,7 +252,6 @@ def test_render_boolean():
 
 def test_validate_boolean():
     field = f.Boolean(validate=[f.Required])
-    field.name = u'abc'
 
     for val in [u'', u'0', u'no', u'off', u'false', u'NO', 'fAlsE']:
         field.load_data(val)
@@ -236,7 +261,7 @@ def test_validate_boolean():
         field.load_data(val)
         assert field.validate() == True
 
-    field.load_data()
+    field = f.Boolean(validate=[f.Required])
     assert field.validate() is None
     assert field.error
 
