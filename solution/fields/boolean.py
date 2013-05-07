@@ -51,8 +51,6 @@ class Boolean(Field):
         return u'1' if self.obj_value else u''
 
     def str_to_py(self, **kwargs):
-        if self.str_value is None:
-            return None
         if not self.str_value or (self.str_value.lower() in self.falsy):
             return False
         return True

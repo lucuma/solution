@@ -262,13 +262,14 @@ def test_render_boolean():
 
 
 def test_validate_boolean():
-    field = f.Boolean(validate=[f.Required])
+    field = f.Boolean()
 
-    for val in [u'', u'0', u'no', u'off', u'false', u'NO', 'fAlsE']:
+    for val in [None, u'', u'0', u'no', u'off', u'false', u'NO', 'fAlsE']:
+        print val
         field.load_data(val)
         assert field.validate() == False
 
-    for val in [u'yes', u'1', u'ok', u'Of course!!!1', u'whatever']:
+    for val in [u'1', u'ok', u'yes', u'Of course!!!1', u'whatever']:
         field.load_data(val)
         assert field.validate() == True
 
