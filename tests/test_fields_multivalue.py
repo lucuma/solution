@@ -153,7 +153,7 @@ def test_render_multiselect():
              (6, u'F'), (7, u'G'),]
     field = f.MultiSelect(items=items)
     field.name = 'abc'
-    field.load_data(obj_value=[2,4,6])
+    field.load_data(str_value=[], obj_value=[2,4,6])
 
     assert unicode(field) == field() == field.as_select()
     expected = (
