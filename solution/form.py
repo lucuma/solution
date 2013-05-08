@@ -103,6 +103,8 @@ class Form(object):
             if is_field:
                 field = copy(field)
                 field.name = self._prefix + name
+                if field.prepare == None:
+                    field.prepare = getattr(self, 'prepare_' + name, None)
                 if field.clean == None:
                     field.clean = getattr(self, 'clean_' + name, None)
                 fields[name] = field

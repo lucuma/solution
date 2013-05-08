@@ -78,6 +78,8 @@ class Field(object):
 
     def load_data(self, str_value=None, obj_value=None,
                   file_data=None, **kwargs):
+        if self.prepare:
+            obj_value = self.prepare(obj_value, **kwargs)
         str_value, file_data, obj_value = self._clean_data(
             str_value, file_data, obj_value)
         self.str_value = str_value
@@ -104,8 +106,7 @@ class Field(object):
     def to_string(self, **kwargs):
         if self.hide_value:
             return u''
-        str_value = self.get_str_value(**kwargs)
-        return self.prepare_value(str_value, **kwargs)
+        return self.get_str_value(**kwargs)
 
     def get_str_value(self, **kwargs):
         if self.str_value is None:
@@ -114,11 +115,6 @@ class Field(object):
 
     def py_to_str(self, **kwargs):
         return to_unicode(self.obj_value or self.default)
-
-    def prepare_value(self, str_value, **kwargs):
-        if not self.prepare:
-            return str_value
-        return self.prepare(str_value, **kwargs)
 
     def to_python(self, **kwargs):
         try:
