@@ -34,6 +34,13 @@ def test_render_collection():
     assert (field(required=False) ==
             u'<input name="abc" type="text" value="a, b">')
 
+    field = f.Collection()
+    field.name = u'abc'
+    field.load_data([])
+    assert field() == u'<input name="abc" type="text" value="">'
+    field.load_data([], [])
+    assert field() == u'<input name="abc" type="text" value="">'
+
 
 def test_validate_collection():
     field = f.Collection()

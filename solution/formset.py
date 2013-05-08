@@ -97,7 +97,6 @@ class FormSet(object):
         if data and self._create_new:
             forms = self._find_new_forms(forms, _prefix, data, files,
                                          locale=locale, tz=tz)
-
         self._forms = forms
         self.missing_objs = missing_objs
         for mo in missing_objs:

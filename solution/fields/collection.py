@@ -92,3 +92,8 @@ class Collection(Text):
                 final_values.append(val)
         return final_values
 
+    def py_to_str(self, **kwargs):
+        if not self.obj_value:
+            return self.default or u''
+        return self.sep.join(self.obj_value)
+
