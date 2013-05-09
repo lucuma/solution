@@ -258,6 +258,7 @@ class Form(object):
         """Save the cleaned data to an object.
         """
         if isinstance(obj, dict):
+            obj = dict(obj)
             for key in self.changed_fields:
                 if not isinstance(getattr(self, key), FormSet):
                     obj[key] = self.cleaned_data.get(key)

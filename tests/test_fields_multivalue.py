@@ -61,6 +61,9 @@ def test_validate_collection():
     assert field.validate() == None
     assert field.error
 
+    field.load_data(obj_value=[u'a', u'b'])
+    assert field.validate() == [u'a', u'b']
+
 
 def test_filter_collection():
     def filter_the_b(py_value):
@@ -70,6 +73,11 @@ def test_filter_collection():
     field.name = 'abc'
     field.load_data(u'a, b,c')
     assert field.validate() == [u'a', u'c']
+
+    field = f.Collection(filters=[f.ValidEmail])
+    field.name = 'abc'
+    field.load_data([u'a@example.com,b@example.com'])
+    assert field.validate() == [u'a@example.com', u'b@example.com']
 
 
 def test_render_select():

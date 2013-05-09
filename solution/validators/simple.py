@@ -12,7 +12,7 @@ class Required(Validator):
 
     def __call__(self, py_value=None, form=None):
         if isinstance(py_value, basestring):
-            return bool(str(py_value).strip())
+            return bool(py_value.strip())
         return bool(py_value)
 
 

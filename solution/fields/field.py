@@ -78,10 +78,10 @@ class Field(object):
 
     def load_data(self, str_value=None, obj_value=None,
                   file_data=None, **kwargs):
-        if self.prepare:
-            obj_value = self.prepare(obj_value, **kwargs)
         str_value, file_data, obj_value = self._clean_data(
             str_value, file_data, obj_value)
+        if self.prepare:
+            obj_value = self.prepare(obj_value, **kwargs)
         self.str_value = str_value
         self.file_data = file_data
         self.obj_value = obj_value
