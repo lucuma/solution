@@ -34,12 +34,6 @@ class Boolean(Field):
         Do not render the current value a a string. Useful with passwords
         fields.
 
-    :param locale:
-        Default locale for this field. Overwrite the form locale.
-
-    :param tz:
-        Default timezone for this field. Overwrite the form timezone.
-
     """
 
     def __init__(self, falsy=FALSY_VALUES, **kwargs):

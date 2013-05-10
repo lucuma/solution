@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 from ..utils import Markup, get_html_attrs
 from .field import Field, ValidationError
 
@@ -26,12 +24,6 @@ class File(Field):
         python and return a 'cleaned' version of it. If the value can't be
         cleaned `None` must be returned instead.
 
-    :param locale:
-        Default locale for this field. Overwrite the form locale.
-
-    :param tz:
-        Default timezone for this field. Overwrite the form timezone.
-    
     """
     hide_value = True
 

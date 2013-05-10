@@ -26,12 +26,6 @@ class Number(Text):
         Do not render the current value a a string. Useful with passwords
         fields.
 
-    :param locale:
-        Default locale for this field. Overwrite the form locale.
-
-    :param tz:
-        Default timezone for this field. Overwrite the form timezone.
-    
     """
     _type = 'number'
     default_validator = v.IsNumber

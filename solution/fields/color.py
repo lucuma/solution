@@ -27,13 +27,7 @@ class Color(Text):
     :param hide_value:
         Do not render the current value a a string. Useful with passwords
         fields.
-
-    :param locale:
-        Default locale for this field. Overwrite the form locale.
-
-    :param tz:
-        Default timezone for this field. Overwrite the form timezone.
-    
+ 
     """
     _type = 'color'
     default_validator = v.IsColor

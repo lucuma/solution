@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
+import datetime
+
+from .. import validators as v
 from ..utils import Markup, get_html_attrs
-from .field import Field
+from .text import Text
 
 
-class Text(Field):
-    """A text field.
+class Date(Text):
+
+    """A date field formatted as yyy-MM-dd
 
     :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
     :param default:
-        Default value.
+        Default value. It must be a `date` or `datetime`.
 
     :param prepare:
         An optional function that takes the current value as a string
@@ -27,18 +31,20 @@ class Text(Field):
         fields.
 
     """
-
-    _type = 'text'
-    default_validator = None
+    _type = 'date'
+    default_validator = v.IsDate
 
     def __init__(self, **kwargs):
-        kwargs.setdefault('default', u'')
-        super(Text, self).__init__(**kwargs)
+        kwargs.setdefault('default', None)
+        return super(Date, self).__init__(**kwargs)
 
-    def __call__(self, **kwargs):
-        return self.as_input(**kwargs)
+    def py_to_str(self, format=None, locale=None, **kwargs):
+        dt = self.obj_value or self.default
+        if not dt:
+            return u''
+        return dt.strftime('%Y-%m-%d')
 
-    def as_input(self, **kwargs):
+    def as_input(self, format=None, locale=None, **kwargs):
         kwargs['type'] = kwargs.setdefault('type', self._type)
         kwargs['name'] = self.name
         kwargs['value'] = self.to_string(**kwargs)
@@ -47,7 +53,7 @@ class Text(Field):
         html = u'<input %s>' % get_html_attrs(kwargs)
         return Markup(html)
 
-    def as_textarea(self, **kwargs):
+    def as_textarea(self, format=None, locale=None, **kwargs):
         kwargs['name'] = self.name
         if not self.optional:
             kwargs.setdefault('required', True)
@@ -55,4 +61,10 @@ class Text(Field):
         value = self.to_string(**kwargs)
         html = u'<textarea %s>%s</textarea>' % (html_attrs, value)
         return Markup(html)
+
+    def str_to_py(self, format=None, locale=None):
+        if not self.str_value:
+            return self.default or None
+        dt = [int(f) for f in self.str_value.split('-')]
+        return datetime.date(*dt) 
 
