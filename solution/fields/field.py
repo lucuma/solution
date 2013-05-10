@@ -53,7 +53,7 @@ class Field(object):
     def __init__(self, validate=None, default=None, prepare=None, clean=None,
             hide_value=False, **kwargs):
         self._set_validators(validate)
-        self.default = default
+        self._default = default
         self.prepare = prepare
         self.clean = clean
         self.hide_value = hide_value
@@ -69,6 +69,12 @@ class Field(object):
         self.validators = [val() if inspect.isclass(val) else val
                            for val in validators]
         self.optional = not validator_in(v.Required, self.validators)
+
+    @property
+    def default(self):
+        if callable(self._default):
+            return self._default()
+        return self._default
 
     def reset(self):
         self.str_value = None

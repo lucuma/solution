@@ -43,17 +43,17 @@ class Select(Field):
     """
     
     def __init__(self, items, **kwargs):
-        self.items = items
+        self._items = items
         super(Select, self).__init__(**kwargs)
 
-    def get_items(self):
-        if callable(self.items):
-            return self.items()
-        return self.items
+    @property
+    def items(self):
+        if callable(self._items):
+            return self._items()
+        return self._items
 
     def __iter__(self):
-        items = self.get_items()
-        for item in items:
+        for item in self.items:
             yield item
 
     def str_to_py(self, **kwargs):
@@ -63,7 +63,7 @@ class Select(Field):
         return None
 
     def __call__(self, **kwargs):
-        items = self.get_items()
+        items = self.items
         if len(items) > 5:
             return self.as_select(_items=items, **kwargs)
         return self.as_radios(_items=items, **kwargs)
@@ -81,7 +81,7 @@ class Select(Field):
             kwargs['required'] = True
         html = [u'<select %s>' % get_html_attrs(kwargs)]
         value = self.to_string(**kwargs)
-        items = _items or self.get_items()
+        items = _items or self.items
 
         for val, label in items:
             item_attrs = {'value': val}
@@ -108,7 +108,7 @@ class Select(Field):
         kwargs['name'] = self.name
         html = []
         value = self.to_string(**kwargs)
-        items = _items or self.get_items()
+        items = _items or self.items
         
         for val, label in items:
             kwargs['value'] = val
@@ -163,17 +163,17 @@ class MultiSelect(Field):
 
     def __init__(self, items, **kwargs):
         kwargs.setdefault('default', [])
-        self.items = items
+        self._items = items
         super(MultiSelect, self).__init__(**kwargs)
 
-    def get_items(self):
-        if callable(self.items):
-            return self.items()
-        return self.items
+    @property
+    def items(self):
+        if callable(self._items):
+            return self._items()
+        return self._items
 
     def __iter__(self):
-        items = self.get_items()
-        for item in items:
+        for item in self.items:
             yield item
 
     def _clean_data(self, str_value, file_data, obj_value):
@@ -192,7 +192,7 @@ class MultiSelect(Field):
         return py_value or None
 
     def __call__(self, **kwargs):
-        items = self.get_items()
+        items = self.items
         if len(items) > 5:
             return self.as_select(_items=items, **kwargs)
         return self.as_checkboxes(_items=items, **kwargs)
@@ -210,7 +210,7 @@ class MultiSelect(Field):
             kwargs['required'] = True
         html = [u'<select %s>' % get_html_attrs(kwargs)]
         values = self.to_string(**kwargs) or []
-        items = _items or self.get_items()
+        items = _items or self.items
 
         for val, label in items:
             item_attrs = {'value': val}
@@ -237,7 +237,7 @@ class MultiSelect(Field):
         kwargs['name'] = self.name
         html = []
         values = self.to_string(**kwargs) or []
-        items = _items or self.get_items()
+        items = _items or self.items
         
         for val, label in items:
             kwargs['value'] = val
