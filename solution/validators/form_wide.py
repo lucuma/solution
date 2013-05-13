@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
 
+from .validator import Validator
 
-class FormValidator(object):
+
+class FormValidator(Validator):
     """Base Form Validator."""
     pass
 
