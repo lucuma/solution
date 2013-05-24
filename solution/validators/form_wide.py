@@ -27,7 +27,7 @@ class AreEqual(FormValidator):
     """
     message = u'The {0} doesn\'t match.'
 
-    def __init__(self, name1, name2, plural=u'fields', message=None):
+    def __init__(self, name1, name2, message=None, plural=u'fields'):
         self.name1 = name1
         self.name2 = name2
         if message is None:

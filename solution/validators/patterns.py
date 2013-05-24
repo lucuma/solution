@@ -20,11 +20,11 @@ class Match(Validator):
 
     :param message:
         Error message to raise in case of a validation error.
-    
+
     """
     message = u'This value doesn\'t seem to be valid.'
 
-    def __init__(self, regex, flags=re.IGNORECASE, message=None):
+    def __init__(self, regex, message=None, flags=re.IGNORECASE):
         if isinstance(regex, basestring):
             regex = re.compile(regex, flags)
         self.regex = regex
@@ -64,7 +64,7 @@ class ValidEmail(Validator):
 
     email_rx = re.compile(
         r'''(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*'''  # dot-atom
-        r'''|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-011\013\014\016-\177])*"''' # quoted-string
+        r'''|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-011\013\014\016-\177])*"'''  # quoted-string
         r''')@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?$''',
         re.IGNORECASE)
 
@@ -99,19 +99,19 @@ class ValidURL(Validator):
     probably want to validate the URL later by other means if the URL must
     resolve.
 
+    :param message:
+        Error message to raise in case of a validation error.
+
     :param require_tld:
         If true, then the domain-name portion of the URL must contain a .tld
         suffix.  Set this to false if you want to allow domains like
         `localhost`.
 
-    :param message:
-        Error message to raise in case of a validation error.
-
     """
     message = u'Enter a valid URL.'
     url_rx = ur'^([a-z]{3,7}:(//)?)?([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$'
 
-    def __init__(self, require_tld=True, message=None):
+    def __init__(self, message=None, require_tld=True):
         tld_part = ur'\.[a-z]{2,10}' if require_tld else u''
         self.regex = re.compile(self.url_rx % tld_part, re.IGNORECASE)
         if message is not None:
@@ -132,6 +132,5 @@ class ValidURL(Validator):
 
     def _encode_idna(self, py_value):
         scheme, netloc, path, query, fragment = urlparse.urlsplit(py_value)
-        netloc = netloc.encode('idna') # IDN -> ACE
+        netloc = netloc.encode('idna')  # IDN -> ACE
         return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
-

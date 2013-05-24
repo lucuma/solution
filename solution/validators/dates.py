@@ -21,7 +21,7 @@ class Before(Validator):
     This will work with both date and datetime values.
 
     :param date:
-        The latest valid date. 
+        The latest valid date.
 
     :param message:
         Error message to raise in case of a validation error.
@@ -51,7 +51,7 @@ class After(Validator):
     This will work with both date and datetime values.
 
     :param date:
-        The soonest valid date. 
+        The soonest valid date.
 
     :param message:
         Error message to raise in case of a validation error.
@@ -110,4 +110,3 @@ class AfterNow(After):
     def __call__(self, py_value=None, form=None):
         self.dt = datetime.datetime.utcnow()
         return super(AfterNow, self).__call__(py_value, form)
-
