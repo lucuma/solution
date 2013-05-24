@@ -26,7 +26,7 @@ class AreEqual(FormValidator):
 
     """
     message = u'The {0} doesn\'t match.'
-    
+
     def __init__(self, name1, name2, plural=u'fields', message=None):
         self.name1 = name1
         self.name2 = name2
@@ -50,7 +50,7 @@ class AtLeastOne(FormValidator):
 
     """
     message = u'Fill at least one of these fields.'
-    
+
     def __init__(self, fields, message=None):
         self.fields = fields
         if message is not None:

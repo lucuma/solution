@@ -45,7 +45,7 @@ class Field(object):
     empty = True
 
     def __init__(self, validate=None, default=None, prepare=None, clean=None,
-            hide_value=False, **kwargs):
+                 hide_value=False, **kwargs):
         self._set_validators(validate)
         self._default = default
         self.prepare = prepare
@@ -139,7 +139,7 @@ class Field(object):
             py_value = self.default or py_value
         else:
             py_value = self.validate_value(form, py_value)
-        
+
         py_value = self.clean_value(py_value, **kwargs)
         self.has_changed = (py_value != self.obj_value)
         return py_value
@@ -154,7 +154,7 @@ class Field(object):
             return None
 
     def is_empty(self, py_value):
-        return py_value is None
+        return not py_value
 
     def validate_value(self, form, py_value):
         for validator in self.validators:
@@ -218,4 +218,3 @@ def validator_in(validator, validators_list):
         if (v == validator) or isinstance(v, validator):
             return True
     return False
-

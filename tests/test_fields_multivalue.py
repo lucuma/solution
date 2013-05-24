@@ -56,14 +56,6 @@ def test_validate_collection():
     field.load_data(u'a, b,c  ')
     assert field.validate() == [u'a, b,c',]
 
-    field = f.Collection(validate=[f.Required])
-    field.load_data([])
-    assert field.validate() == None
-    assert field.error
-
-    field.load_data(obj_value=[u'a', u'b'])
-    assert field.validate() == [u'a', u'b']
-
 
 def test_filter_collection():
     def filter_the_b(py_value):

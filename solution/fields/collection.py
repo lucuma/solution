@@ -67,17 +67,20 @@ class Collection(Text):
             else:
                 str_value = None
         if str_value:
-            str_value = self.sep.join(re.split(self.rxsep, str_value.strip()))
+            str_value = self.sep.join(self._split_values(str_value))
 
-        if isinstance(obj_value, (list, tuple)):
-            str_value = self.sep.join(obj_value)
+        if not isinstance(obj_value, (list, tuple)):
+            if obj_value:
+                obj_value = [obj_value]
+            else:
+                obj_value = None
 
         return (str_value, None, obj_value)
 
     def str_to_py(self, **kwargs):
         if self.str_value is None:
             return None
-        py_values = re.split(self.rxsep, self.str_value)
+        py_values = self._split_values(self.str_value)
         if not self.filters:
             return py_values
 
@@ -97,3 +100,6 @@ class Collection(Text):
             return self.default or u''
         return self.sep.join(self.obj_value)
 
+    def _split_values(self, str_value):
+        values = re.split(self.rxsep, str_value.strip())
+        return filter(lambda x: x != u'', values)
