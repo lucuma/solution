@@ -34,7 +34,7 @@ class Before(Validator):
             dt = datetime.datetime(dt.year, dt.month, dt.day)
         self.dt = dt
         if message is None:
-            message = self.message.format(dt.isoformat())
+            message = self.message % dt.isoformat()
         self.message = message
 
     def __call__(self, py_value=None, form=None):
@@ -56,7 +56,7 @@ class After(Validator):
     :param message:
         Error message to raise in case of a validation error.
     """
-    message = u'Enter a valid date after {0}.'
+    message = u'Enter a valid date after %s.'
 
     def __init__(self, dt, message=None):
         assert isinstance(dt, datetime.date)
@@ -64,7 +64,7 @@ class After(Validator):
             dt = datetime.datetime(dt.year, dt.month, dt.day)
         self.dt = dt
         if message is None:
-            message = self.message.format(dt.isoformat())
+            message = self.message % dt.isoformat()
         self.message = message
 
     def __call__(self, py_value=None, form=None):

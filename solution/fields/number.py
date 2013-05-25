@@ -36,10 +36,8 @@ class Number(Text):
 
     def str_to_py(self, **kwargs):
         try:
-            num = float(self.str_value)
-            if self.type != float:
-                num = self.type(num)
-            return num 
+            if self.type == int:
+                return int(float(self.str_value))
+            return self.type(self.str_value)
         except Exception:
             return None
-

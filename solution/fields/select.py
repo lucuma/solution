@@ -7,10 +7,11 @@ TMPL = u'<label><input {attrs}> {label}</label>'
 
 
 class Select(Field):
+
     """A field with a fixed list of options for the possible values
 
     :param items:
-        Either: 
+        Either:
         - An list of tuples with the format `(value, label)`; or
         - A function that return a list of items in that format.
 
@@ -35,7 +36,7 @@ class Select(Field):
         fields.
 
     """
-    
+
     def __init__(self, items, **kwargs):
         self._items = items
         super(Select, self).__init__(**kwargs)
@@ -64,11 +65,11 @@ class Select(Field):
 
     def as_select(self, _items=None, **kwargs):
         """Render the field as a `<select>` element.
-        
+
         :param **kwargs:
             Named paremeters used to generate the HTML attributes of each item.
             It follows the same rules as `get_html_attrs`
-        
+
         """
         kwargs['name'] = self.name
         if not self.optional:
@@ -89,36 +90,40 @@ class Select(Field):
     def as_radios(self, tmpl=TMPL, _items=None, **kwargs):
         """Render the field as a series of radio buttons, using the `tmpl`
         parameter as the template for each item.
-        
+
         :param tmpl:
             HTML template to use for rendering each item.
 
         :param **kwargs:
             Named paremeters used to generate the HTML attributes of each item.
             It follows the same rules as `get_html_attrs`
-        
+
         """
         kwargs['type'] = 'radio'
         kwargs['name'] = self.name
         html = []
         value = self.to_string(**kwargs)
         items = _items or self.items
-        
+
         for val, label in items:
             kwargs['value'] = val
             kwargs['checked'] = (str(val) == str(value))
             html_attrs = get_html_attrs(kwargs)
-            html.append(tmpl.format(attrs=html_attrs, label=label))
+            item_html = (tmpl
+                         .replace(u'{attrs}', html_attrs)
+                         .replace(u'{label}', label))
+            html.append(item_html)
 
         return Markup('\n'.join(html))
 
 
 class MultiSelect(Field):
+
     """Like a ``:class:solution.Select``but allows to choose more than one
     option at a time.
 
     :param items:
-        Either: 
+        Either:
         - An list of tuples with the format `(value, label)`; or
         - A function that return a list of items in that format.
 
@@ -193,11 +198,11 @@ class MultiSelect(Field):
 
     def as_select(self, _items=None, **kwargs):
         """Render the field as a `<select>` element.
-        
+
         :param **kwargs:
             Named paremeters used to generate the HTML attributes of each item.
             It follows the same rules as `get_html_attrs`
-        
+
         """
         kwargs['name'] = self.name
         if not self.optional:
@@ -232,12 +237,14 @@ class MultiSelect(Field):
         html = []
         values = self.to_string(**kwargs) or []
         items = _items or self.items
-        
+
         for val, label in items:
             kwargs['value'] = val
             kwargs['checked'] = (val in values or str(val) in values)
             html_attrs = get_html_attrs(kwargs)
-            html.append(tmpl.format(attrs=html_attrs, label=label))
+            item_html = (tmpl
+                         .replace(u'{attrs}', html_attrs)
+                         .replace(u'{label}', label))
+            html.append(item_html)
 
         return Markup('\n'.join(html))
-

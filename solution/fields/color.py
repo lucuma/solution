@@ -6,6 +6,7 @@ from .text import Text
 
 
 class Color(Text):
+
     """A color field.
 
     :param validate:
@@ -27,7 +28,7 @@ class Color(Text):
     :param hide_value:
         Do not render the current value a a string. Useful with passwords
         fields.
- 
+
     """
     _type = 'color'
     default_validator = v.IsColor
@@ -60,7 +61,7 @@ def normalize_hex(hex_color):
         return '#' + hex_color
     if length not in (3, 4):
         return None
-    strhex = u'#{0}{1}{2}'.format(
+    strhex = u'#%s%s%s' % (
         hex_color[0] * 2,
         hex_color[1] * 2,
         hex_color[2] * 2)
@@ -83,4 +84,3 @@ def normalize_rgb(r, g, b, a):
     if a:
         color += '%02x' % a
     return color
-

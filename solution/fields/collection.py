@@ -53,9 +53,7 @@ class Collection(Text):
     def __init__(self, sep=', ', filters=None, **kwargs):
         kwargs.setdefault('default', [])
         self.sep = sep
-        self.rxsep = r'\s*{}\s*'.format(
-            re.escape(self.sep.replace(' ', ''))
-        )
+        self.rxsep = r'\s*%s\s*' % re.escape(self.sep.replace(' ', ''))
         filters = filters or []
         self.filters = [f() if inspect.isclass(f) else f for f in filters]
         super(Collection, self).__init__(**kwargs)

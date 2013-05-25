@@ -199,14 +199,14 @@ class Field(object):
         return self.to_string()
 
     def label_tag(self, text, **kwargs):
-        html = u'<label {0}>{1}</label>'.format(get_html_attrs(kwargs), text)
+        html = u'<label %s>%s</label>' % (get_html_attrs(kwargs), text)
         return Markup(html)
 
     def error_tag(self, **kwargs):
         if self.error is None:
             return u''
         kwargs.setdefault('classes', u'error')
-        html = u'<div {0}>{1}</div>'.format(
+        html = u'<div %s>%s</div>' % (
             get_html_attrs(kwargs),
             self.error.message
         )

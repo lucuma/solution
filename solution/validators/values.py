@@ -12,13 +12,13 @@ class LongerThan(Validator):
         Error message to raise in case of a validation error
 
     """
-    message = u'Field must be at least {0} character long.'
+    message = u'Field must be at least %s character long.'
 
     def __init__(self, length, message=None):
         assert isinstance(length, int)
         self.length = length
         if message is None:
-            message = self.message.format(length)
+            message = self.message % (length,)
         self.message = message
 
     def __call__(self, py_value=None, form=None):
@@ -38,13 +38,13 @@ class ShorterThan(Validator):
         Error message to raise in case of a validation error
 
     """
-    message = u'Field cannot be longer than {0} character.'
+    message = u'Field cannot be longer than %s character.'
 
     def __init__(self, length, message=None):
         assert isinstance(length, int)
         self.length = length
         if message is None:
-            message = self.message.format(length)
+            message = self.message % (length,)
         self.message = message
 
     def __call__(self, py_value=None, form=None):
@@ -64,12 +64,12 @@ class LessThan(Validator):
     :param message:
         Error message to raise in case of a validation error
     """
-    message = u'Number must be less than {0}.'
+    message = u'Number must be less than %s.'
 
     def __init__(self, value, message=None):
         self.value = value
         if message is None:
-            message = self.message.format(value)
+            message = self.message % (value,)
         self.message = message
 
     def __call__(self, py_value=None, form=None):
@@ -91,12 +91,12 @@ class MoreThan(Validator):
     :param message:
         Error message to raise in case of a validation error
     """
-    message = u'Number must be greater than {0}.'
+    message = u'Number must be greater than %s.'
 
     def __init__(self, value, message=None):
         self.value = value
         if message is None:
-            message = self.message.format(value)
+            message = self.message % (value,)
         self.message = message
 
     def __call__(self, py_value=None, form=None):
@@ -121,13 +121,13 @@ class InRange(Validator):
     :param message:
         Error message to raise in case of a validation error
     """
-    message = u'Number must be between {0} and {1}.'
+    message = u'Number must be between %s and %s.'
 
     def __init__(self, minval, maxval, message=None):
         self.minval = minval
         self.maxval = maxval
         if message is None:
-            message = self.message.format(minval, maxval)
+            message = self.message % (minval, maxval)
         self.message = message
 
     def __call__(self, py_value=None, form=None):
@@ -148,5 +148,3 @@ def try_to_number(value):
         return float(value)
     except (ValueError, TypeError):
         return value
-
-

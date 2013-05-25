@@ -25,13 +25,13 @@ class AreEqual(FormValidator):
         Custom error message.
 
     """
-    message = u'The {0} doesn\'t match.'
+    message = u'The %s doesn\'t match.'
 
     def __init__(self, name1, name2, message=None, plural=u'fields'):
         self.name1 = name1
         self.name2 = name2
         if message is None:
-            message = self.message.format(plural)
+            message = self.message % (plural,)
         self.message = message
 
     def __call__(self, data=None, form=None):

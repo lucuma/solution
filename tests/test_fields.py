@@ -158,10 +158,17 @@ def test_validate_number():
 
 
 def test_number_types():
-    for t in (int, float, Decimal):
-        field = f.Number(type=t)
-        field.load_data('3.02')
-        assert field.validate() == t(float('3.02'))
+    field = f.Number(type=int)
+    field.load_data('3.02')
+    assert field.validate() == 3
+
+    field = f.Number(type=float)
+    field.load_data('3.02')
+    assert field.validate() == float('3.02')
+
+    field = f.Number(type=Decimal)
+    field.load_data('3.02')
+    assert field.validate() == Decimal('3.02')
 
 
 def test_number_default():
