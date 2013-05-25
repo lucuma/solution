@@ -52,9 +52,11 @@ class IsColor(Match):
 
 
 class ValidEmail(Validator):
-    """Validates an email address. Note that this uses a very primitive regular
-    expression and should only be used in instances where you later verify by
-    other means, or wen it doesn't matters very much the email is real.
+    """Validates an email address.
+
+    Note that the purpose of this validator is to alert the user of a typing
+    mistake, so it uses a very permissive regexp. Even if the format is valid,
+    it cannot guarantee that the email is real.
 
     :param message:
         Error message to raise in case of a validation error.
@@ -63,9 +65,7 @@ class ValidEmail(Validator):
     message = u'Enter a valid e-mail address.'
 
     email_rx = re.compile(
-        r'''(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*'''  # dot-atom
-        r'''|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-011\013\014\016-\177])*"'''  # quoted-string
-        r''')@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?$''',
+        r'[^@]+@[A-Z0-9][A-Z0-9\-\.]{0,61}\.[A-Z0-9]+\.?$',
         re.IGNORECASE)
 
     def __init__(self, message=None):
@@ -73,25 +73,20 @@ class ValidEmail(Validator):
             self.message = message
 
     def __call__(self, py_value=None, form=None):
-        if not py_value:
+        if not py_value or '@' not in py_value:
             return False
         _, py_value = parseaddr(py_value)
-        if self.email_rx.match(py_value):
-            return True
-        # Common case failed. Try for possible IDN domain-part
         try:
-            if py_value and u'@' in py_value:
-                py_value = self._encode_idna(py_value)
-            return bool(self.email_rx.match(py_value))
+            py_value = self._encode_idna(py_value)
         except UnicodeDecodeError:
-            pass
-        return False
+            return False
+        return bool(self.email_rx.match(py_value))
 
     def _encode_idna(self, py_value):
         parts = py_value.split(u'@')
         domain_part = parts[-1]
         parts[-1] = parts[-1].encode('idna')
-        return u'@'.join(parts)
+        return '@'.join(parts)
 
 
 class ValidURL(Validator):

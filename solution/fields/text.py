@@ -55,4 +55,3 @@ class Text(Field):
         value = self.to_string(**kwargs)
         html = u'<textarea %s>%s</textarea>' % (html_attrs, value)
         return Markup(html)
-
