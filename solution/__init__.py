@@ -15,5 +15,5 @@ from .fields import *
 from .validators import *
 from .utils import Markup, get_html_attrs, to_unicode
 
-__version__ = '2.3.2'
+__version__ = '2.3.3'
 

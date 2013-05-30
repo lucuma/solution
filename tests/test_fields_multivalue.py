@@ -139,7 +139,7 @@ def test_iterate_select():
 
 
 def test_validate_select():
-    items = [(1, u'A'), (2, u'B'), (3, u'C'),]
+    items = [(u'1', u'A'), (u'2', u'B'), (u'3', u'C'),]
     field = f.Select(items=items, validate=[f.Required])
     field.name = 'abc'
     
@@ -153,6 +153,15 @@ def test_validate_select():
     field.load_data(u'xxx')
     assert field.validate() is None
     assert field.error
+
+
+def test_validate_select_with_type():
+    items = [(u'1', u'A'), (u'2', u'B'), (u'3', u'C'),]
+    field = f.Select(items=items, validate=[f.Required], type=int)
+    field.name = 'abc'
+    
+    field.load_data(u'2')
+    assert field.validate() == 2
 
 
 def test_render_multiselect():

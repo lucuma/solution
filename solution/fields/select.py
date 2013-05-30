@@ -37,8 +37,9 @@ class Select(Field):
 
     """
 
-    def __init__(self, items, **kwargs):
+    def __init__(self, items, type=None, **kwargs):
         self._items = items
+        self.type = type
         super(Select, self).__init__(**kwargs)
 
     @property
@@ -54,8 +55,16 @@ class Select(Field):
     def str_to_py(self, **kwargs):
         accepted = [str(item[0]) for item in self]
         if self.str_value in accepted:
-            return self.str_value
+            return self._clean_value(self.str_value)
         return None
+
+    def _clean_value(self, value):
+        if not self.type:
+            return value
+        try:
+            return self.type(value)
+        except (ValueError, TypeError):
+            return None
 
     def __call__(self, **kwargs):
         items = self.items
@@ -111,7 +120,9 @@ class Select(Field):
             html_attrs = get_html_attrs(kwargs)
             item_html = (tmpl
                          .replace(u'{attrs}', html_attrs)
-                         .replace(u'{label}', label))
+                         .replace(u'{label}', label)
+                         .replace(u'{value}', unicode(val))
+                         )
             html.append(item_html)
 
         return Markup('\n'.join(html))
@@ -160,9 +171,10 @@ class MultiSelect(Field):
 
     """
 
-    def __init__(self, items, **kwargs):
+    def __init__(self, items, type=None, **kwargs):
         kwargs.setdefault('default', [])
         self._items = items
+        self.type = type
         super(MultiSelect, self).__init__(**kwargs)
 
     @property
@@ -187,8 +199,17 @@ class MultiSelect(Field):
         if self.str_value is None:
             return None
         accepted = [str(item[0]) for item in self]
-        py_value = [v for v in self.str_value if v in accepted]
+        py_value = [self._clean_value(v)
+                    for v in self.str_value if v in accepted]
         return py_value or None
+
+    def _clean_value(self, value):
+        if not self.type:
+            return value
+        try:
+            return self.type(value)
+        except (ValueError, TypeError):
+            return None
 
     def __call__(self, **kwargs):
         items = self.items
@@ -244,7 +265,12 @@ class MultiSelect(Field):
             html_attrs = get_html_attrs(kwargs)
             item_html = (tmpl
                          .replace(u'{attrs}', html_attrs)
-                         .replace(u'{label}', label))
+                         .replace(u'{label}', label)
+                         .replace(u'{value}', unicode(val))
+                         )
             html.append(item_html)
 
         return Markup('\n'.join(html))
+
+    as_checks = as_checkboxes
+
