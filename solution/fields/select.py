@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from ..utils import Markup, get_html_attrs, to_unicode
+from .._compat import to_unicode
+from ..utils import Markup, get_html_attrs
 from .field import Field
 
 
@@ -121,7 +122,7 @@ class Select(Field):
             item_html = (tmpl
                          .replace(u'{attrs}', html_attrs)
                          .replace(u'{label}', label)
-                         .replace(u'{value}', unicode(val))
+                         .replace(u'{value}', to_unicode(val))
                          )
             html.append(item_html)
 
@@ -266,7 +267,7 @@ class MultiSelect(Field):
             item_html = (tmpl
                          .replace(u'{attrs}', html_attrs)
                          .replace(u'{label}', label)
-                         .replace(u'{value}', unicode(val))
+                         .replace(u'{value}', to_unicode(val))
                          )
             html.append(item_html)
 

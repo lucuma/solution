@@ -3,7 +3,8 @@ python:
   - "2.6"
   - "2.7"
   - "pypy"
+  - "3.3"
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: python setup.py install && pip install pytest orm --use-mirrors
+install: python setup.py install && pip install pytest orm==1.0.1 --use-mirrors
 # command to run tests, e.g. python setup.py test
 script: py.test tests

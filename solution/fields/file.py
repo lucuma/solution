@@ -30,7 +30,7 @@ class File(Field):
     def __init__(self, **kwargs):
         # Backwards compatibility
         kwargs.setdefault('clean', kwargs.get('upload'))
-        
+
         super(File, self).__init__(**kwargs)
 
     def str_to_py(self, **kwargs):

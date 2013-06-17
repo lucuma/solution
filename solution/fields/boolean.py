@@ -5,7 +5,7 @@ from ..utils import Markup, get_html_attrs
 from .field import Field
 
 
-FALSY_VALUES = [u'', u'0', u'no', u'off', u'false',]
+FALSY_VALUES = [u'', u'0', u'no', u'off', u'false']
 
 
 class Boolean(Field):

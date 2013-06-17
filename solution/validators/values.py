@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from .._compat import to_unicode, string_types
 from .validator import Validator
 
 
@@ -24,7 +25,7 @@ class LongerThan(Validator):
     def __call__(self, py_value=None, form=None):
         if py_value is None:
             return False
-        py_value = unicode(py_value)
+        py_value = to_unicode(py_value)
         return len(py_value) >= self.length
 
 
@@ -50,7 +51,7 @@ class ShorterThan(Validator):
     def __call__(self, py_value=None, form=None):
         if py_value is None:
             return False
-        py_value = unicode(py_value or u'')
+        py_value = to_unicode(py_value or u'')
         return len(py_value) <= self.length
 
 
@@ -73,7 +74,7 @@ class LessThan(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
-        if isinstance(py_value, basestring):
+        if isinstance(py_value, string_types):
             py_value = try_to_number(py_value)
         if py_value is None:
             return False
@@ -100,7 +101,7 @@ class MoreThan(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
-        if isinstance(py_value, basestring):
+        if isinstance(py_value, string_types):
             py_value = try_to_number(py_value)
         if py_value is None:
             return False
@@ -131,7 +132,7 @@ class InRange(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
-        if isinstance(py_value, basestring):
+        if isinstance(py_value, string_types):
             py_value = try_to_number(py_value)
         if py_value is None:
             return False

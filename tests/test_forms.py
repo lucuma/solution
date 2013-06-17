@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import pytest
+from __future__ import print_function
+
 from orm import SQLAlchemy
 import solution as f
 
@@ -71,7 +72,7 @@ def test_is_valid():
         'message': u'Welcome',
     }
     form = ContactForm(data)
-    print form._errors
+    print(form._errors)
     assert form.is_valid()
     assert not form._errors  
 
@@ -99,7 +100,7 @@ def test_dict_save():
     }
     form = ContactForm(data)
     obj = form.save()
-    print obj.keys()
+    print(obj.keys())
     assert obj['subject'] == data['subject']
     assert obj['message'] == data['message']
 
@@ -116,7 +117,7 @@ def test_has_changed():
     form = ContactForm(data)
     assert form.is_valid()
     assert form.has_changed
-    assert form.changed_fields == ['message', 'subject']
+    assert sorted(form.changed_fields) == sorted(['message', 'subject'])
 
 
 def test_prefix():
@@ -135,7 +136,7 @@ def test_prefix():
 
     assert form.is_valid()
     obj = form.save()
-    print obj.keys()
+    print(obj.keys())
     assert obj['subject'] == data['meh-subject']
     assert obj['message'] == data['meh-message']
 
@@ -210,7 +211,7 @@ def test_save():
     form = MyContactForm(data)
     assert form.is_valid()
     contact = form.save()
-    print 'contact', contact.__dict__
+    print('contact', contact.__dict__)
     assert isinstance(contact, Contact)
     assert contact.id is None
     assert contact.subject == data['subject']
@@ -259,7 +260,7 @@ def test_prefix_save():
     db.commit()
     assert contact.subject == data['meh-subject']
     assert contact.message == data['meh-message']
-    
+
     data = {
         'meh-subject': u'foo',
         'meh-message': u'bar',
@@ -345,7 +346,7 @@ def test_cascade_save():
 
     assert db.query(ModelA).count() == 1
     assert db.query(ModelB).count() == 1
-    
+
     obja = db.query(ModelA).first()
     assert obja.a1 == data['a1']
     assert obja.a2 == data['a2']
@@ -381,7 +382,7 @@ def test_formset_objs():
         a = f.Text(validate=[f.Required])
         b = f.Text(validate=[f.Required])
 
-    objs=[
+    objs = [
         {'a': 'A1', 'b': 'B1'},
         {'a': 'A2', 'b': 'B2'},
         {'a': 'A3', 'b': 'B3'},
@@ -399,7 +400,7 @@ def test_formset_new_forms():
         a = f.Text(validate=[f.Required])
         b = f.Text(validate=[f.Required])
 
-    data={
+    data = {
         'myform.1-a': 'a first',
         'myform.1-b': 'b first',
         'myform.2-a': 'a second',
@@ -534,7 +535,7 @@ def test_formset_missing_objs():
         'formaddress.3-email': u'three@example.org',
         'formaddress.4-email': u'four@example.org',
     }
-    print [(a.id, a.email) for a in user.addresses]
+    print([(a.id, a.email) for a in user.addresses])
     form = FormUser(data, user)
     assert form.is_valid()
     assert form.addresses.missing_objs == [a2]

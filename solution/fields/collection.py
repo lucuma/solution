@@ -2,7 +2,6 @@
 import inspect
 import re
 
-from ..utils import Markup, to_unicode, get_html_attrs
 from .text import Text
 
 
@@ -101,3 +100,4 @@ class Collection(Text):
     def _split_values(self, str_value):
         values = re.split(self.rxsep, str_value.strip())
         return filter(lambda x: x != u'', values)
+

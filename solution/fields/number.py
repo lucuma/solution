@@ -41,3 +41,4 @@ class Number(Text):
             return self.type(self.str_value)
         except Exception:
             return None
+

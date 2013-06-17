@@ -134,6 +134,8 @@ def test_validemail():
     assert validator(u'jps@nic.pe')
     assert not validator(u'lalala')
     assert not validator(u'aa@a')
+    assert not validator(u'fail@test,com')
+    assert not validator(u'Whatever <lucumalabs.com>')
     assert not validator(None)
 
 
@@ -149,8 +151,7 @@ def test_validemail_idna():
     validator = f.ValidEmail()
     assert validator(u'"Test" <test@mañana.com>')
     assert validator(u'<test@mañana.com>')
-    assert not validator('fail@olé.com>')
-    assert not validator(u'Whatever <lucumalabs.com>')
+    assert not validator('fail@olé')
 
 
 def test_validemail_message():

@@ -8,6 +8,9 @@ clean: clean-pyc
 	rm -rf *.egg-info
 	find . -name '.DS_Store' -delete
 	rm -rf tests/__pycache__
+	rm -rf solution/__pycache__
+	rm -rf solution/fields/__pycache__
+	rm -rf solution/validators/__pycache__
 
 clean-pyc:
 	find . -name '*.pyc' -delete

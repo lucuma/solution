@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
+b'This library requires Python 2.6, 2.7, 3.3 or newer'
 """
-Solution
----------
+    Solution
+    ---------
 
-An amazing form solution.
-
-Features
-`````````
-
-* Subforms. If used with SQLAlchemy it even create or update those as related objects.
-* Extremely flexible in the field representation (altough with default HTML representation that might be good enough).
-* Easy individual field or form-wide validators.
-* Customizable cleanup functions.
+    An amazing form solution.
 
 """
 import io
@@ -44,11 +37,11 @@ def read_from(filepath):
 def get_version():
     data = read_from(get_path(PACKAGE, '__init__.py'))
     version = re.search(r"__version__\s*=\s*'([^']+)'", data).group(1)
-    return version.encode('utf-8')
+    return version
 
 
 def find_package_data(root, include_files=None):
-    include_files = include_files or ['.gitignore',]
+    include_files = include_files or ['.gitignore', ]
     files = []
     src_root = get_path(root).rstrip('/') + '/'
     for dirpath, subdirs, filenames in os.walk(src_root):
@@ -87,35 +80,39 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import pytest
+        import sys
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
 
 setup(
-    name = NAME,
-    version = get_version(),
-    author = AUTHOR,
-    author_email = AUTHOR_EMAIL,
-    packages = [PACKAGE],
-    package_data = find_packages_data(PACKAGE, 'tests'),
-    zip_safe = False,
-    url = URL,
-    license = 'MIT license (http://www.opensource.org/licenses/mit-license.php)',
-    description = DESCRIPTION,
-    long_description = __doc__,
-    install_requires = get_requirements(),
-    classifiers = [
+    name=NAME,
+    version=get_version(),
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    packages=[PACKAGE],
+    package_data=find_packages_data(PACKAGE, 'tests'),
+    zip_safe=False,
+    url=URL,
+    license='MIT license (http://www.opensource.org/licenses/mit-license.php)',
+    description=DESCRIPTION,
+    long_description=__doc__,
+    install_requires=get_requirements(),
+    classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-    tests_require = ['pytest-cov', 'orm'],
-    cmdclass = {'test': PyTest},
-    test_suite = '__main__.run_tests'
+    tests_require=['pytest-cov', 'orm'],
+    cmdclass={'test': PyTest},
+    test_suite='__main__.run_tests'
 )
 

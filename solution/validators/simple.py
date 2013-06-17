@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from .._compat import string_types
 from .validator import Validator
 
 
@@ -11,7 +12,7 @@ class Required(Validator):
     message = u'This field is required.'
 
     def __call__(self, py_value=None, form=None):
-        if isinstance(py_value, basestring):
+        if isinstance(py_value, string_types):
             return bool(py_value.strip())
         return bool(py_value)
 

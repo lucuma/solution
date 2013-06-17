@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
+from .._compat import to_unicode, implements_to_string
 import inspect
 
 from .. import validators as v
-from ..utils import Markup, to_unicode, get_html_attrs
+from ..utils import Markup, get_html_attrs
 
 
 class ValidationError(Exception):
     pass
 
 
+@implements_to_string
 class Field(object):
 
     """
@@ -119,7 +121,7 @@ class Field(object):
     def to_python(self, **kwargs):
         try:
             return self.str_to_py(**kwargs)
-        except ValidationError, error:
+        except ValidationError as error:
             self.error = error
             return None
 
@@ -149,7 +151,7 @@ class Field(object):
             return py_value
         try:
             return self.clean(py_value, **kwargs)
-        except ValidationError, error:
+        except ValidationError as error:
             self.error = error
             return None
 
@@ -173,23 +175,17 @@ class Field(object):
                 self.error = ValidationError(validator.message)
                 break
 
-    def __unicode__(self):
-        """Returns a HTML representation of the field. For more powerful
-        rendering, see the `__call__` method.
-        """
-        return self()
-
     def __str__(self):
         """Returns a HTML representation of the field. For more powerful
         rendering, see the `__call__` method.
         """
-        return self()
+        return to_unicode(self())
 
     def __html__(self):
         """Returns a HTML representation of the field. For more powerful
         rendering, see the `__call__` method.
         """
-        return self()
+        return to_unicode(self())
 
     def __call__(self, **kwargs):
         raise NotImplemented
@@ -208,7 +204,7 @@ class Field(object):
         kwargs.setdefault('classes', u'error')
         html = u'<div %s>%s</div>' % (
             get_html_attrs(kwargs),
-            self.error.message
+            to_unicode(self.error)
         )
         return Markup(html)
 
@@ -218,3 +214,4 @@ def validator_in(validator, validators_list):
         if (v == validator) or isinstance(v, validator):
             return True
     return False
+

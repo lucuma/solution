@@ -2,6 +2,7 @@
 from copy import copy
 import inspect
 
+from ._compat import itervalues
 from .fields import Field
 from .formset import FormSet
 from .utils import FakeMultiDict
@@ -47,7 +48,7 @@ class Form(object):
     changed_fields = None
 
     def __init__(self, data=None, obj=None, files=None, locale='en', tz='utc',
-            prefix=u'', backref=None, parent=None):
+                 prefix=u'', backref=None, parent=None):
 
         backref = backref or parent
         if self._model is not None:
@@ -90,7 +91,6 @@ class Form(object):
         fields = {}
         forms = {}
         sets = {}
-        first = u''
 
         for name in dir(self):
             if name.startswith('_'):
@@ -103,9 +103,9 @@ class Form(object):
             if is_field:
                 field = copy(field)
                 field.name = self._prefix + name
-                if field.prepare == None:
+                if field.prepare is None:
                     field.prepare = getattr(self, 'prepare_' + name, None)
-                if field.clean == None:
+                if field.clean is None:
                     field.clean = getattr(self, 'clean_' + name, None)
                 fields[name] = field
                 setattr(self, name, field)
@@ -157,7 +157,7 @@ class Form(object):
     def __iter__(self):
         """Iterate form fields in arbitrary order.
         """
-        return self._fields.itervalues()
+        return itervalues(self._fields)
 
     def __getitem__(self, name):
         return self._fields[name]

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-from datetime import date, datetime
+from __future__ import print_function
 from decimal import Decimal
 
-import pytest
 import solution as f
+
+
+to_unicode = f._compat.to_unicode
 
 
 def test_field():
@@ -52,14 +54,14 @@ def test_validate():
 
     field = f.Field(validate=[f.Required])
     assert field.validate() is None
-    assert field.error.message
+    assert str(field.error)
 
 
 def test_validate_with_custom_msg():
     field = f.Field(validate=[f.ValidEmail(u'invalid')])
     field.load_data('email')
     field.validate()
-    assert field.error.message == u'invalid'
+    assert str(field.error) == 'invalid'
 
 
 def test_clean_error_make_validation_fail():
@@ -71,7 +73,7 @@ def test_clean_error_make_validation_fail():
     field.load_data('foobar')
 
     assert field.validate() is None
-    assert field.error.message == 'test'
+    assert str(field.error) == 'test'
 
 
 def test_render_text():
@@ -79,7 +81,7 @@ def test_render_text():
     field.name = u'abc'
     field.load_data(u'123')
 
-    assert unicode(field) == field() == field.as_input()
+    assert field() == field.as_input()
     assert (field(foo='bar') ==
             u'<input foo="bar" name="abc" type="text" value="123">')
     assert (field.as_textarea(foo='bar') ==
@@ -128,7 +130,7 @@ def test_render_number():
     field = f.Number()
     field.name = u'abc'
     field.load_data('123')
-    assert unicode(field) == field() == field.as_input()
+    assert field() == field.as_input()
     assert (field(foo='bar') ==
             u'<input foo="bar" name="abc" type="number" value="123">')
     assert (field.as_textarea(foo='bar') ==
@@ -182,7 +184,7 @@ def test_render_color():
     field.name = u'abc'
     field.load_data('#ffaf2e')
 
-    assert unicode(field) == field() == field.as_input()
+    assert field() == field.as_input()
     assert (field(foo='bar') ==
             u'<input foo="bar" name="abc" type="color" value="#ffaf2e">')
     assert (field(foo='bar', type='text') ==
@@ -251,7 +253,7 @@ def test_render_boolean():
     field.name = u'abc'
 
     field.load_data(obj_value=True)
-    assert unicode(field) == field() == field.as_checkbox()
+    assert field() == field.as_checkbox()
     assert (field(foo='bar') ==
             u'<input foo="bar" name="abc" type="checkbox" checked>')
 
@@ -272,7 +274,7 @@ def test_validate_boolean():
     field = f.Boolean()
 
     for val in [None, u'', u'0', u'no', u'off', u'false', u'NO', 'fAlsE']:
-        print val
+        print(val)
         field.load_data(val)
         assert field.validate() == False
 
@@ -289,7 +291,7 @@ def test_render_file():
     field = f.File()
     field.name = u'abc'
 
-    assert unicode(field) == field() == field.as_input()
+    assert field() == field.as_input()
     assert (field(foo='bar') ==
             u'<input foo="bar" name="abc" type="file">')
 

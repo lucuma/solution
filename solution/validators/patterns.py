@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+from .._compat import PY2, string_types
 from email.utils import parseaddr
 import re
-import urlparse
+if PY2:
+    from urlparse import urlsplit, urlunsplit
+else:
+    from urllib.parse import urlsplit, urlunsplit
 
-from ..utils import to_unicode
 from .validator import Validator
 
 
@@ -25,7 +28,7 @@ class Match(Validator):
     message = u'This value doesn\'t seem to be valid.'
 
     def __init__(self, regex, message=None, flags=re.IGNORECASE):
-        if isinstance(regex, basestring):
+        if isinstance(regex, string_types):
             regex = re.compile(regex, flags)
         self.regex = regex
         if message is not None:
@@ -84,9 +87,8 @@ class ValidEmail(Validator):
 
     def _encode_idna(self, py_value):
         parts = py_value.split(u'@')
-        domain_part = parts[-1]
-        parts[-1] = parts[-1].encode('idna')
-        return '@'.join(parts)
+        parts[-1] = parts[-1].encode('idna').decode("utf-8", "strict")
+        return u'@'.join(parts)
 
 
 class ValidURL(Validator):
@@ -104,10 +106,10 @@ class ValidURL(Validator):
 
     """
     message = u'Enter a valid URL.'
-    url_rx = ur'^([a-z]{3,7}:(//)?)?([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$'
+    url_rx = r'^([a-z]{3,7}:(//)?)?([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$'
 
     def __init__(self, message=None, require_tld=True):
-        tld_part = ur'\.[a-z]{2,10}' if require_tld else u''
+        tld_part = r'\.[a-z]{2,10}' if require_tld else u''
         self.regex = re.compile(self.url_rx % tld_part, re.IGNORECASE)
         if message is not None:
             self.message = message
@@ -126,6 +128,6 @@ class ValidURL(Validator):
         return False
 
     def _encode_idna(self, py_value):
-        scheme, netloc, path, query, fragment = urlparse.urlsplit(py_value)
+        scheme, netloc, path, query, fragment = urlsplit(py_value)
         netloc = netloc.encode('idna')  # IDN -> ACE
-        return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
+        return urlunsplit((scheme, netloc, path, query, fragment))
