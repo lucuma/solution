@@ -188,7 +188,7 @@ class Field(object):
         return to_unicode(self())
 
     def __call__(self, **kwargs):
-        raise NotImplemented
+        raise NotImplementedError
 
     @property
     def value(self):
