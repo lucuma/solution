@@ -40,7 +40,7 @@ class Select(Field):
 
     def __init__(self, items, type=None, **kwargs):
         self._items = items
-        self.type = type
+        self._type = type
         super(Select, self).__init__(**kwargs)
 
     @property
@@ -60,10 +60,10 @@ class Select(Field):
         return None
 
     def _clean_value(self, value):
-        if not self.type:
+        if not self._type:
             return value
         try:
-            return self.type(value)
+            return self._type(value)
         except (ValueError, TypeError):
             return None
 
@@ -121,7 +121,7 @@ class Select(Field):
             html_attrs = get_html_attrs(kwargs)
             item_html = (tmpl
                          .replace(u'{attrs}', html_attrs)
-                         .replace(u'{label}', label)
+                         .replace(u'{label}', to_unicode(label))
                          .replace(u'{value}', to_unicode(val))
                          )
             html.append(item_html)
@@ -175,7 +175,7 @@ class MultiSelect(Field):
     def __init__(self, items, type=None, **kwargs):
         kwargs.setdefault('default', [])
         self._items = items
-        self.type = type
+        self._type = type
         super(MultiSelect, self).__init__(**kwargs)
 
     @property
@@ -205,10 +205,10 @@ class MultiSelect(Field):
         return py_value or None
 
     def _clean_value(self, value):
-        if not self.type:
+        if not self._type:
             return value
         try:
-            return self.type(value)
+            return self._type(value)
         except (ValueError, TypeError):
             return None
 
@@ -266,7 +266,7 @@ class MultiSelect(Field):
             html_attrs = get_html_attrs(kwargs)
             item_html = (tmpl
                          .replace(u'{attrs}', html_attrs)
-                         .replace(u'{label}', label)
+                         .replace(u'{label}', to_unicode(label))
                          .replace(u'{value}', to_unicode(val))
                          )
             html.append(item_html)
