@@ -112,6 +112,7 @@ class Select(Field):
         kwargs['type'] = 'radio'
         kwargs['name'] = self.name
         html = []
+        tmpl = to_unicode(tmpl)
         value = self.to_string(**kwargs)
         items = _items or self.items
 
@@ -127,6 +128,8 @@ class Select(Field):
             html.append(item_html)
 
         return Markup('\n'.join(html))
+
+    as_radiobuttons = as_radios
 
 
 class MultiSelect(Field):
@@ -242,7 +245,7 @@ class MultiSelect(Field):
 
         return Markup('\n'.join(html))
 
-    def as_checkboxes(self, tmpl=TMPL, _items=None, **kwargs):
+    def as_checks(self, tmpl=TMPL, _items=None, **kwargs):
         """Render the field as a series of checkboxes, using the `tmpl`
         parameter as the template for each item.
 
@@ -257,6 +260,7 @@ class MultiSelect(Field):
         kwargs['type'] = 'checkbox'
         kwargs['name'] = self.name
         html = []
+        tmpl = to_unicode(tmpl)
         values = self.to_string(**kwargs) or []
         items = _items or self.items
 
@@ -273,5 +277,5 @@ class MultiSelect(Field):
 
         return Markup('\n'.join(html))
 
-    as_checks = as_checkboxes
+    as_checkboxes = as_checks
 

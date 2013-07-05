@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
 from ._compat import to_unicode, iteritems
-try:
-    from markupsafe import Markup
-except ImportError:
-    try:
-        from jinja2 import Markup
-    except ImportError:
-        Markup = to_unicode
+from markupsafe import Markup, escape_silent
 import re
 from xml.sax.saxutils import quoteattr
 
@@ -66,7 +60,7 @@ def get_html_attrs(kwargs=None):
             if value is True:
                 props.append(key)
         else:
-            value = quoteattr(to_unicode(value))
+            value = quoteattr(escape_silent(to_unicode(value)))
             attrs.append(u'%s=%s' % (key, value))
 
     attrs.sort()

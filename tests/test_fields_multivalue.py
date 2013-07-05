@@ -129,11 +129,11 @@ def test_render_select_as_radios_custom():
     field.name = 'abc'
     field.load_data(obj_value=3)
 
-    tmpl = '<label>{label}</label><input {attrs}>'
+    tmpl = u'<label>{label}</label><input {attrs}>'
     expected = (
-        '<label>A</label><input foo="bar" name="abc" type="radio" value="1">\n'
-        '<label>B</label><input foo="bar" name="abc" type="radio" value="2">\n'
-        '<label>C</label><input foo="bar" name="abc" type="radio" value="3" checked>'
+        u'<label>A</label><input foo="bar" name="abc" type="radio" value="1">\n'
+        u'<label>B</label><input foo="bar" name="abc" type="radio" value="2">\n'
+        u'<label>C</label><input foo="bar" name="abc" type="radio" value="3" checked>'
     )
     assert field.as_radios(tmpl=tmpl, foo='bar') == expected
 
