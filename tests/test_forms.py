@@ -114,7 +114,7 @@ def test_manipulate_cleaned_data_and_save():
     assert form.is_valid()
     form.cleaned_data.pop('message')
     obj = form.save()
-    assert obj.keys() == ['subject']
+    assert list(obj.keys()) == ['subject']
     assert obj['subject'] == data['subject']
 
 
