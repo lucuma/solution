@@ -260,11 +260,11 @@ class Form(object):
         if isinstance(obj, dict):
             obj = dict(obj)
             for key in self.changed_fields:
-                if not isinstance(getattr(self, key), FormSet):
+                if key in self.cleaned_data and not isinstance(getattr(self, key), FormSet):
                     obj[key] = self.cleaned_data.get(key)
         else:
             for key in self.changed_fields:
-                if not isinstance(getattr(self, key), FormSet):
+                if key in self.cleaned_data and not isinstance(getattr(self, key), FormSet):
                     setattr(obj, key, self.cleaned_data.get(key))
         return obj
 

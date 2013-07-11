@@ -105,6 +105,19 @@ def test_dict_save():
     assert obj['message'] == data['message']
 
 
+def test_manipulate_cleaned_data_and_save():
+    data = {
+        'subject': u'Hello',
+        'message': u'Welcome',
+    }
+    form = ContactForm(data)
+    assert form.is_valid()
+    form.cleaned_data.pop('message')
+    obj = form.save()
+    assert obj.keys() == ['subject']
+    assert obj['subject'] == data['subject']
+
+
 def test_has_changed():
     form = ContactForm()
     assert not form.is_valid()
