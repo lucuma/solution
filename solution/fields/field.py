@@ -204,7 +204,7 @@ class Field(object):
         kwargs.setdefault('classes', u'error')
         html = u'<div %s>%s</div>' % (
             get_html_attrs(kwargs),
-            to_unicode(self.error)
+            self.error.message
         )
         return Markup(html)
 

@@ -76,6 +76,7 @@ class Form(object):
 
         self.cleaned_data = {}
         self.changed_fields = []
+        self.validated = False
         self._obj = obj
         self._errors = {}
 
@@ -174,6 +175,7 @@ class Form(object):
         """
         self.cleaned_data = {}
         self.changed_fields = []
+        self.validated = False
         self._errors = {}
         cleaned_data = {}
         changed_fields = []
@@ -219,13 +221,14 @@ class Form(object):
 
         self.cleaned_data = cleaned_data
         self.changed_fields = changed_fields
+        self.validated = True
         return True
 
     def save(self, backref_obj=None):
         """Save the cleaned data to the initial object or creating a new one
         (if a `model_class` was provided).
         """
-        if not self.cleaned_data:
+        if not self.validated:
             assert self.is_valid()
         if self._model and not self._obj:
             obj = self._save_new_object(backref_obj)

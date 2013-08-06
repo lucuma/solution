@@ -22,7 +22,7 @@ else:
 
 def to_unicode(txt, encoding='utf8'):
     if not isinstance(txt, string_types):
-        txt = str(txt)
+        txt = repr(txt)
     if not PY2:
         return str(txt)
     if isinstance(txt, unicode):
