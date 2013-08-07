@@ -8,6 +8,14 @@ import solution as f
 to_unicode = f._compat.to_unicode
 
 
+def test_validation_error():
+    v = f.ValidationError(u'olé')
+    assert v.message == u'olé'
+
+    v = f.ValidationError()
+    assert v.message
+
+
 def test_field():
     field = f.Field()
     value = u'abc'

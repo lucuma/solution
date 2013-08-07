@@ -7,7 +7,9 @@ from ..utils import Markup, get_html_attrs
 
 
 class ValidationError(Exception):
-    pass
+    def __init__(self, message=u'Validation error'):
+        self.message = message  # Py3 compatibility
+        super(ValidationError, self).__init__(message)
 
 
 @implements_to_string
