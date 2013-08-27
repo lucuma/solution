@@ -7,14 +7,16 @@ from .field import Field
 TMPL = u'<label><input {attrs}> {label}</label>'
 
 
-def flatten_items(items):
-    n = []
-    for item in items:
-        if isinstance(item, list):
-            n.extend(flatten_items(item))
+def iter_flatten(iterable):
+    items = iter(iterable)
+    for i in items:
+        if isinstance(i, string_types):
+            continue
+        if isinstance(i, list):
+            for f in iter_flatten(i):
+                yield f
         else:
-            n.append(str(item[0]))
-    return n
+            yield str(i[0])
 
 
 class BaseSelect(Field):
@@ -120,7 +122,7 @@ class Select(BaseSelect):
             yield item
 
     def str_to_py(self, **kwargs):
-        accepted = flatten_items(self.items)
+        accepted = iter_flatten(self.items)
         if self.str_value in accepted:
             return self._clean_value(self.str_value)
         return None
@@ -255,7 +257,7 @@ class MultiSelect(BaseSelect):
     def str_to_py(self, **kwargs):
         if self.str_value is None:
             return None
-        accepted = flatten_items(self.items)
+        accepted = list(iter_flatten(self.items))
         py_value = [self._clean_value(v)
                     for v in self.str_value if v in accepted]
         return py_value or None

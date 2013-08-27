@@ -34,7 +34,8 @@ def test_render_select():
 def test_render_select_groups():
     items1 = [u'First group', (1, u'A'), (2, u'B'), (3, u'C')]
     items2 = [(4, u'D'), (5, u'E'), (6, u'F')]
-    field = f.Select(items=[items1, items2, (7, u'G')])
+    items = [items1, items2, (7, u'G')]
+    field = f.Select(items=items)
     field.name = 'abc'
     field.load_data(obj_value=3)
 
