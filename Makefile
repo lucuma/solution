@@ -1,25 +1,54 @@
-.PHONY: clean clean-pyc test publish
+.PHONY: clean-pyc clean-build docs
 
-all: clean clean-pyc test
+help:
+	@echo "clean-build - remove build artifacts"
+	@echo "clean-pyc - remove Python file artifacts"
+	@echo "lint - check style with flake8"
+	@echo "test - run tests quickly with the default Python"
+	@echo "testall - run tests on every Python version with tox"
+	@echo "coverage - check code coverage quickly with the default Python"
+	@echo "docs - generate Sphinx HTML documentation, including API docs"
+	@echo "publish - package and upload a release"
+	@echo "sdist - package"
 
-clean: clean-pyc
-	rm -rf build
-	rm -rf dist
-	rm -rf *.egg-info
-	find . -name '.DS_Store' -delete
-	rm -rf tests/__pycache__
-	rm -rf solution/__pycache__
-	rm -rf solution/fields/__pycache__
-	rm -rf solution/validators/__pycache__
+clean: clean-build clean-pyc
+
+clean-build:
+	rm -fr build/
+	rm -fr dist/
+	rm -fr *.egg-info
 
 clean-pyc:
-	find . -name '*.pyc' -delete
-	find . -name '*.pyo' -delete
-	find . -name '*~' -delete
+	find . -name '*.pyc' -exec rm -f {} +
+	find . -name '*.pyo' -exec rm -f {} +
+	find . -name '*~' -exec rm -f {} +
+
+lint:
+	flake8 solution tests
 
 test:
-	py.test --cov-config .coveragerc --cov solution tests/
+	py.test tests/
+
+test-all:
+	tox
+
+coverage:
+	coverage run --source solution setup.py test
+	coverage report -m
+	coverage html
+	open htmlcov/index.html
+
+docs:
+	rm docs/solution.rst
+	rm docs/modules.rst
+	sphinx-apidoc -o docs/ solution
+	$(MAKE) -C docs clean
+	$(MAKE) -C docs html
+	open docs/_build/html/index.html
 
 publish: clean
 	python setup.py sdist upload
 
+sdist: clean
+	python setup.py sdist
+	ls -l dist

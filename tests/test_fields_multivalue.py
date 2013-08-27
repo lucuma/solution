@@ -107,6 +107,31 @@ def test_render_select():
     assert field().startswith(u'<select name="abc" required>')
 
 
+def test_render_select_groups():
+    items1 = [u'First group', (1, u'A'), (2, u'B'), (3, u'C')]
+    items2 = [(4, u'D'), (5, u'E'), (6, u'F')]
+    field = f.Select(items=[items1, items2, (7, u'G')])
+    field.name = 'abc'
+    field.load_data(obj_value=3)
+
+    expected = (
+        '<select name="abc">\n'
+        '<optgroup label="First group">\n'
+        '<option value="1">A</option>\n'
+        '<option value="2">B</option>\n'
+        '<option value="3" selected>C</option>\n'
+        '</optgroup>\n'
+        '<optgroup>\n'
+        '<option value="4">D</option>\n'
+        '<option value="5">E</option>\n'
+        '<option value="6">F</option>\n'
+        '</optgroup>\n'
+        '<option value="7">G</option>\n'
+        '</select>'
+    )
+    assert field.as_select() == expected
+
+
 def test_render_select_as_radios():
     items = [(1, u'A'), (2, u'B'), (3, u'C')]
     field = f.Select(items=items)
@@ -136,6 +161,30 @@ def test_render_select_as_radios_custom():
         u'<label>C</label><input foo="bar" name="abc" type="radio" value="3" checked>'
     )
     assert field.as_radios(tmpl=tmpl, foo='bar') == expected
+
+
+def test_render_select_as_radios_group():
+    items1 = [u'First group', (1, u'A'), (2, u'B'), (3, u'C')]
+    items2 = [(4, u'D'), (5, u'E'), (6, u'F')]
+    field = f.Select(items=[items1, items2, (7, u'G')])
+    field.name = 'abc'
+    field.load_data(obj_value=3)
+
+    expected = (
+        '<fieldset>\n'
+        '<legend>First group</legend>\n'
+        '<label><input name="abc" type="radio" value="1"> A</label>\n'
+        '<label><input name="abc" type="radio" value="2"> B</label>\n'
+        '<label><input name="abc" type="radio" value="3" checked> C</label>\n'
+        '</fieldset>\n'
+        '<fieldset>\n'
+        '<label><input name="abc" type="radio" value="4"> D</label>\n'
+        '<label><input name="abc" type="radio" value="5"> E</label>\n'
+        '<label><input name="abc" type="radio" value="6"> F</label>\n'
+        '</fieldset>\n'
+        '<label><input name="abc" type="radio" value="7"> G</label>'
+    )
+    assert field.as_radios() == expected
 
 
 def test_iterate_select():
@@ -199,23 +248,47 @@ def test_render_multiselect():
     assert field().startswith(u'<select name="abc" required>')
 
 
-def test_render_multiselect_as_checkboxes():
+def test_render_multiselect_groups():
+    items1 = [u'First group', (1, u'A'), (2, u'B'), (3, u'C')]
+    items2 = [(4, u'D'), (5, u'E'), (6, u'F')]
+    field = f.MultiSelect(items=[items1, items2, (7, u'G')])
+    field.name = 'abc'
+    field.load_data(str_value=[], obj_value=[2, 4, 6])
+    expected = (
+        '<select name="abc">\n'
+        '<optgroup label="First group">\n'
+        '<option value="1">A</option>\n'
+        '<option value="2" selected>B</option>\n'
+        '<option value="3">C</option>\n'
+        '</optgroup>\n'
+        '<optgroup>\n'
+        '<option value="4" selected>D</option>\n'
+        '<option value="5">E</option>\n'
+        '<option value="6" selected>F</option>\n'
+        '</optgroup>\n'
+        '<option value="7">G</option>\n'
+        '</select>'
+    )
+    assert field.as_select() == expected
+
+
+def test_render_multiselect_as_checks():
     items = [(1, u'A'), (2, u'B'), (3, u'C')]
     field = f.MultiSelect(items=items)
     field.name = 'abc'
     field.load_data(obj_value=[1, 2])
 
-    assert field() == field.as_checkboxes()
+    assert field() == field.as_checks()
 
     expected = (
         '<label><input foo="bar" name="abc" type="checkbox" value="1" checked> A</label>\n'
         '<label><input foo="bar" name="abc" type="checkbox" value="2" checked> B</label>\n'
         '<label><input foo="bar" name="abc" type="checkbox" value="3"> C</label>'
     )
-    assert field.as_checkboxes(foo='bar') == expected
+    assert field.as_checks(foo='bar') == expected
 
 
-def test_render_multiselect_as_checkboxes_custom():
+def test_render_multiselect_as_checks_custom():
     items = [(1, u'A'), (2, u'B'), (3, u'C')]
     field = f.MultiSelect(items=items)
     field.name = 'abc'
@@ -227,7 +300,31 @@ def test_render_multiselect_as_checkboxes_custom():
         '<label>B</label><input foo="bar" name="abc" type="checkbox" value="2" checked>\n'
         '<label>C</label><input foo="bar" name="abc" type="checkbox" value="3">'
     )
-    assert field.as_checkboxes(tmpl=tmpl, foo='bar') == expected
+    assert field.as_checks(tmpl=tmpl, foo='bar') == expected
+
+
+def test_render_select_as_checks_group():
+    items1 = [u'First group', (1, u'A'), (2, u'B'), (3, u'C')]
+    items2 = [(4, u'D'), (5, u'E'), (6, u'F')]
+    field = f.MultiSelect(items=[items1, items2, (7, u'G')])
+    field.name = 'abc'
+    field.load_data(obj_value=[1, 3])
+
+    expected = (
+        '<fieldset>\n'
+        '<legend>First group</legend>\n'
+        '<label><input name="abc" type="checkbox" value="1" checked> A</label>\n'
+        '<label><input name="abc" type="checkbox" value="2"> B</label>\n'
+        '<label><input name="abc" type="checkbox" value="3" checked> C</label>\n'
+        '</fieldset>\n'
+        '<fieldset>\n'
+        '<label><input name="abc" type="checkbox" value="4"> D</label>\n'
+        '<label><input name="abc" type="checkbox" value="5"> E</label>\n'
+        '<label><input name="abc" type="checkbox" value="6"> F</label>\n'
+        '</fieldset>\n'
+        '<label><input name="abc" type="checkbox" value="7"> G</label>'
+    )
+    assert field.as_checks() == expected
 
 
 def test_validate_multiselect():

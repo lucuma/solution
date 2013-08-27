@@ -3,13 +3,7 @@ b'This library requires Python 2.6, 2.7, 3.3 or newer'
 import io
 import os
 import re
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
-
-PACKAGE = 'solution'
+from setuptools import setup, find_packages
 
 
 def get_path(*args):
@@ -21,38 +15,14 @@ def read_from(filepath):
         return f.read()
 
 
-def get_version():
-    data = read_from(get_path(PACKAGE, '__init__.py'))
+def get_version(package):
+    data = read_from(get_path(package, '__init__.py'))
     version = re.search(r"__version__\s*=\s*u?'([^']+)'", data).group(1)
     return str(version)
 
 
-def find_package_data(root, include_files=('.gitignore', )):
-    files = []
-    src_root = get_path(root).rstrip('/') + '/'
-    for dirpath, subdirs, filenames in os.walk(src_root):
-        path, dirname = os.path.split(dirpath)
-        if dirname.startswith(('.', '_')):
-            continue
-        dirpath = dirpath.replace(src_root, '')
-        for filename in filenames:
-            is_valid_filename = not (
-                filename.startswith('.') or
-                filename.endswith('.pyc')
-            )
-            include_it_anyway = filename in include_files
-
-            if is_valid_filename or include_it_anyway:
-                files.append(os.path.join(dirpath, filename))
-    return files
-
-
-def find_packages_data(*roots):
-    return dict([(root, find_package_data(root)) for root in roots])
-
-
-def get_description():
-    data = read_from(get_path(PACKAGE, '__init__.py'))
+def get_description(package):
+    data = read_from(get_path(package, '__init__.py'))
     desc = re.search('"""(.+)"""', data, re.DOTALL).group(1)
     return desc.strip()
 
@@ -65,16 +35,16 @@ def get_requirements(filename='requirements.txt'):
 
 setup(
     name='Solution',
-    version=get_version(),
+    version=get_version('solution'),
     author='Juan-Pablo Scaletti',
     author_email='juanpablo@lucumalabs.com',
-    packages=[PACKAGE],
-    package_data=find_packages_data(PACKAGE, 'tests'),
+    packages=find_packages(),
+    include_package_data=True,
     zip_safe=False,
     url='http://github.com/lucuma/Solution',
     license='MIT license (http://www.opensource.org/licenses/mit-license.php)',
     description='An amazing form solution',
-    long_description=get_description(),
+    long_description=get_description('solution'),
     install_requires=get_requirements(),
     classifiers=[
         'Development Status :: 4 - Beta',

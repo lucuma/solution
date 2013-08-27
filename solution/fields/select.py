@@ -1,13 +1,61 @@
 # -*- coding: utf-8 -*-
-from .._compat import to_unicode
-from ..utils import Markup, get_html_attrs
+from .._compat import to_unicode, string_types
+from ..utils import Markup, get_html_attrs, escape
 from .field import Field
 
 
 TMPL = u'<label><input {attrs}> {label}</label>'
 
 
-class Select(Field):
+class BaseSelect(Field):
+
+    def _render_optgroup(self, items, values):
+        html = []
+        label = items[0]
+        if isinstance(label, string_types):
+            label = escape(label)
+            html.append(u'<optgroup label="%s">' % (label, ))
+            items = items[1:]
+        else:
+            html.append(u'<optgroup>')
+
+        for item in items:
+            html.append(self._render_option(item, values))
+        html.append(u'</optgroup>')
+        return html
+
+    def _render_option(self, item, values):
+        val, label = item
+        item_attrs = {'value': val}
+        item_attrs['selected'] = (val in values or str(val) in values)
+        html_attrs = get_html_attrs(item_attrs)
+        return u'<option %s>%s</option>' % (html_attrs, escape(label))
+
+    def _render_fieldset(self, items, kwargs, values, tmpl):
+        html = [u'<fieldset>']
+        legend = items[0]
+        if isinstance(legend, string_types):
+            html.append(u'<legend>%s</legend>' % (legend, ))
+            items = items[1:]
+
+        for item in items:
+            html.append(self._render_item(item, kwargs, values, tmpl))
+        html.append(u'</fieldset>')
+        return html
+
+    def _render_item(self, item, kwargs, values, tmpl):
+        val, label = item
+        kwargs['value'] = val
+        kwargs['checked'] = (val in values or str(val) in values)
+        html_attrs = get_html_attrs(kwargs)
+        return (tmpl
+                .replace(u'{attrs}', html_attrs)
+                .replace(u'{label}', escape(label))
+                .replace(u'{value}', escape(val))
+                )
+
+
+class Select(BaseSelect):
 
     """A field with a fixed list of options for the possible values
 
@@ -85,14 +133,14 @@ class Select(Field):
         if not self.optional:
             kwargs['required'] = True
         html = [u'<select %s>' % get_html_attrs(kwargs)]
-        value = self.to_string(**kwargs)
+        values = [self.to_string(**kwargs)] or []
         items = _items or self.items
 
-        for val, label in items:
-            item_attrs = {'value': val}
-            item_attrs['selected'] = (str(val) == str(value))
-            html_attrs = get_html_attrs(item_attrs)
-            html.append(u'<option %s>%s</option>' % (html_attrs, label))
+        for item in items:
+            if isinstance(item, list):
+                html.extend(self._render_optgroup(item, values))
+            else:
+                html.append(self._render_option(item, values))
         html.append(u'</select>')
 
         return Markup('\n'.join(html))
@@ -113,26 +161,21 @@ class Select(Field):
         kwargs['name'] = self.name
         html = []
         tmpl = to_unicode(tmpl)
-        value = self.to_string(**kwargs)
+        values = [self.to_string(**kwargs)] or []
         items = _items or self.items
 
-        for val, label in items:
-            kwargs['value'] = val
-            kwargs['checked'] = (str(val) == str(value))
-            html_attrs = get_html_attrs(kwargs)
-            item_html = (tmpl
-                         .replace(u'{attrs}', html_attrs)
-                         .replace(u'{label}', to_unicode(label))
-                         .replace(u'{value}', to_unicode(val))
-                         )
-            html.append(item_html)
+        for item in items:
+            if isinstance(item, list):
+                html.extend(self._render_fieldset(item, kwargs, values, tmpl))
+            else:
+                html.append(self._render_item(item, kwargs, values, tmpl))
 
         return Markup('\n'.join(html))
 
     as_radiobuttons = as_radios
 
 
-class MultiSelect(Field):
+class MultiSelect(BaseSelect):
 
     """Like a ``:class:solution.Select``but allows to choose more than one
     option at a time.
@@ -236,11 +279,11 @@ class MultiSelect(Field):
         values = self.to_string(**kwargs) or []
         items = _items or self.items
 
-        for val, label in items:
-            item_attrs = {'value': val}
-            item_attrs['selected'] = (val in values or str(val) in values)
-            html_attrs = get_html_attrs(item_attrs)
-            html.append(u'<option %s>%s</option>' % (html_attrs, label))
+        for item in items:
+            if isinstance(item, list):
+                html.extend(self._render_optgroup(item, values))
+            else:
+                html.append(self._render_option(item, values))
         html.append(u'</select>')
 
         return Markup('\n'.join(html))
@@ -264,17 +307,11 @@ class MultiSelect(Field):
         values = self.to_string(**kwargs) or []
         items = _items or self.items
 
-        for val, label in items:
-            kwargs['value'] = val
-            kwargs['checked'] = (val in values or str(val) in values)
-            html_attrs = get_html_attrs(kwargs)
-            item_html = (tmpl
-                         .replace(u'{attrs}', html_attrs)
-                         .replace(u'{label}', to_unicode(label))
-                         .replace(u'{value}', to_unicode(val))
-                         )
-            html.append(item_html)
-
+        for item in items:
+            if isinstance(item, list):
+                html.extend(self._render_fieldset(item, kwargs, values, tmpl))
+            else:
+                html.append(self._render_item(item, kwargs, values, tmpl))
         return Markup('\n'.join(html))
 
     as_checkboxes = as_checks

@@ -24,6 +24,10 @@ class FakeMultiDict(dict):
         return [value]
 
 
+def escape(value):
+    return escape_silent(to_unicode(value))
+
+
 def get_html_attrs(kwargs=None):
     """Generate HTML attributes from the provided keyword arguments.
 
@@ -60,11 +64,10 @@ def get_html_attrs(kwargs=None):
             if value is True:
                 props.append(key)
         else:
-            value = quoteattr(escape_silent(to_unicode(value)))
+            value = quoteattr(escape(value))
             attrs.append(u'%s=%s' % (key, value))
 
     attrs.sort()
     props.sort()
     attrs.extend(props)
     return u' '.join(attrs)
-
