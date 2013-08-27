@@ -7,7 +7,25 @@ from .field import Field
 TMPL = u'<label><input {attrs}> {label}</label>'
 
 
+def flatten_items(items):
+    n = []
+    for item in items:
+        if isinstance(item, list):
+            n.extend(flatten_items(item))
+        else:
+            n.append(str(item[0]))
+    return n
+
+
 class BaseSelect(Field):
+
+    def _clean_value(self, value):
+        if not self._type:
+            return value
+        try:
+            return self._type(value)
+        except (ValueError, TypeError):
+            return None
 
     def _render_optgroup(self, items, values):
         html = []
@@ -102,18 +120,10 @@ class Select(BaseSelect):
             yield item
 
     def str_to_py(self, **kwargs):
-        accepted = [str(item[0]) for item in self]
+        accepted = flatten_items(self.items)
         if self.str_value in accepted:
             return self._clean_value(self.str_value)
         return None
-
-    def _clean_value(self, value):
-        if not self._type:
-            return value
-        try:
-            return self._type(value)
-        except (ValueError, TypeError):
-            return None
 
     def __call__(self, **kwargs):
         items = self.items
@@ -245,18 +255,10 @@ class MultiSelect(BaseSelect):
     def str_to_py(self, **kwargs):
         if self.str_value is None:
             return None
-        accepted = [str(item[0]) for item in self]
+        accepted = flatten_items(self.items)
         py_value = [self._clean_value(v)
                     for v in self.str_value if v in accepted]
         return py_value or None
-
-    def _clean_value(self, value):
-        if not self._type:
-            return value
-        try:
-            return self._type(value)
-        except (ValueError, TypeError):
-            return None
 
     def __call__(self, **kwargs):
         items = self.items
