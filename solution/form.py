@@ -9,6 +9,7 @@ from .utils import FakeMultiDict
 
 
 class Form(object):
+
     """Declarative Form base class. Provides core behaviour like field
     construction, validation, and data and error proxying.
 

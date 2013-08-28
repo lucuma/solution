@@ -3,6 +3,7 @@ from .utils import FakeMultiDict
 
 
 class FormSet(object):
+
     """Open set of forms. This is intended to be used as in two different ways:
     A. As a field in another form
     B. As a independent form generator

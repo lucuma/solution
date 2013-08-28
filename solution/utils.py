@@ -6,6 +6,7 @@ from xml.sax.saxutils import quoteattr
 
 
 class FakeMultiDict(dict):
+
     """Adds a fake `getlist` method to a regular dict; or acts as a proxy to
     Webob's MultiDict `getall` method.
     """

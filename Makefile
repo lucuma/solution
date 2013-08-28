@@ -6,7 +6,7 @@ help:
 	@echo "lint - check style with flake8"
 	@echo "test - run tests quickly with the default Python"
 	@echo "testall - run tests on every Python version with tox"
-	@echo "coverage - check code coverage quickly with the default Python"
+	@echo "coverage - check code coverage with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "publish - package and upload a release"
 	@echo "sdist - package"
@@ -14,9 +14,9 @@ help:
 clean: clean-build clean-pyc
 
 clean-build:
-	rm -rf build/
-	rm -rf dist/
-	rm -rf *.egg-info
+	rm -fr build/
+	rm -fr dist/
+	rm -fr *.egg-info
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
