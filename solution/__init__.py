@@ -7,7 +7,7 @@ Solution
 An amazing form solution
 
 
-MIT License. See ``LICENSE`` for more details.
+BSD License. See ``LICENSE`` for more details.
 Copyright © 2011, Lúcuma labs (http://lucumalabs.com)
 
 """

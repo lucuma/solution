@@ -14,7 +14,7 @@ Solution
 
 An amazing form solution
 
-* MIT License. See ``LICENSE`` for more details.
+* BSD License. See ``LICENSE`` for more details.
 * Documentation: http://solution.rtfd.org.
 
 Features
