@@ -38,7 +38,9 @@ coverage:
 	open htmlcov/index.html
 
 docs:
+	touch docs/solution.rst
 	rm docs/solution.rst
+	touch docs/modules.rst
 	rm docs/modules.rst
 	sphinx-apidoc -o docs/ solution
 	$(MAKE) -C docs clean
