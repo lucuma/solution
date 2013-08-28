@@ -5,6 +5,6 @@ python:
   - "pypy"
   - "3.3"
 # command to install dependencies
-install: python setup.py install && pip install pytest markupsafe orm
+install: pip install pytest orm -r requirements.txt
 # command to run tests, e.g. python setup.py test
 script: py.test tests
