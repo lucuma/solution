@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from .._compat import PY2, string_types
 from email.utils import parseaddr
 import re
+from .._compat import PY2, string_types
 if PY2:
     from urlparse import urlsplit, urlunsplit
 else:

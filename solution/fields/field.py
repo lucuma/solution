@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from .._compat import to_unicode, implements_to_string
 import inspect
 
 from .. import validators as v
+from .._compat import to_unicode, implements_to_string
 from ..utils import Markup, get_html_attrs
 
 

@@ -2,14 +2,14 @@
 Solution
 ===============================
 
-.. image:: https://badge.fury.io/py/solution.png
-    :target: http://badge.fury.io/py/solution
+.. image:: https://badge.fury.io/py/Solution.png
+    :target: http://badge.fury.io/py/Solution
     
 .. image:: https://travis-ci.org/lucuma/solution.png?branch=master
         :target: https://travis-ci.org/lucuma/solution
 
-.. image:: https://pypip.in/d/solution/badge.png
-        :target: https://crate.io/packages/solution?version=latest
+.. image:: https://pypip.in/d/Solution/badge.png
+        :target: https://crate.io/packages/Solution?version=latest
 
 
 An amazing form solution

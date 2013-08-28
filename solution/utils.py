@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from ._compat import to_unicode, iteritems
-from markupsafe import Markup, escape_silent
 import re
 from xml.sax.saxutils import quoteattr
+
+from markupsafe import Markup, escape_silent
+from ._compat import to_unicode, iteritems
 
 
 class FakeMultiDict(dict):

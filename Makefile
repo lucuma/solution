@@ -14,15 +14,15 @@ help:
 clean: clean-build clean-pyc
 
 clean-build:
-	rm -fr build/
-	rm -fr dist/
-	rm -fr *.egg-info
+	rm -rf build/
+	rm -rf dist/
+	rm -rf *.egg-info
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
+	find . -name '__pycache__' -exec rm -rf {} +
 
 lint:
 	flake8 solution tests
@@ -38,13 +38,7 @@ coverage:
 	open htmlcov/index.html
 
 docs:
-	touch docs/solution.rst
-	rm docs/solution.rst
-	touch docs/modules.rst
-	rm docs/modules.rst
-	sphinx-apidoc -o docs/ solution
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
+	@(cd docs; make html)
 	open docs/_build/html/index.html
 
 publish: clean
