@@ -6,11 +6,12 @@ Contributions are welcome, and they are greatly appreciated! Every little bit he
 
 You can contribute in many ways:
 
+
 Types of Contributions
-----------------------
+====================================
 
 Report Bugs
-~~~~~~~~~~~
+------------------------------------
 
 Report bugs at https://github.com/lucuma/solution/issues.
 
@@ -21,22 +22,22 @@ If you are reporting a bug, please include:
 * Detailed steps to reproduce the bug.
 
 Fix Bugs
-~~~~~~~~
+------------------------------------
 
 Look through the GitHub issues for bugs. Anything tagged with "bug" is open to whoever wants to implement it.
 
 Implement Features
-~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 Look through the GitHub issues for features. Anything tagged with "Feature request" is open to whoever wants to implement it.
 
 Write Documentation
-~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 Solution could always use more documentation, whether as part of the  official Solution docs, or even on the web in blog posts, articles, and such.
 
 Submit Feedback
-~~~~~~~~~~~~~~~
+------------------------------------
 
 The best way to send feedback is to file an issue at https://github.com/lucuma/solution/issues.
 
@@ -46,8 +47,9 @@ If you are proposing a feature:
 * Keep the scope as narrow as possible, to make it easier to implement.
 * Remember that this is a volunteer-driven project, and that contributions are welcome :)
 
+
 Get Started!
-------------
+====================================
 
 Ready to contribute? Here's how to set up `solution` for local development.
 
@@ -88,19 +90,19 @@ Ready to contribute? Here's how to set up `solution` for local development.
 7. Submit a pull request through the GitHub website.
 
 
+Tips
+------------------------------------
+
+To run a subset of tests::
+
+  $  py.test tests/tests_file.py
+
+
 Pull Request Guidelines
------------------------
+====================================
 
 Before you submit a pull request, check that it meets these guidelines:
 
 1. The pull request has code, it should include tests.
 2. If the pull request adds functionality, the docs should be updated.
 3. Run ``tox`` and make sure that the tests pass for all supported Python versions.
-
-
-Tips
-----
-
-To run a subset of tests::
-
-  $  py.test tests/tests_file.py

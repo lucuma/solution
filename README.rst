@@ -18,10 +18,10 @@ An amazing form solution
 * Documentation: http://solution.rtfd.org.
 
 Features
---------
+====================================
 
 * Return validated data as dictionaries or create/update a linked model and child models.
 * Sub-forms and form sets
-* Extremely flexible in the field representation (altough with default HTML representation that might be good enough).
+* Extremely flexible in the field representation (defaulting to an HTML representation that might be good enough).
 * Easy individual field or form-wide validators.
 * Customizable cleanup functions.

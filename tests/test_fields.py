@@ -97,6 +97,9 @@ def test_render_text():
     assert (field(foo='bar', type='email') ==
             u'<input foo="bar" name="abc" type="email" value="123">')
 
+    field.load_data(u'"Ben" & Jerry')
+    assert (field() == u'<input name="abc" type="text" value=\'"Ben" & Jerry\'>')
+
     field = f.Text(hide_value=True)
     field.name = u'abc'
     field.load_data(u'123')
@@ -151,14 +154,14 @@ def test_render_number():
     field.load_data('123')
     assert (field() ==
             u'<input name="abc" type="number" value="123" required>')
-    assert (field(required=False) == 
+    assert (field(required=False) ==
             u'<input name="abc" type="number" value="123">')
 
 
 def test_validate_number():
     field = f.Number(validate=[f.Required])
     field.name = u'abc'
-    
+
     field.load_data('123')
     assert field.validate() == 123
 
@@ -201,9 +204,9 @@ def test_render_color():
     field = f.Color(validate=[f.Required])
     field.name = u'abc'
     field.load_data('#ffaf2e')
-    assert (field() == 
+    assert (field() ==
             u'<input name="abc" type="color" value="#ffaf2e" required>')
-    assert (field(required=False) == 
+    assert (field(required=False) ==
             u'<input name="abc" type="color" value="#ffaf2e">')
 
 

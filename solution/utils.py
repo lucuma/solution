@@ -66,7 +66,7 @@ def get_html_attrs(kwargs=None):
             if value is True:
                 props.append(key)
         else:
-            value = quoteattr(escape(value))
+            value = quoteattr(Markup(value))
             attrs.append(u'%s=%s' % (key, value))
 
     attrs.sort()
