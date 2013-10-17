@@ -138,8 +138,7 @@ class FormSet(object):
         return True
 
     def save(self, backref_obj):
-        for form in self._forms:
-            form.save(backref_obj)
+        return [form.save(backref_obj) for form in self._forms]
 
 
 def has_data(d, prefix):

@@ -105,6 +105,7 @@ class Form(object):
             if is_field:
                 field = copy(field)
                 field.name = self._prefix + name
+                field.form = self
                 if field.prepare is None:
                     field.prepare = getattr(self, 'prepare_' + name, None)
                 if field.clean is None:
@@ -236,11 +237,23 @@ class Form(object):
         else:
             obj = self.save_to(self._obj)
 
-        for subform in self._forms.values():
-            subform.save(obj)
+        for key, subform in self._forms.items():
+            data = subform.save(obj)
+            if not data:
+                continue
+            if isinstance(obj, dict):
+                obj[key] = data
+            else:
+                setattr(obj, key, data)
 
-        for subset in self._sets.values():
-            subset.save(obj)
+        for key, subset in self._sets.items():
+            data = subset.save(obj)
+            if not data:
+                continue
+            if isinstance(obj, dict):
+                obj[key] = data
+            else:
+                setattr(obj, key, data)
 
         return obj
 
@@ -263,13 +276,15 @@ class Form(object):
         """
         if isinstance(obj, dict):
             obj = dict(obj)
-            for key in self.changed_fields:
-                if key in self.cleaned_data and not isinstance(getattr(self, key), FormSet):
-                    obj[key] = self.cleaned_data.get(key)
-        else:
-            for key in self.changed_fields:
-                if key in self.cleaned_data and not isinstance(getattr(self, key), FormSet):
-                    setattr(obj, key, self.cleaned_data.get(key))
+
+        for key in self.changed_fields:
+            if key in self.cleaned_data:
+                val = self.cleaned_data.get(key)
+                if isinstance(obj, dict):
+                    obj[key] = val
+                else:
+                    setattr(obj, key, val)
+
         return obj
 
     def __repr__(self):

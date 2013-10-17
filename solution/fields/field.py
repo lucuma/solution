@@ -40,6 +40,7 @@ class Field(object):
 
     """
     name = 'field'
+    form = None
     default_validator = None
 
     str_value = None

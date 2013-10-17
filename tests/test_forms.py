@@ -74,7 +74,7 @@ def test_is_valid():
     form = ContactForm(data)
     print(form._errors)
     assert form.is_valid()
-    assert not form._errors  
+    assert not form._errors
 
 
 def test_empty_data():
@@ -553,3 +553,32 @@ def test_formset_missing_objs():
     assert form.is_valid()
     assert form.addresses.missing_objs == [a2]
 
+
+def test_formset_save_to_dict():
+
+    class FormAddress(f.Form):
+        email = f.Text(validate=[f.ValidEmail])
+
+
+    class FormUser(f.Form):
+        name = f.Text()
+        addresses = f.FormSet(FormAddress, parent='user')
+
+    ## Save
+
+    data = {
+        'name': u'John Doe',
+        'formaddress.1-email': u'one@example.com',
+        'formaddress.2-email': u'two@example.com',
+        'formaddress.3-email': u'three@example.com',
+    }
+    form = FormUser(data)
+
+    assert form.save() == {
+        'name': u'John Doe',
+        'addresses': [
+            {'email': u'one@example.com'},
+            {'email': u'two@example.com'},
+            {'email': u'three@example.com'},
+        ],
+    }

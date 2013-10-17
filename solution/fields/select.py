@@ -114,7 +114,7 @@ class Select(BaseSelect):
     @property
     def items(self):
         if callable(self._items):
-            return self._items()
+            return self._items(self.form)
         return self._items
 
     def __iter__(self):
@@ -239,7 +239,7 @@ class MultiSelect(BaseSelect):
     @property
     def items(self):
         if callable(self._items):
-            return self._items()
+            return self._items(self.form)
         return self._items
 
     def __iter__(self):
