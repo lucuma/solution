@@ -279,7 +279,7 @@ class MultiSelect(BaseSelect):
         kwargs['name'] = self.name
         if not self.optional:
             kwargs['required'] = True
-        html = [u'<select %s>' % get_html_attrs(kwargs)]
+        html = [u'<select %s multiple>' % get_html_attrs(kwargs)]
         values = self.to_string(**kwargs) or []
         items = _items or self.items
 

@@ -17,7 +17,7 @@ def test_render_multiselect():
 
     assert field() == field.as_select()
     expected = (
-        '<select foo="bar" name="abc">\n'
+        '<select foo="bar" name="abc" multiple>\n'
         '<option value="1">A</option>\n'
         '<option value="2" selected>B</option>\n'
         '<option value="3">C</option>\n'
@@ -34,7 +34,7 @@ def test_render_multiselect():
 
     field = f.MultiSelect(items=items, validate=[f.Required])
     field.name = 'abc'
-    assert field().startswith(u'<select name="abc" required>')
+    assert field().startswith(u'<select name="abc" required multiple>')
 
 
 def test_render_multiselect_groups():
@@ -44,7 +44,7 @@ def test_render_multiselect_groups():
     field.name = 'abc'
     field.load_data(str_value=[], obj_value=[2, 4, 6])
     expected = (
-        '<select name="abc">\n'
+        '<select name="abc" multiple>\n'
         '<optgroup label="First group">\n'
         '<option value="1">A</option>\n'
         '<option value="2" selected>B</option>\n'
