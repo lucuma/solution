@@ -3,6 +3,7 @@ import datetime
 
 from .. import validators as v
 from ..utils import Markup, get_html_attrs
+from .field import ValidationError
 from .text import Text
 
 
@@ -66,5 +67,8 @@ class Date(Text):
         if not self.str_value:
             return self.default or None
         dt = [int(f) for f in self.str_value.split('-')]
-        return datetime.date(*dt)
+        try:
+            return datetime.date(*dt)
+        except ValueError as e:
+            raise ValidationError
 
