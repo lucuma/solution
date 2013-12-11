@@ -252,7 +252,7 @@ class MultiSelect(BaseSelect):
         return (str_value, None, obj_value)
 
     def py_to_str(self, **kwargs):
-        return self.obj_value
+        return self.obj_value or self.default
 
     def str_to_py(self, **kwargs):
         if self.str_value is None:

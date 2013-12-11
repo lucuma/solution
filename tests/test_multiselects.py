@@ -92,7 +92,7 @@ def test_render_multiselect_as_checks_custom():
     assert field.as_checks(tmpl=tmpl, foo='bar') == expected
 
 
-def test_render_select_as_checks_group():
+def test_render_multiselect_as_checks_group():
     items1 = [u'First group', (1, u'A'), (2, u'B'), (3, u'C')]
     items2 = [(4, u'D'), (5, u'E'), (6, u'F')]
     field = f.MultiSelect(items=[items1, items2, (7, u'G')])
@@ -114,6 +114,27 @@ def test_render_select_as_checks_group():
         '<label><input name="abc" type="checkbox" value="7"> G</label>'
     )
     assert field.as_checks() == expected
+
+
+def test_render_multiselect_default_value():
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'),
+             (6, u'F'), (7, u'G')]
+    field = f.MultiSelect(items=items, default=[4, 6])
+    field.name = 'abc'
+    field.load_data(str_value=[], obj_value=[])
+
+    expected = (
+        '<select name="abc" multiple>\n'
+        '<option value="1">A</option>\n'
+        '<option value="2">B</option>\n'
+        '<option value="3">C</option>\n'
+        '<option value="4" selected>D</option>\n'
+        '<option value="5">E</option>\n'
+        '<option value="6" selected>F</option>\n'
+        '<option value="7">G</option>\n'
+        '</select>'
+    )
+    assert field.as_select() == expected
 
 
 def test_validate_multiselect():

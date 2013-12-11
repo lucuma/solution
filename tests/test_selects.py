@@ -112,6 +112,27 @@ def test_render_select_as_radios_group():
     assert field.as_radios() == expected
 
 
+def test_render_select_default_value():
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'),
+             (6, u'F'), (7, u'G')]
+    field = f.Select(items=items, default=4)
+    field.name = 'abc'
+    field.load_data(value='')
+
+    expected = (
+        '<select name="abc">\n'
+        '<option value="1">A</option>\n'
+        '<option value="2">B</option>\n'
+        '<option value="3">C</option>\n'
+        '<option value="4" selected>D</option>\n'
+        '<option value="5">E</option>\n'
+        '<option value="6">F</option>\n'
+        '<option value="7">G</option>\n'
+        '</select>'
+    )
+    assert field.as_select() == expected
+
+
 def test_iterate_select():
     items = [(1, u'A'), (2, u'B'), (3, u'C')]
     field = f.Select(items=items)
