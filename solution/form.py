@@ -49,7 +49,7 @@ class Form(object):
     changed_fields = None
 
     def __init__(self, data=None, obj=None, files=None, locale='en', tz='utc',
-                 prefix=u'', backref=None, parent=None):
+            prefix=u'', backref=None, parent=None):
 
         backref = backref or parent
         if self._model is not None:
@@ -129,8 +129,9 @@ class Form(object):
             obj_value = getattr(obj, name, None)
             fclass = subform.__class__
             subform = fclass(
-                data, obj_value, files=files, locale=self._locale, tz=self._tz,
-                prefix=self._prefix, backref=subform._backref
+                data, obj_value, files=files, prefix=self._prefix,
+                locale=self._locale, tz=self._tz,
+                backref=subform._backref
             )
             self._forms[name] = subform
             setattr(self, name, subform)
@@ -138,8 +139,20 @@ class Form(object):
         # Initialize sub-sets
         for name, subset in self._sets.items():
             obj_value = getattr(obj, name, None)
-            subset._init(data, obj_value, files=files,
-                         locale=self._locale, tz=self._tz)
+            sclass = subset.__class__
+            subset = sclass(
+                form_class=subset._form_class,
+                data=data,
+                objs=obj_value,
+                files=files,
+                locale=self._locale,
+                tz=self._tz,
+                prefix=self._prefix,
+                create_new=subset._create_new,
+                backref=subset._backref
+            )
+            self._sets[name] = subset
+            setattr(self, name, subset)
 
         # Initialize fields
         for name, field in self._fields.items():

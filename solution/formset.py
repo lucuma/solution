@@ -26,17 +26,26 @@ class FormSet(object):
     """
     _forms = None
     _errors = None
+    _prefix = u''
+    missing_objs = None
     has_changed = False
 
-    def __init__(self, form_class, backref=None, parent=None,
-            create_new=True, data=None, objs=None, files=None):
-        backref = backref or parent
+    def __init__(self, form_class, data=None, objs=None, files=None,
+            locale='en', tz='utc', prefix=u'', create_new=True,
+            backref=None, parent=None):
         self._form_class = form_class
-        self._backref = backref
+        self._locale = locale
+        self._tz = tz
+        self._prefix = prefix
         self._create_new = bool(create_new)
+        backref = backref or parent
+        self._backref = backref
+
         self._forms = []
         self._errors = {}
+        self.missing_objs = []
         self.has_changed = False
+
         if (data or objs or files):
             self._init(data, objs, files)
 
@@ -60,7 +69,7 @@ class FormSet(object):
     def form(self):
         return self._form_class(prefix=self._get_prefix(1))
 
-    def _init(self, data=None, objs=None, files=None, locale='en', tz='utc'):
+    def _init(self, data=None, objs=None, files=None):
         self._errors = {}
         self.has_changed = False
 
@@ -78,26 +87,30 @@ class FormSet(object):
 
         forms = []
         missing_objs = []
-        _prefix = 0
+        num = 0
 
-        for num, obj in enumerate(objs, 1):
-            _prefix = num
-            prefix = self._get_prefix(_prefix)
-            if (data or files) and self._form_class._model and \
-                    not has_data(data, prefix) and not has_data(files, prefix):
+        for i, obj in enumerate(objs, 1):
+            num = i
+            form_prefix = self._get_prefix(num)
+            if (
+                    (data or files)
+                    and self._form_class._model
+                    and not has_data(data, form_prefix)
+                    and not has_data(files, form_prefix)
+                ):
                 missing_objs.append(obj)
                 continue
 
             f = self._form_class(
-                data, obj=obj, files=files, locale=locale, tz=tz,
-                prefix=prefix, backref=self._backref
+                data, obj=obj, files=files,
+                locale=self._locale, tz=self._tz,
+                prefix=form_prefix, backref=self._backref
             )
             forms.append(f)
-
-        _prefix += 1
+        num += 1
         if data and self._create_new:
-            forms = self._find_new_forms(forms, _prefix, data, files,
-                                         locale=locale, tz=tz)
+            forms = self._find_new_forms(forms, num, data, files,
+                locale=self._locale, tz=self._tz)
         self._forms = forms
         self.missing_objs = missing_objs
         for mo in missing_objs:
@@ -105,20 +118,24 @@ class FormSet(object):
                 setattr(mo, self._backref, None)
 
     def _get_prefix(self, num):
-        return '%s.%s' % (self._form_class.__name__.lower(), num)
+        return '%s%s.%s' % (
+            self._prefix,
+            self._form_class.__name__.lower(),
+            num
+        )
 
-    def _find_new_forms(self, forms, _prefix, data, files, locale, tz):
+    def _find_new_forms(self, forms, num, data, files, locale, tz):
         """Acknowledge new forms created client-side.
         """
-        prefix = self._get_prefix(_prefix)
-        while has_data(data, prefix) or has_data(files, prefix):
+        form_prefix = self._get_prefix(num)
+        while has_data(data, form_prefix) or has_data(files, form_prefix):
             f = self._form_class(
                 data, files=files, locale=locale, tz=tz,
-                prefix=prefix, backref=self._backref
+                prefix=form_prefix, backref=self._backref
             )
             forms.append(f)
-            _prefix += 1
-            prefix = self._get_prefix(_prefix)
+            num += 1
+            form_prefix = self._get_prefix(num)
         return forms
 
     def is_valid(self):

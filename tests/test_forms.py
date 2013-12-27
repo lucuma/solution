@@ -541,6 +541,7 @@ def test_formset_missing_objs():
     a3 = Address(email=u'three@example.com', user=user)
     db.add(a3)
     db.commit()
+    print([(a.id, a.email) for a in user.addresses])
 
     data = {
         'name': u'Jane Doe',
@@ -548,7 +549,6 @@ def test_formset_missing_objs():
         'formaddress.3-email': u'three@example.org',
         'formaddress.4-email': u'four@example.org',
     }
-    print([(a.id, a.email) for a in user.addresses])
     form = FormUser(data, user)
     assert form.is_valid()
     assert form.addresses.missing_objs == [a2]
