@@ -113,9 +113,10 @@ class FormSet(object):
                 locale=self._locale, tz=self._tz)
         self._forms = forms
         self.missing_objs = missing_objs
-        for mo in missing_objs:
-            if getattr(mo, self._backref, None):
-                setattr(mo, self._backref, None)
+        if self._backref:
+            for mo in missing_objs:
+                if getattr(mo, self._backref, None):
+                    setattr(mo, self._backref, None)
 
     def _get_prefix(self, num):
         return '%s%s.%s' % (

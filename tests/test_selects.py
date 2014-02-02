@@ -3,23 +3,24 @@ import solution as f
 
 
 def test_render_select():
-    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'),
-             (6, u'F'), (7, u'G')]
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'Curaçao'),
+             (6, u'F'), (7, u'G'), (8, 'Curaçao')]
     field = f.Select(items=items)
     field.name = 'abc'
     field.load_data(obj_value=3)
 
     assert field() == field.as_select()
     expected = (
-        '<select foo="bar" name="abc">\n'
-        '<option value="1">A</option>\n'
-        '<option value="2">B</option>\n'
-        '<option value="3" selected>C</option>\n'
-        '<option value="4">D</option>\n'
-        '<option value="5">E</option>\n'
-        '<option value="6">F</option>\n'
-        '<option value="7">G</option>\n'
-        '</select>'
+        u'<select foo="bar" name="abc">\n'
+        u'<option value="1">A</option>\n'
+        u'<option value="2">B</option>\n'
+        u'<option value="3" selected>C</option>\n'
+        u'<option value="4">D</option>\n'
+        u'<option value="5">Curaçao</option>\n'
+        u'<option value="6">F</option>\n'
+        u'<option value="7">G</option>\n'
+        u'<option value="8">Curaçao</option>\n'
+        u'</select>'
     )
     assert field(foo='bar') == expected
 
@@ -40,19 +41,19 @@ def test_render_select_groups():
     field.load_data(obj_value=3)
 
     expected = (
-        '<select name="abc">\n'
-        '<optgroup label="First group">\n'
-        '<option value="1">A</option>\n'
-        '<option value="2">B</option>\n'
-        '<option value="3" selected>C</option>\n'
-        '</optgroup>\n'
-        '<optgroup>\n'
-        '<option value="4">D</option>\n'
-        '<option value="5">E</option>\n'
-        '<option value="6">F</option>\n'
-        '</optgroup>\n'
-        '<option value="7">G</option>\n'
-        '</select>'
+        u'<select name="abc">\n'
+        u'<optgroup label="First group">\n'
+        u'<option value="1">A</option>\n'
+        u'<option value="2">B</option>\n'
+        u'<option value="3" selected>C</option>\n'
+        u'</optgroup>\n'
+        u'<optgroup>\n'
+        u'<option value="4">D</option>\n'
+        u'<option value="5">E</option>\n'
+        u'<option value="6">F</option>\n'
+        u'</optgroup>\n'
+        u'<option value="7">G</option>\n'
+        u'</select>'
     )
     assert field.as_select() == expected
 
@@ -66,9 +67,9 @@ def test_render_select_as_radios():
     assert field() == field.as_radios()
 
     expected = (
-        '<label><input foo="bar" name="abc" type="radio" value="1"> A</label>\n'
-        '<label><input foo="bar" name="abc" type="radio" value="2"> B</label>\n'
-        '<label><input foo="bar" name="abc" type="radio" value="3" checked> C</label>'
+        u'<label><input foo="bar" name="abc" type="radio" value="1"> A</label>\n'
+        u'<label><input foo="bar" name="abc" type="radio" value="2"> B</label>\n'
+        u'<label><input foo="bar" name="abc" type="radio" value="3" checked> C</label>'
     )
     assert field.as_radios(foo='bar') == expected
 
@@ -96,18 +97,18 @@ def test_render_select_as_radios_group():
     field.load_data(obj_value=3)
 
     expected = (
-        '<fieldset>\n'
-        '<legend>First group</legend>\n'
-        '<label><input name="abc" type="radio" value="1"> A</label>\n'
-        '<label><input name="abc" type="radio" value="2"> B</label>\n'
-        '<label><input name="abc" type="radio" value="3" checked> C</label>\n'
-        '</fieldset>\n'
-        '<fieldset>\n'
-        '<label><input name="abc" type="radio" value="4"> D</label>\n'
-        '<label><input name="abc" type="radio" value="5"> E</label>\n'
-        '<label><input name="abc" type="radio" value="6"> F</label>\n'
-        '</fieldset>\n'
-        '<label><input name="abc" type="radio" value="7"> G</label>'
+        u'<fieldset>\n'
+        u'<legend>First group</legend>\n'
+        u'<label><input name="abc" type="radio" value="1"> A</label>\n'
+        u'<label><input name="abc" type="radio" value="2"> B</label>\n'
+        u'<label><input name="abc" type="radio" value="3" checked> C</label>\n'
+        u'</fieldset>\n'
+        u'<fieldset>\n'
+        u'<label><input name="abc" type="radio" value="4"> D</label>\n'
+        u'<label><input name="abc" type="radio" value="5"> E</label>\n'
+        u'<label><input name="abc" type="radio" value="6"> F</label>\n'
+        u'</fieldset>\n'
+        u'<label><input name="abc" type="radio" value="7"> G</label>'
     )
     assert field.as_radios() == expected
 
@@ -120,15 +121,15 @@ def test_render_select_default_value():
     field.load_data(value='')
 
     expected = (
-        '<select name="abc">\n'
-        '<option value="1">A</option>\n'
-        '<option value="2">B</option>\n'
-        '<option value="3">C</option>\n'
-        '<option value="4" selected>D</option>\n'
-        '<option value="5">E</option>\n'
-        '<option value="6">F</option>\n'
-        '<option value="7">G</option>\n'
-        '</select>'
+        u'<select name="abc">\n'
+        u'<option value="1">A</option>\n'
+        u'<option value="2">B</option>\n'
+        u'<option value="3">C</option>\n'
+        u'<option value="4" selected>D</option>\n'
+        u'<option value="5">E</option>\n'
+        u'<option value="6">F</option>\n'
+        u'<option value="7">G</option>\n'
+        u'</select>'
     )
     assert field.as_select() == expected
 
