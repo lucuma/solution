@@ -66,9 +66,8 @@ class Date(Text):
     def str_to_py(self, format=None, locale=None):
         if not self.str_value:
             return self.default or None
-        dt = [int(f) for f in self.str_value.split('-')]
         try:
+            dt = [int(f) for f in self.str_value.split('-')]
             return datetime.date(*dt)
-        except ValueError as e:
+        except ValueError:
             raise ValidationError
-

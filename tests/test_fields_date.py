@@ -46,6 +46,10 @@ def test_validate_date():
     field.load_data([u'1979-05-13'])
     assert field.validate() == date(1979, 5, 13)
 
+    field = f.Date()
+    field.load_data(u'invalid')
+    assert field.validate() is None
+
 
 def test_validate_date_with_default():
     today = date.today()
