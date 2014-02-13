@@ -7,9 +7,9 @@ from .field import ValidationError
 from .text import Text
 
 
-class Date(Text):
+class Time(Text):
 
-    """A date field formatted as yyy-MM-dd. Example: 1980-07-28
+    """A time field formatted as 'HH:mm AA'. Examples: 5:03 AM, 11:00 PM
     This field DOES NOT make any timezone conversions
 
     :param validate:
@@ -17,7 +17,7 @@ class Date(Text):
         the method `validate` is called.
 
     :param default:
-        Default value. It must be a `date` or `datetime`.
+        Default value. It must be a `datetime.time`.
 
     :param prepare:
         An optional function that takes the current value as a string
@@ -29,22 +29,21 @@ class Date(Text):
         cleaned `None` must be returned instead.
 
     :param hide_value:
-        Do not render the current value a a string. Useful with passwords
-        fields.
+        Do not render the current value a a string.
 
     """
-    _type = 'date'
-    default_validator = v.IsDate
+    _type = 'time'
+    default_validator = v.IsTime
 
     def __init__(self, **kwargs):
         kwargs.setdefault('default', None)
-        return super(Date, self).__init__(**kwargs)
+        return super(Time, self).__init__(**kwargs)
 
     def py_to_str(self, format=None, locale=None, **kwargs):
-        dt = self.obj_value or self.default
-        if not dt:
+        tt = self.obj_value or self.default
+        if not tt:
             return u''
-        return dt.strftime('%Y-%m-%d')
+        return tt.strftime('%l:%M %p').strip()
 
     def as_input(self, format=None, locale=None, **kwargs):
         kwargs['type'] = kwargs.setdefault('type', self._type)
@@ -68,7 +67,14 @@ class Date(Text):
         if not self.str_value:
             return self.default or None
         try:
-            dt = [int(f) for f in self.str_value.split('-')]
-            return datetime.date(*dt)
+            num, p = self.str_value.upper().split(' ')
+            splitted = [int(n) for n in num.split(':')]
+            splitted.append(0)
+            hour = splitted[0]
+            minute = splitted[1]
+            second = splitted[2]
+            if p == 'PM':
+                hour = hour + 12
+            return datetime.time(hour, minute, second)
         except ValueError:
             raise ValidationError

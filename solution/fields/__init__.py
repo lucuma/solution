@@ -7,3 +7,4 @@ from .file import File
 from .number import Number
 from .select import Select, MultiSelect
 from .text import Text
+from .time import Time

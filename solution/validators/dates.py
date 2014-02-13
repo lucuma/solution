@@ -16,6 +16,18 @@ class IsDate(Validator):
         return isinstance(py_value, datetime.date)
 
 
+class IsTime(Validator):
+    """Validates that the field is a date or a datetime.
+
+    :param message:
+        Error message to raise in case of a validation error.
+    """
+    message = u'Enter a valid date.'
+
+    def __call__(self, py_value=None, form=None):
+        return isinstance(py_value, datetime.time)
+
+
 class Before(Validator):
     """Validates than the date happens before another.
     This will work with both date and datetime values.
