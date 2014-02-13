@@ -76,5 +76,5 @@ class Time(Text):
             if p == 'PM':
                 hour = hour + 12
             return datetime.time(hour, minute, second)
-        except ValueError:
+        except (ValueError, TypeError):
             raise ValidationError

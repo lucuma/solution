@@ -70,5 +70,5 @@ class Date(Text):
         try:
             dt = [int(f) for f in self.str_value.split('-')]
             return datetime.date(*dt)
-        except ValueError:
+        except (ValueError, TypeError):
             raise ValidationError
