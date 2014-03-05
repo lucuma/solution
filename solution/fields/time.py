@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import re
 
 from .. import validators as v
 from ..utils import Markup, get_html_attrs
@@ -34,8 +35,13 @@ class Time(Text):
     """
     _type = 'time'
     default_validator = v.IsTime
+    rx_time = re.compile(
+        '(?P<hour>[0-9]{1,2}):(?P<minute>[0-9]{1,2})(:(?P<second>[0-9]{1,2}))?\s?(?P<tt>am|pm)?',
+        re.IGNORECASE
+    )
 
-    def __init__(self, **kwargs):
+    def __init__(self, format='%l:%M %p', **kwargs):
+        self.format = format
         kwargs.setdefault('default', None)
         return super(Time, self).__init__(**kwargs)
 
@@ -43,7 +49,7 @@ class Time(Text):
         tt = self.obj_value or self.default
         if not tt:
             return u''
-        return tt.strftime('%l:%M %p').strip()
+        return tt.strftime(self.format).strip()
 
     def as_input(self, format=None, locale=None, **kwargs):
         kwargs['type'] = kwargs.setdefault('type', self._type)
@@ -66,15 +72,16 @@ class Time(Text):
     def str_to_py(self, format=None, locale=None):
         if not self.str_value:
             return self.default or None
+        match = self.rx_time.match(self.str_value.upper())
+        if not match:
+            raise ValidationError
         try:
-            num, p = self.str_value.upper().split(' ')
-            splitted = [int(n) for n in num.split(':')]
-            splitted.append(0)
-            hour = splitted[0]
-            minute = splitted[1]
-            second = splitted[2]
-            if p == 'PM':
-                hour = hour + 12
+            gd = match.groupdict()
+            hour = int(gd['hour'])
+            minute = int(gd['minute'])
+            second = int(gd['second'] or 0)
+            if gd['tt'] == 'PM':
+                hour += 12
             return datetime.time(hour, minute, second)
         except (ValueError, TypeError):
             raise ValidationError

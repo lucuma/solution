@@ -59,6 +59,20 @@ def test_validate_time():
     assert field.validate() is None
 
 
+def test_validate_24hours():
+    field = f.Time()
+    field.load_data(u'16:23')
+    assert field.validate() == datetime.time(16, 23)
+    field = f.Time()
+    field.load_data(u'4:23')
+    assert field.validate() == datetime.time(4, 23)
+
+    field = f.Time()
+    field.load_data(u'16:23:55')
+    assert field.validate() == datetime.time(16, 23, 55)
+
+
+
 def test_validate_time_with_default():
     dt = datetime.time(4, 48, 16)
     field = f.Time(default=dt)
