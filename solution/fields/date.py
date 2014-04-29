@@ -40,13 +40,13 @@ class Date(Text):
         kwargs.setdefault('default', None)
         return super(Date, self).__init__(**kwargs)
 
-    def py_to_str(self, format=None, locale=None, **kwargs):
+    def py_to_str(self, locale=None, **kwargs):
         dt = self.obj_value or self.default
         if not dt:
             return u''
         return dt.strftime('%Y-%m-%d')
 
-    def as_input(self, format=None, locale=None, **kwargs):
+    def as_input(self, locale=None, **kwargs):
         kwargs['type'] = kwargs.setdefault('type', self._type)
         kwargs['name'] = self.name
         kwargs['value'] = self.to_string(**kwargs)
@@ -55,7 +55,7 @@ class Date(Text):
         html = u'<input %s>' % get_html_attrs(kwargs)
         return Markup(html)
 
-    def as_textarea(self, format=None, locale=None, **kwargs):
+    def as_textarea(self, locale=None, **kwargs):
         kwargs['name'] = self.name
         if not self.optional:
             kwargs.setdefault('required', True)
@@ -64,7 +64,7 @@ class Date(Text):
         html = u'<textarea %s>%s</textarea>' % (html_attrs, value)
         return Markup(html)
 
-    def str_to_py(self, format=None, locale=None):
+    def str_to_py(self, locale=None):
         if not self.str_value:
             return self.default or None
         try:

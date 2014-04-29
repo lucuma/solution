@@ -84,6 +84,10 @@ class Select(BaseSelect):
         - An list of tuples with the format `(value, label)`; or
         - A function that return a list of items in that format.
 
+    :param create:
+        If False, only the values in the items are allowed as valid.
+        Set to True with caution.
+
     :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
@@ -106,9 +110,10 @@ class Select(BaseSelect):
 
     """
 
-    def __init__(self, items, type=None, **kwargs):
+    def __init__(self, items, type=None, create=False, **kwargs):
         self._items = items
         self._type = type
+        self._create = create
         super(Select, self).__init__(**kwargs)
 
     @property
@@ -122,6 +127,9 @@ class Select(BaseSelect):
             yield item
 
     def str_to_py(self, **kwargs):
+        if self._create:
+            return self._clean_value(self.str_value)
+
         accepted = iter_flatten(self.items)
         if self.str_value in accepted:
             return self._clean_value(self.str_value)
@@ -197,6 +205,10 @@ class MultiSelect(BaseSelect):
         - An list of tuples with the format `(value, label)`; or
         - A function that return a list of items in that format.
 
+    :param create:
+        If False, only the values in the items are allowed as valid.
+        Set to True with caution.
+
     :param filters:
         List of callables (can be validators). If a value do not pass one
         of these (the callable return `False`), it is filtered out from the
@@ -230,10 +242,11 @@ class MultiSelect(BaseSelect):
 
     """
 
-    def __init__(self, items, type=None, **kwargs):
+    def __init__(self, items, type=None, create=False, **kwargs):
         kwargs.setdefault('default', [])
         self._items = items
         self._type = type
+        self._create = create
         super(MultiSelect, self).__init__(**kwargs)
 
     @property
@@ -257,9 +270,13 @@ class MultiSelect(BaseSelect):
     def str_to_py(self, **kwargs):
         if self.str_value is None:
             return None
-        accepted = list(iter_flatten(self.items))
-        py_value = [self._clean_value(v)
-                    for v in self.str_value if v in accepted]
+
+        if self._create:
+            py_value = [self._clean_value(v) for v in self.str_value]
+        else:
+            accepted = list(iter_flatten(self.items))
+            py_value = [self._clean_value(v)
+                        for v in self.str_value if v in accepted]
         return py_value or None
 
     def __call__(self, **kwargs):

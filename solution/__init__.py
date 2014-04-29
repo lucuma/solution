@@ -8,7 +8,7 @@ An amazing form solution
 
 
 BSD License. See ``LICENSE`` for more details.
-Copyright © 2011, Lúcuma labs (http://lucumalabs.com)
+Copyright © 2011 - 2014, Lúcuma labs (http://lucumalabs.com)
 
 """
 from .form import Form
@@ -18,4 +18,4 @@ from .validators import *
 from .utils import Markup, get_html_attrs, to_unicode
 
 
-__version__ = '2.6.2'
+__version__ = '2.7'
