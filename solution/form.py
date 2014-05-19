@@ -128,9 +128,15 @@ class Form(object):
         for name, subform in self._forms.items():
             obj_value = getattr(obj, name, None)
             fclass = subform.__class__
+            subform_prefix = '{}{}.'.format(self._prefix, name.lower())
+
             subform = fclass(
-                data, obj_value, files=files, prefix=self._prefix,
-                locale=self._locale, tz=self._tz,
+                data,
+                obj_value,
+                files=files,
+                locale=self._locale,
+                tz=self._tz,
+                prefix=subform_prefix,
                 backref=subform._backref
             )
             self._forms[name] = subform
