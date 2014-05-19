@@ -25,6 +25,7 @@ class File(Field):
         cleaned `None` must be returned instead.
 
     """
+    _type = 'file'
     hide_value = True
 
     def __init__(self, **kwargs):
@@ -40,8 +41,10 @@ class File(Field):
         return self.as_input(**kwargs)
 
     def as_input(self, **kwargs):
-        kwargs['type'] = 'file'
+        kwargs.setdefault('type', self._type)
         kwargs['name'] = self.name
+        if kwargs['type'] != self._type:
+            kwargs['value'] = self.to_string(**kwargs)
         if not self.optional:
             kwargs.setdefault('required', True)
         html = u'<input %s>' % get_html_attrs(kwargs)

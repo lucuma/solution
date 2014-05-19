@@ -38,7 +38,7 @@ class Match(Validator):
         return self.regex.match(py_value or u'')
 
 
-class IsColor(Match):
+class ValidColor(Match):
     """Validates that the field is a string representing a rgb or rgba color
     in the format `#rrggbb[aa]`.
 
@@ -52,6 +52,8 @@ class IsColor(Match):
     def __init__(self, message=None):
         if message is not None:
             self.message = message
+
+IsColor = ValidColor
 
 
 class ValidEmail(Validator):

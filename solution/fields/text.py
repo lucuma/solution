@@ -39,7 +39,7 @@ class Text(Field):
         return self.as_input(**kwargs)
 
     def as_input(self, **kwargs):
-        kwargs['type'] = kwargs.setdefault('type', self._type)
+        kwargs.setdefault('type', self._type)
         kwargs['name'] = self.name
         kwargs['value'] = self.to_string(**kwargs)
         if not self.optional:
