@@ -128,7 +128,7 @@ class Form(object):
         for name, subform in self._forms.items():
             obj_value = getattr(obj, name, None)
             fclass = subform.__class__
-            subform_prefix = '{}{}.'.format(self._prefix, name.lower())
+            subform_prefix = '{0}{1}.'.format(self._prefix, name.lower())
 
             subform = fclass(
                 data,

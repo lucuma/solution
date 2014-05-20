@@ -119,7 +119,7 @@ class FormSet(object):
                     setattr(mo, self._backref, None)
 
     def _get_prefix(self, num):
-        return '{}{}.{}'.format(
+        return '{0}{1}.{2}'.format(
             self._prefix,
             self._form_class.__name__.lower(),
             num
