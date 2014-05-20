@@ -321,10 +321,10 @@ def test_cascade_save():
 
     data = {
         'wr': u'foo',
-        'a1': u'AAA1',
-        'a2': u'AAA2',
-        'b1': u'BBB1',
-        'b2': u'BBB2',
+        'fa.a1': u'AAA1',
+        'fa.a2': u'AAA2',
+        'fb.b1': u'BBB1',
+        'fb.b2': u'BBB2',
     }
     form = WrapForm(data)
 
@@ -334,19 +334,19 @@ def test_cascade_save():
     assert db.query(ModelA).count() == 1
     assert db.query(ModelB).count() == 1
     obja = db.query(ModelA).first()
-    assert obja.a1 == data['a1']
-    assert obja.a2 == data['a2']
+    assert obja.a1 == data['fa.a1']
+    assert obja.a2 == data['fa.a2']
     objb = db.query(ModelB).first()
-    assert objb.b1 == data['b1']
-    assert objb.b2 == data['b2']
+    assert objb.b1 == data['fb.b1']
+    assert objb.b2 == data['fb.b2']
 
     ## Update
     data = {
         'wr': u'foo',
-        'a1': u'A1',
-        'a2': u'A2',
-        'b1': u'B1',
-        'b2': u'B2',
+        'fa.a1': u'A1',
+        'fa.a2': u'A2',
+        'fb.b1': u'B1',
+        'fb.b2': u'B2',
     }
     objs = {
         'fa': obja,
@@ -361,12 +361,12 @@ def test_cascade_save():
     assert db.query(ModelB).count() == 1
 
     obja = db.query(ModelA).first()
-    assert obja.a1 == data['a1']
-    assert obja.a2 == data['a2']
+    assert obja.a1 == data['fa.a1']
+    assert obja.a2 == data['fa.a2']
 
     objb = db.query(ModelB).first()
-    assert objb.b1 == data['b1']
-    assert objb.b2 == data['b2']
+    assert objb.b1 == data['fb.b1']
+    assert objb.b2 == data['fb.b2']
 
 
 
