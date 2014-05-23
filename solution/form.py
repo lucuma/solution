@@ -5,7 +5,7 @@ import inspect
 from ._compat import itervalues
 from .fields import Field
 from .formset import FormSet
-from .utils import FakeMultiDict
+from .utils import FakeMultiDict, get_obj_value, set_obj_value
 
 
 class Form(object):
@@ -126,7 +126,7 @@ class Form(object):
         """
         # Initialize sub-forms
         for name, subform in self._forms.items():
-            obj_value = getattr(obj, name, None)
+            obj_value = get_obj_value(obj, name)
             fclass = subform.__class__
             subform_prefix = '{0}{1}.'.format(self._prefix, name.lower())
 
@@ -144,7 +144,7 @@ class Form(object):
 
         # Initialize sub-sets
         for name, subset in self._sets.items():
-            obj_value = getattr(obj, name, None)
+            obj_value = get_obj_value(obj, name)
             sclass = subset.__class__
             subset = sclass(
                 form_class=subset._form_class,
@@ -164,7 +164,7 @@ class Form(object):
         for name, field in self._fields.items():
             subdata = data.getlist(self._prefix + name)
             subfiles = files.getlist(self._prefix + name)
-            obj_value = getattr(obj, name, None)
+            obj_value = get_obj_value(obj, name)
             field.load_data(subdata, obj_value, file_data=subfiles,
                             locale=self._locale, tz=self._tz)
 
@@ -251,6 +251,7 @@ class Form(object):
         """
         if not self.validated:
             assert self.is_valid()
+
         if self._model and not self._obj:
             obj = self._save_new_object(backref_obj)
         else:
@@ -260,19 +261,13 @@ class Form(object):
             data = subform.save(obj)
             if not data:
                 continue
-            if isinstance(obj, dict):
-                obj[key] = data
-            else:
-                setattr(obj, key, data)
+            set_obj_value(obj, key, data)
 
         for key, subset in self._sets.items():
             data = subset.save(obj)
             if not data:
                 continue
-            if isinstance(obj, dict):
-                obj[key] = data
-            else:
-                setattr(obj, key, data)
+            set_obj_value(obj, key, data)
 
         return obj
 
@@ -299,13 +294,9 @@ class Form(object):
         for key in self.changed_fields:
             if key in self.cleaned_data:
                 val = self.cleaned_data.get(key)
-                if isinstance(obj, dict):
-                    obj[key] = val
-                else:
-                    setattr(obj, key, val)
+                set_obj_value(obj, key, val)
 
         return obj
 
     def __repr__(self):
         return '<%s>' % self.__class__.__name__
-

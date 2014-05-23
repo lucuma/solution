@@ -582,3 +582,36 @@ def test_formset_save_to_dict():
             {'email': u'three@example.com'},
         ],
     }
+
+
+def test_save_conflicting_field_names():
+
+    class FormValue(f.Form):
+        val = f.Text()
+
+
+    class FormUser(f.Form):
+        name = f.Text()
+        values = f.FormSet(FormValue, parent='user')
+
+    ## Save
+
+    data = {
+        'name': u'John Doe',
+        'formvalue.1-val': u'one',
+        'formvalue.2-val': u'two',
+        'formvalue.3-val': u'three',
+    }
+    form = FormUser(data)
+
+    print ('-' * 30)
+    result = form.save()
+    print('result:', result)
+    assert result == {
+        'name': u'John Doe',
+        'values': [
+            {'val': u'one'},
+            {'val': u'two'},
+            {'val': u'three'},
+        ],
+    }

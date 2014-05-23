@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .utils import FakeMultiDict
+from .utils import FakeMultiDict, get_obj_value, set_obj_value
 
 
 class FormSet(object):
@@ -108,15 +108,17 @@ class FormSet(object):
             )
             forms.append(f)
         num += 1
+
         if data and self._create_new:
             forms = self._find_new_forms(forms, num, data, files,
                 locale=self._locale, tz=self._tz)
+
         self._forms = forms
         self.missing_objs = missing_objs
         if self._backref:
             for mo in missing_objs:
-                if getattr(mo, self._backref, None):
-                    setattr(mo, self._backref, None)
+                if get_obj_value(mo, self._backref, None):
+                    set_obj_value(mo, self._backref, None)
 
     def _get_prefix(self, num):
         return '{0}{1}.{2}'.format(

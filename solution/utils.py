@@ -73,3 +73,20 @@ def get_html_attrs(kwargs=None):
     props.sort()
     attrs.extend(props)
     return u' '.join(attrs)
+
+
+def get_obj_value(obj, name, default=None):
+    # The field name could conflict with a native method
+    # if `obj` is a dictionary instance
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return getattr(obj, name, default)
+
+
+def set_obj_value(obj, name, value):
+    # The field name could conflict with a native method
+    # if `obj` is a dictionary instance
+    if isinstance(obj, dict):
+        obj[name] = value
+    else:
+        setattr(obj, name, value)
