@@ -40,8 +40,8 @@ class Text(Field):
 
     def as_input(self, **kwargs):
         kwargs.setdefault('type', self._type)
-        kwargs['name'] = self.name
-        kwargs['value'] = self.to_string(**kwargs)
+        kwargs.setdefault('name', self.name)
+        kwargs.setdefault('value', self.to_string(**kwargs))
         if not self.optional:
             kwargs.setdefault('required', True)
         html = u'<input %s>' % get_html_attrs(kwargs)
@@ -52,7 +52,7 @@ class Text(Field):
         if not self.optional:
             kwargs.setdefault('required', True)
         html_attrs = get_html_attrs(kwargs)
-        value = self.to_string(**kwargs)
+        value = kwargs.get('value', self.to_string(**kwargs))
         html = u'<textarea %s>%s</textarea>' % (html_attrs, value)
         return Markup(html)
 

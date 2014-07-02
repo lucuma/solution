@@ -197,17 +197,20 @@ class Field(object):
     def value(self):
         return self.to_string()
 
-    def label_tag(self, text, **kwargs):
-        html = u'<label %s>%s</label>' % (get_html_attrs(kwargs), text)
+    def label_tag(self, text, tmpl=u'<label {attrs}>{msg}</label>', **kwargs):
+        html = tmpl.format(
+            attrs=get_html_attrs(kwargs),
+            msg=text,
+        )
         return Markup(html)
 
-    def error_tag(self, **kwargs):
+    def error_tag(self, tmpl=u'<div {attrs}>{msg}</div>', **kwargs):
         if self.error is None:
             return u''
         kwargs.setdefault('classes', u'error')
-        html = u'<div %s>%s</div>' % (
-            get_html_attrs(kwargs),
-            self.error.message
+        html = tmpl.format(
+            attrs=get_html_attrs(kwargs),
+            msg=self.error.message,
         )
         return Markup(html)
 

@@ -78,10 +78,10 @@ class ValidSplitDate(FormValidator):
 
     :param message:
         Custom error message.
-    
+
     """
     message = u'This is not a valid date.'
-    
+
     def __init__(self, day, month, year=None, message=None):
         self.day = day
         self.month = month
