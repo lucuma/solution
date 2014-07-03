@@ -26,6 +26,7 @@ class FormSet(object):
     """
     _forms = None
     _errors = None
+    _named_errors = None
     _prefix = u''
     missing_objs = None
     has_changed = False
@@ -43,6 +44,7 @@ class FormSet(object):
 
         self._forms = []
         self._errors = {}
+        self._named_errors = {}
         self.missing_objs = []
         self.has_changed = False
 
@@ -71,6 +73,7 @@ class FormSet(object):
 
     def _init(self, data=None, objs=None, files=None):
         self._errors = {}
+        self._named_errors = {}
         self.has_changed = False
 
         data = data or {}
@@ -143,17 +146,21 @@ class FormSet(object):
 
     def is_valid(self):
         self._errors = {}
+        self._named_errors = {}
         self.has_changed = False
         errors = {}
+        named_errors = {}
 
         for name, form in enumerate(self._forms, 1):
             if not form.is_valid():
                 errors[name] = form._errors
+                named_errors.update(form._named_errors)
                 continue
             if form.has_changed:
                 self.has_changed = True
         if errors:
             self._errors = errors
+            self._named_errors = named_errors
             return False
         return True
 

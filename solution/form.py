@@ -44,6 +44,7 @@ class Form(object):
     _forms = None
     _sets = None
     _errors = None
+    _named_errors = None
 
     cleaned_data = None
     changed_fields = None
@@ -80,6 +81,7 @@ class Form(object):
         self.validated = False
         self._obj = obj
         self._errors = {}
+        self._named_errors = {}
 
         self._init_fields()
         self._init_data(data, obj, files)
@@ -198,14 +200,17 @@ class Form(object):
         self.changed_fields = []
         self.validated = False
         self._errors = {}
+        self._named_errors = {}
         cleaned_data = {}
         changed_fields = []
         errors = {}
+        named_errors = {}
 
         # Validate sub forms
         for name, subform in self._forms.items():
             if not subform.is_valid():
                 errors[name] = subform._errors
+                named_errors.update(subform._named_errors)
                 continue
             if subform.has_changed:
                 changed_fields.append(name)
@@ -214,6 +219,7 @@ class Form(object):
         for name, subset in self._sets.items():
             if not subset.is_valid():
                 errors[name] = subset._errors
+                named_errors.update(subset._named_errors)
                 continue
             if subset.has_changed:
                 changed_fields.append(name)
@@ -224,6 +230,7 @@ class Form(object):
             py_value = field.validate(self)
             if field.error:
                 errors[name] = field.error
+                named_errors[field.name] = field.error
                 continue
             cleaned_data[name] = py_value
             if field.has_changed:
@@ -234,10 +241,12 @@ class Form(object):
             field.validate(self, cleaned_data)
             if field.error:
                 errors[name] = field.error
+                named_errors[field.name] = field.error
                 continue
 
         if errors:
             self._errors = errors
+            self._named_errors = named_errors
             return False
 
         self.cleaned_data = cleaned_data
