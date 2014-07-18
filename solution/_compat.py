@@ -9,6 +9,9 @@ PY2 = sys.version_info[0] == 2
 
 
 if PY2:
+    from urlparse import urlsplit, urlunsplit
+
+    text_type = unicode
     string_types = (basestring, )
 
     def implements_to_string(cls):
@@ -16,18 +19,22 @@ if PY2:
         cls.__str__ = lambda x: x.__unicode__().encode('utf-8')
         return cls
 else:
+    from urllib.parse import urlsplit, urlunsplit
+
+    text_type = str
     string_types = (str, )
     implements_to_string = lambda x: x
 
 
-def to_unicode(txt, encoding='utf8'):
-    if not isinstance(txt, string_types):
-        txt = repr(txt)
-    if not PY2:
-        return str(txt)
-    if isinstance(txt, unicode):
-        return txt
-    return unicode(txt, encoding)
+def to_unicode(x, charset='utf-8', errors='strict',
+               allow_none_charset=False):
+    if x is None:
+        return None
+    if not isinstance(x, bytes):
+        return text_type(x)
+    if charset is None and allow_none_charset:
+        return x
+    return x.decode(charset, errors)
 
 
 def iteritems(d, **kw):

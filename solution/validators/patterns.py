@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 from email.utils import parseaddr
 import re
-from .._compat import PY2, string_types
-if PY2:
-    from urlparse import urlsplit, urlunsplit
-else:
-    from urllib.parse import urlsplit, urlunsplit
+
+from .._compat import PY2, string_types, urlsplit, urlunsplit, to_unicode
 
 from .validator import Validator
 
@@ -89,7 +86,9 @@ class ValidEmail(Validator):
 
     def _encode_idna(self, py_value):
         parts = py_value.split(u'@')
-        parts[-1] = parts[-1].encode('idna').decode("utf-8", "strict")
+        domain = parts[-1]
+        domain = domain.encode(u'idna')
+        parts[-1] = to_unicode(domain)
         return u'@'.join(parts)
 
 

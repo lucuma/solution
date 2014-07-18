@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-=============================
-Solution
-=============================
+    =============================
+    Solution
+    =============================
 
-An amazing form solution
+    An amazing form solution
 
-
-BSD License. See ``LICENSE`` for more details.
-Copyright © 2011 - 2014, Lúcuma labs (http://lucumalabs.com)
+    :copyright: © 2012 by `Juan Pablo Scaletti <http://jpscaletti.com>`_.
+    :license: MIT, see LICENSE for more details.
 
 """
 from .form import Form
@@ -18,4 +17,4 @@ from .validators import *
 from .utils import Markup, get_html_attrs, to_unicode
 
 
-__version__ = '2.8'
+__version__ = '2.9.0'

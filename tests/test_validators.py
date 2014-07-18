@@ -65,7 +65,7 @@ def test_lessthan():
     assert validator(u'3')
     assert not validator(u'5')
     assert not validator(None)
-    
+
     validator = f.LessThan(u'b')
     assert validator(u'a')
     assert not validator(u'c')

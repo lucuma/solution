@@ -123,9 +123,25 @@ class Form(object):
         self._forms = forms
         self._sets = sets
 
+    def prepare(self, data):
+        """You can overwrite this method to store the logic of pre-processing
+        the input data.
+        """
+        return data
+
+    def clean(self, cleaned_data):
+        """You can overwrite this method to store the logic of post-processing
+        the cleaned data after validation.
+        You can delete fields but any field that isn't part of the form is
+        filtered out.
+        """
+        return cleaned_data
+
     def _init_data(self, data, obj, files):
         """Load the data into the form.
         """
+        data = self.prepare(data)
+
         # Initialize sub-forms
         for name, subform in self._forms.items():
             obj_value = get_obj_value(obj, name)
@@ -249,7 +265,7 @@ class Form(object):
             self._named_errors = named_errors
             return False
 
-        self.cleaned_data = cleaned_data
+        self.cleaned_data = self.clean(cleaned_data)
         self.changed_fields = changed_fields
         self.validated = True
         return True

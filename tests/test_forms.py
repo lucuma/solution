@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from orm import SQLAlchemy
+from sqlalchemy_wrapper import SQLAlchemy
 import solution as f
 
 
@@ -615,3 +615,33 @@ def test_save_conflicting_field_names():
             {'val': u'three'},
         ],
     }
+
+
+def test_form_data_prepare_and_clean():
+
+    class ContactForm(f.Form):
+        subject = f.Text(validate=[f.Required])
+        message = f.Text(validate=[f.Required])
+
+        def prepare(self, data):
+            data['message'] = u'Welcome'
+            data['subject'] = data['greeting'] + u' World'
+            return data
+
+        def clean(self, cleaned_data):
+            #: Any field that isn't in the form is filtered out
+            return {
+                'message': u'{subject}. {message}'.format(**cleaned_data),
+                'loremipsum': u'I am filtered out',
+            }
+
+    data = {
+        'greeting': u'Hello',
+    }
+    form = ContactForm(data)
+
+    assert form.subject.value == u'Hello World'
+    assert form.message.value == u'Welcome'
+
+    cleaned_data = form.save()
+    assert cleaned_data == {'message': u'Hello World. Welcome'}
