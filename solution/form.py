@@ -50,7 +50,7 @@ class Form(object):
     changed_fields = None
 
     def __init__(self, data=None, obj=None, files=None, locale='en', tz='utc',
-            prefix=u'', backref=None, parent=None):
+                 prefix=u'', backref=None, parent=None):
 
         backref = backref or parent
         if self._model is not None:

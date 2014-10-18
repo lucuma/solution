@@ -2,7 +2,7 @@
 from email.utils import parseaddr
 import re
 
-from .._compat import PY2, string_types, urlsplit, urlunsplit, to_unicode
+from .._compat import string_types, urlsplit, urlunsplit, to_unicode
 
 from .validator import Validator
 
@@ -67,7 +67,7 @@ class ValidEmail(Validator):
     message = u'Enter a valid e-mail address.'
 
     email_rx = re.compile(
-        r'[^@]+@[A-Z0-9][A-Z0-9\-\.]{0,61}\.[A-Z0-9]+\.?$',
+        r'^[A-Z0-9][A-Z0-9._%+-]*@[A-Z0-9][A-Z0-9\-\.]{0,61}\.[A-Z0-9]+$',
         re.IGNORECASE)
 
     def __init__(self, message=None):
@@ -77,7 +77,7 @@ class ValidEmail(Validator):
     def __call__(self, py_value=None, form=None):
         if not py_value or '@' not in py_value:
             return False
-        _, py_value = parseaddr(py_value)
+        py_value = parseaddr(py_value)[-1]
         try:
             py_value = self._encode_idna(py_value)
         except UnicodeDecodeError:

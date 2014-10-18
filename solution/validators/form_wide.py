@@ -35,6 +35,7 @@ class AreEqual(FormValidator):
         self.message = message
 
     def __call__(self, data=None, form=None):
+        data = data or {}
         return data.get(self.name1) == data.get(self.name2)
 
 
@@ -57,6 +58,7 @@ class AtLeastOne(FormValidator):
             self.message = message
 
     def __call__(self, data=None, form=None):
+        data = data or {}
         for field in self.fields:
             if data.get(field):
                 return True
@@ -90,6 +92,7 @@ class ValidSplitDate(FormValidator):
             self.message = message
 
     def __call__(self, data=None, form=None):
+        data = data or {}
         now = datetime.date.today()
         try:
             day = int(data.get(self.day))

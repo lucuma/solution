@@ -137,6 +137,7 @@ def test_validemail():
     assert not validator(u'fail@test,com')
     assert not validator(u'Whatever <lucumalabs.com>')
     assert not validator(None)
+    assert not validator(u'.fail@test.com')
 
 
 def test_validemail_wrapped():
