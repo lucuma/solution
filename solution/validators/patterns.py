@@ -82,6 +82,8 @@ class ValidEmail(Validator):
             py_value = self._encode_idna(py_value)
         except UnicodeDecodeError:
             return False
+        if u'.@' in py_value:
+            return False
         return bool(self.email_rx.match(py_value))
 
     def _encode_idna(self, py_value):
