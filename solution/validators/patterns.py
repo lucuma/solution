@@ -78,7 +78,7 @@ class ValidEmail(Validator):
         if not py_value or '@' not in py_value:
             return False
         py_value = parseaddr(py_value)[-1]
-        if u'.@' in py_value:
+        if '.@' in py_value:
             return False
         try:
             py_value = self._encode_idna(py_value)
