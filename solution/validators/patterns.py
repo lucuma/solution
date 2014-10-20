@@ -78,11 +78,11 @@ class ValidEmail(Validator):
         if not py_value or '@' not in py_value:
             return False
         py_value = parseaddr(py_value)[-1]
+        if u'.@' in py_value:
+            return False
         try:
             py_value = self._encode_idna(py_value)
-        except UnicodeDecodeError:
-            return False
-        if u'.@' in py_value:
+        except (UnicodeDecodeError, UnicodeError):
             return False
         return bool(self.email_rx.match(py_value))
 
@@ -126,8 +126,8 @@ class ValidURL(Validator):
         try:
             py_value = self._encode_idna(py_value)
             return bool(self.regex.match(py_value))
-        except UnicodeDecodeError:
-            pass
+        except (UnicodeDecodeError, UnicodeError):
+            return False
         return False
 
     def _encode_idna(self, py_value):
