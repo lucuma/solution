@@ -44,7 +44,7 @@ class Date(Text):
         dt = self.obj_value or self.default
         if not dt:
             return u''
-        return dt.strftime('%Y-%m-%d')
+        return dt.isoformat()
 
     def as_input(self, locale=None, **kwargs):
         kwargs['type'] = kwargs.setdefault('type', self._type)
