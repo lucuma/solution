@@ -154,7 +154,7 @@ class Storage(object):
             filesto.seek(0, 0)
         return content_length
 
-    def validate(self, filesto, allowed=None, denied=None, max_size=None):
+    def validate(self, filesto, allowed, denied, max_size=None):
         max_size = max_size or self.max_size
         content_length = self.get_content_length(filesto)
 
@@ -166,11 +166,8 @@ class Storage(object):
         ext = ext.lower()
         self.check_file_extension(ext, allowed, denied)
 
-    def check_file_extension(self, ext, allowed=None, denied=None):
-        allowed = allowed or self.allowed
-        denied = denied or self.denied
-
-        if allowed and not ext in allowed:
+    def check_file_extension(self, ext, allowed, denied):
+        if allowed is not True and not ext in allowed:
             raise UnsupportedMediaType()
         if denied and ext in denied:
             raise UnsupportedMediaType()
@@ -179,7 +176,7 @@ class Storage(object):
 class FilesStorage(Storage):
 
     def __init__(self, base_path, upload_to='', secret=False,
-                 prefix='', allowed=IMAGES, denied=None, max_size=None):
+                 prefix='', allowed=None, denied=None, max_size=None):
         """
         Except for `base_path`, all of these parameters are optional,
         so only bother setting the ones relevant to your application.
@@ -205,12 +202,12 @@ class FilesStorage(Storage):
              be used.
 
         prefix
-        :   To avoid race-conditions between users uploading files with
+        :   To avoid race-co[nditions between users uploading files with
             the same name at the same time. If `secret` is True, this
             will be ignored.
 
         allowed
-        :   List of allowed file extensions. `None` to allow all
+        :   List of allowed fi]le extensions. `True` to allow all
             of them. If the uploaded file doesn't have one of these
             extensions, an `UnsupportedMediaType` exception will be
             raised.
@@ -226,6 +223,7 @@ class FilesStorage(Storage):
             has higher priority.
 
         """
+
         self.base_path = base_path.rstrip('/')
         try:
             os.makedirs(os.path.realpath(base_path))
@@ -236,7 +234,7 @@ class FilesStorage(Storage):
         self.upload_to = upload_to
         self.secret = secret
         self.prefix = prefix
-        self.allowed = allowed or []
+        self.allowed = allowed or IMAGES
         self.denied = denied or []
         self.max_size = max_size
 
