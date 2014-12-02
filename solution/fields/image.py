@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from math import floor, ceil
-from wand.image import Image
+from os.path impor join
+from wand.image import Image as I
 from solution.fields import File
 
 
@@ -9,12 +10,12 @@ class Image(File):
     sure the image is of that size.
     """
 
-    def __init__(self, size=None, **kwargs):
+    def __init__(self, base_path, size=None, **kwargs):
         self.size = kwargs.get('size', None)
         if size:
             self.width = size[0]
             self.height = size [1]
-        super(Image, self).__init__(**kwargs)
+        super(Image, self).__init__(base_path, **kwargs)
 
     def clean(self, value):
         """Passes the value to FileField and resizes the image at the path the parent
@@ -23,17 +24,18 @@ class Image(File):
         """
         path = super(Image, self).clean(value, *args, **kwargs)
         # Resize
-        self.resize_image(path)
+        self.resize_image(join(self.base_path, path))
         return path
 
     def resize_image(self, image_path):
-        with Image(filename=image_path) as img:
-            result = self.calculate_dimensions(img.size,
-                                               self.size)
-            if result:
-                x, y, width, height = result
-                img.crop(x, y, width=width, height=height)
-                img.save(image_path)
+        if self.size: # Only resize if we have a size constraint.
+            with I(filename=image_path) as img:
+                result = Image.calculate_dimensions(img.size,
+                                                   self.size)
+                if result:
+                    x, y, width, height = result
+                    img.crop(x, y, width=width, height=height)
+                    img.save(filename=image_path)
 
     @staticmethod
     def calculate_dimensions(image_size, desired_size):
@@ -69,4 +71,4 @@ class Image(File):
             new_y = 0
             new_height = current_y
 
-        return (new_x, new_y, new_width, new_height)
+        return (int(new_x), int(new_y), new_width, new_height)

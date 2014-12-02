@@ -33,6 +33,7 @@ class File(Field):
         # Backwards compatibility
         kwargs.setdefault('clean', kwargs.get('upload'))
 
+        self.base_path = base_path
         self.storage = FilesStorage(base_path=base_path,
                                    upload_to=kwargs.get('upload_to', ''),
                                    secret=kwargs.get('secret', False),
@@ -44,7 +45,7 @@ class File(Field):
         super(File, self).__init__(**kwargs)
 
     def clean(self, value):
-        """Takes a Werkzueg FileSto, returns the absolute path.
+        """Takes a Werkzeug FileStorage, returns the relative path.
         """
         return self.storage.save(value)
 
