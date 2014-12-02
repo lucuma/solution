@@ -34,6 +34,11 @@ class File(Field):
 
         super(File, self).__init__(**kwargs)
 
+    def clean(self, value):
+        """Takes a Werkzueg FileSto, returns the absolute path.
+        """
+
+
     def str_to_py(self, **kwargs):
         return self.str_value or self.file_data or self.obj_value
 
@@ -49,4 +54,3 @@ class File(Field):
             kwargs.setdefault('required', True)
         html = u'<input %s>' % get_html_attrs(kwargs)
         return Markup(html)
-
