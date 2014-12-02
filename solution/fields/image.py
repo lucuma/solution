@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from math import floor, ceil
 from wand.image import Image
-from .file import File
+from solution.fields import File
 
 
 class Image(File):
@@ -9,20 +9,27 @@ class Image(File):
     sure the image is of that size.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, size=None, **kwargs):
         self.size = kwargs.get('size', None)
         if size:
             self.width = size[0]
             self.height = size [1]
         super(Image, self).__init__(**kwargs)
 
-    def validate_field(self,):
-        pass
+    def clean(self, value):
+        """Passes the value to FileField and resizes the image at the path the parent
+        returns if needed.
+
+        """
+        path = super.(Image, self).clean(value, *args, **kwargs)
+        # Resize
+        self.resize_image(path)
+        return path
 
     def resize_image(self, image_path):
         with Image(filename=image_path) as img:
             result = self.calculate_dimensions(img.size,
-                                                            self.size)
+                                               self.size)
             if result:
                 x, y, width, height = result
                 img.crop(x, y, width=width, height=height)
