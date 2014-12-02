@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from solution.fields import Field, ValidationError
-from solution.fields.helpers import FileStorage
+from solution.fields.file.helpers import FilesStorage
 from solution.utils import Markup, get_html_attrs
 
 
@@ -33,7 +33,7 @@ class File(Field):
         # Backwards compatibility
         kwargs.setdefault('clean', kwargs.get('upload'))
 
-        self.storage = FileStorage(base_path=base_path,
+        self.storage = FilesStorage(base_path=base_path,
                                    upload_to=kwargs.get('upload_to', ''),
                                    secret=kwargs.get('secret', False),
                                    prefix=kwargs.get('prefix', ''),

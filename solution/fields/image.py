@@ -21,7 +21,7 @@ class Image(File):
         returns if needed.
 
         """
-        path = super.(Image, self).clean(value, *args, **kwargs)
+        path = super(Image, self).clean(value, *args, **kwargs)
         # Resize
         self.resize_image(path)
         return path
