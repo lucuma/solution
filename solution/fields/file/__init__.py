@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from ..utils import Markup, get_html_attrs
-from .field import Field, ValidationError
+from solution.fields import Field, ValidationError
+from solution.fields.helpers import FileStorage
+from solution.utils import Markup, get_html_attrs
 
 
 class File(Field):
@@ -28,16 +29,24 @@ class File(Field):
     _type = 'file'
     hide_value = True
 
-    def __init__(self, **kwargs):
+    def __init__(self, base_path, **kwargs):
         # Backwards compatibility
         kwargs.setdefault('clean', kwargs.get('upload'))
+
+        self.storage = FileStorage(base_path=base_path,
+                                   upload_to=kwargs.get('upload_to', ''),
+                                   secret=kwargs.get('secret', False),
+                                   prefix=kwargs.get('prefix', ''),
+                                   allowed=kwargs.get('allowed', None),
+                                   denied=kwargs.get('denied', None),
+                                   max_size=kwargs.get('max_size', None), )
 
         super(File, self).__init__(**kwargs)
 
     def clean(self, value):
         """Takes a Werkzueg FileSto, returns the absolute path.
         """
-
+        return self.storage.save(value)
 
     def str_to_py(self, **kwargs):
         return self.str_value or self.file_data or self.obj_value
