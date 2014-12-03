@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from werkzeug.datastructures import FileStorage
 from solution.fields import Field, ValidationError
 from solution.fields.file.helpers import FilesStorage
 from solution.utils import Markup, get_html_attrs
@@ -35,19 +36,20 @@ class File(Field):
 
         self.base_path = base_path
         self.storage = FilesStorage(base_path=base_path,
-                                   upload_to=kwargs.get('upload_to', ''),
-                                   secret=kwargs.get('secret', False),
-                                   prefix=kwargs.get('prefix', ''),
-                                   allowed=kwargs.get('allowed', None),
-                                   denied=kwargs.get('denied', None),
-                                   max_size=kwargs.get('max_size', None), )
+                                    upload_to=kwargs.get('upload_to', ''),
+                                    secret=kwargs.get('secret', False),
+                                    prefix=kwargs.get('prefix', ''),
+                                    allowed=kwargs.get('allowed', None),
+                                    denied=kwargs.get('denied', None),
+                                    max_size=kwargs.get('max_size', None), )
 
         super(File, self).__init__(**kwargs)
 
     def clean(self, value):
         """Takes a Werkzeug FileStorage, returns the relative path.
         """
-        return self.storage.save(value)
+        if isinstance(value, FileStorage):
+            return self.storage.save(value)
 
     def str_to_py(self, **kwargs):
         return self.str_value or self.file_data or self.obj_value

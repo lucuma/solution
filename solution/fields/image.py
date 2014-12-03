@@ -23,9 +23,9 @@ class Image(File):
 
         """
         path = super(Image, self).clean(value, *args, **kwargs)
-        # Resize
-        self.resize_image(join(self.base_path, path))
-        return path
+        if path:
+            self.resize_image(join(self.base_path, path))
+            return path
 
     def resize_image(self, image_path):
         if self.size: # Only resize if we have a size constraint.
