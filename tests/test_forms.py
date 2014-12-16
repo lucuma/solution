@@ -242,6 +242,91 @@ def test_save():
     db.commit()
 
 
+def init_subform_with_classes():
+    class FormA(f.Form):
+        a = f.Text()
+
+    class WrapForm(f.Form):
+        fa = FormA()
+
+    data = {
+        'fa.a': u'A',
+    }
+    form = WrapForm(data)
+    assert form.save() == data
+
+    user_data = {
+        'fa.a': u'AAA',
+    }
+    form = WrapForm(user_data, data)
+    assert form.save() == user_data
+
+
+def test_dont_save_not_used_fields():
+
+    class MySubForm(f.Form):
+        a = f.Text()
+        b = f.Text()
+        c = f.Text()
+
+    class MyForm(f.Form):
+        subject = f.Text()
+        email = f.Text()
+        foobar = f.Boolean()
+        message1 = f.Text()
+        message2 = f.Text()
+        subform = MySubForm()
+        formset = f.FormSet(MySubForm)
+
+    user_data = {
+        'email': u'new@example.com',
+        'foobar': False,
+        'subform.c': 4,
+        'formset.1-c': 54,
+        'formset.2-c': 64,
+        'formset.3-c': 74,
+    }
+    original_data = {
+        'subject': u'foo',
+        'email': u'test@example.com',
+        'subform': {
+            'a': 1,
+            'c': 3,
+        },
+        'formset': [
+            {'a': 51, 'c': 52},
+            {'a': 61, 'c': 62},
+            {'a': 71, 'c': 72},
+        ]
+    }
+
+    form = MyForm(user_data, original_data)
+    assert form.is_valid()
+    saved_data = form.save()
+
+    assert saved_data['subject'] == u'foo'
+    assert saved_data['email'] == u'new@example.com'
+    assert saved_data['foobar'] == False
+    assert 'message1' not in saved_data.keys()
+    assert 'message2' not in saved_data.keys()
+
+    assert saved_data['subform']['a'] == 1
+    assert 'b' not in saved_data['subform'].keys()
+    assert saved_data['subform']['c'] == 4
+
+    assert saved_data['formset'][0]['a'] == 51
+    assert 'b' not in saved_data['formset'][0].keys()
+    assert saved_data['formset'][0]['c'] == 54
+
+    assert saved_data['formset'][1]['a'] == 61
+    assert 'b' not in saved_data['formset'][1].keys()
+    assert saved_data['formset'][1]['c'] == 64
+
+    assert saved_data['formset'][2]['a'] == 71
+    assert 'b' not in saved_data['formset'][2].keys()
+    assert saved_data['formset'][2]['c'] == 74
+
+
 def test_prefix_save():
     db = SQLAlchemy()
 
@@ -369,7 +454,6 @@ def test_cascade_save():
     assert objb.b2 == data['fb.b2']
 
 
-
 def test_formset_as_field():
     class MyForm(f.Form):
         a = f.Text(validate=[f.Required])
@@ -439,8 +523,9 @@ def test_formset_model():
         id = db.Column(db.Integer, primary_key=True)
         email = db.Column(db.String)
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-        user = db.relationship('User',
-            backref=db.backref('addresses', lazy='dynamic'))
+        user = db.relationship(
+            'User', backref=db.backref('addresses', lazy='dynamic')
+        )
 
         def __repr__(self):
             return '<Address %s>' % (self.email,)
@@ -512,8 +597,9 @@ def test_formset_missing_objs():
         id = db.Column(db.Integer, primary_key=True)
         email = db.Column(db.String)
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-        user = db.relationship('User',
-            backref=db.backref('addresses', lazy='dynamic'))
+        user = db.relationship(
+            'User', backref=db.backref('addresses', lazy='dynamic')
+        )
 
         def __repr__(self):
             return self.email
@@ -559,7 +645,6 @@ def test_formset_save_to_dict():
     class FormAddress(f.Form):
         email = f.Text(validate=[f.ValidEmail])
 
-
     class FormUser(f.Form):
         name = f.Text()
         addresses = f.FormSet(FormAddress, parent='user')
@@ -588,7 +673,6 @@ def test_save_conflicting_field_names():
 
     class FormValue(f.Form):
         val = f.Text()
-
 
     class FormUser(f.Form):
         name = f.Text()
