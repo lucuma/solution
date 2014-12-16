@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 from .._compat import to_unicode, string_types
 from .validator import Validator
 

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 from .utils import FakeMultiDict, get_obj_value, set_obj_value
 
 

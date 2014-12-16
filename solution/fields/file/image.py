@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 from math import floor, ceil
 from os.path import join
-from solution.fields import File
+
+from .file import File
 
 
 class Image(File):

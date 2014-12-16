@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 from ..utils import Markup, get_html_attrs
 from .field import Field
 

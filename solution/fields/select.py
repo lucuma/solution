@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 from .._compat import to_unicode, string_types
 from ..utils import Markup, get_html_attrs, escape
 from .field import Field
