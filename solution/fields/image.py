@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from math import floor, ceil
-from os.path impor join
-from wand.image import Image as I
+from os.path import join
 from solution.fields import File
 
 
@@ -28,10 +27,13 @@ class Image(File):
             return path
 
     def resize_image(self, image_path):
+        import wand
+
         if self.size: # Only resize if we have a size constraint.
-            with I(filename=image_path) as img:
-                result = Image.calculate_dimensions(img.size,
-                                                   self.size)
+            with wand.image.Image(filename=image_path) as img:
+                result = Image.calculate_dimensions(
+                    img.size, self.size
+                )
                 if result:
                     x, y, width, height = result
                     img.crop(x, y, width=width, height=height)

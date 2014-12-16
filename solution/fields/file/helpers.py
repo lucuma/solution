@@ -1,13 +1,16 @@
 # coding=utf-8
+from __future__ import print_function
 import errno
 from math import ceil
 import os
 import shutil
 import uuid
 
-from wand.image import Image
-from werkzeug.exceptions import RequestEntityTooLarge, UnsupportedMediaType
-from werkzeug.utils import secure_filename
+try:
+    from werkzeug.exceptions import RequestEntityTooLarge, UnsupportedMediaType
+    from werkzeug.utils import secure_filename
+except ImportError as e:
+    print(e)
 
 
 IMAGES = ('.jpg', '.jpeg', '.png', '.gif', '.bmp',)
@@ -133,6 +136,8 @@ def set_geometry(im, width_height):
 
 
 def resize_image(path, width_height):
+    from wand.image import Image
+
     width, height = width_height
     im = Image(filename=path)
     im = set_geometry(im, width_height)

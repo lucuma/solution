@@ -299,14 +299,14 @@ def test_validate_boolean():
 
 
 def test_render_file():
-    field = f.File()
+    field = f.File('.')
     field.name = u'abc'
 
     assert field() == field.as_input()
     assert (field(foo='bar') ==
             u'<input foo="bar" name="abc" type="file">')
 
-    field = f.File(validate=[f.Required])
+    field = f.File('.', validate=[f.Required])
     field.name = u'abc'
     assert (field() ==
             u'<input name="abc" type="file" required>')
@@ -315,7 +315,7 @@ def test_render_file():
 
 
 def test_validate_file():
-    field = f.File()
+    field = f.File('.')
     field.name = u'abc'
 
     field.load_data(obj_value=u'obj value')

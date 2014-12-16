@@ -35,14 +35,15 @@ class File(Field):
         kwargs.setdefault('clean', kwargs.get('upload'))
 
         self.base_path = base_path
-        self.storage = FilesStorage(base_path=base_path,
-                                    upload_to=kwargs.get('upload_to', ''),
-                                    secret=kwargs.get('secret', False),
-                                    prefix=kwargs.get('prefix', ''),
-                                    allowed=kwargs.get('allowed', None),
-                                    denied=kwargs.get('denied', None),
-                                    max_size=kwargs.get('max_size', None), )
-
+        self.storage = FilesStorage(
+            base_path=base_path,
+            upload_to=kwargs.get('upload_to', ''),
+            secret=kwargs.get('secret', False),
+            prefix=kwargs.get('prefix', ''),
+            allowed=kwargs.get('allowed', None),
+            denied=kwargs.get('denied', None),
+            max_size=kwargs.get('max_size', None),
+        )
         super(File, self).__init__(**kwargs)
 
     def clean(self, value):
@@ -62,7 +63,7 @@ class File(Field):
         kwargs['name'] = self.name
         if kwargs['type'] != self._type:
             kwargs['value'] = self.to_string(**kwargs)
-        if not self.optional:
+        if not self.optional and not self.obj_value:
             kwargs.setdefault('required', True)
         html = u'<input %s>' % get_html_attrs(kwargs)
         return Markup(html)
