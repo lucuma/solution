@@ -282,9 +282,9 @@ def test_dont_save_not_used_fields():
         'email': u'new@example.com',
         'foobar': False,
         'subform.c': 4,
-        'subform.1-c': 54,
-        'subform.2-c': 64,
-        'subform.3-c': 74,
+        'formset.1-c': 54,
+        'formset.2-c': 64,
+        'formset.3-c': 74,
     }
     original_data = {
         'subject': u'foo',
@@ -474,6 +474,27 @@ def test_formset_as_field():
         assert sf.cleaned_data
 
 
+def test_formset_get_fullname():
+    class MyForm(f.Form):
+        a = f.Text(validate=[f.Required])
+        b = f.Text(validate=[f.Required])
+
+    objs = [
+        {'a': 'A1', 'b': 'B1'},
+        {'a': 'A2', 'b': 'B2'},
+        {'a': 'A3', 'b': 'B3'},
+    ]
+    formset = f.FormSet(MyForm, data={}, objs=objs)
+    assert formset._forms[0]._prefix == 'myform.1-'
+    assert formset._forms[1]._prefix == 'myform.2-'
+    assert formset._forms[2]._prefix == 'myform.3-'
+
+    formset = f.FormSet(MyForm, data={}, objs=objs, name='yeah')
+    assert formset._forms[0]._prefix == 'yeah.1-'
+    assert formset._forms[1]._prefix == 'yeah.2-'
+    assert formset._forms[2]._prefix == 'yeah.3-'
+
+
 def test_formset_objs():
     class MyForm(f.Form):
         a = f.Text(validate=[f.Required])
@@ -548,9 +569,9 @@ def test_formset_model():
 
     data = {
         'name': u'John Doe',
-        'formaddress.1-email': u'one@example.com',
-        'formaddress.2-email': u'two@example.com',
-        'formaddress.3-email': u'three@example.com',
+        'addresses.1-email': u'one@example.com',
+        'addresses.2-email': u'two@example.com',
+        'addresses.3-email': u'three@example.com',
     }
     form = FormUser(data)
     assert form.is_valid()
@@ -560,7 +581,7 @@ def test_formset_model():
     assert db.query(User).count() == 1
     assert db.query(Address).count() == 3
     addr = db.query(Address).first()
-    assert addr.email == data['formaddress.1-email']
+    assert addr.email == data['addresses.1-email']
     assert addr.user == user
 
     ## Update
@@ -568,9 +589,9 @@ def test_formset_model():
     user = db.query(User).first()
     data = {
         'name': u'Max Smart',
-        'formaddress.1-email': u'one+1@example.com',
-        'formaddress.2-email': u'two+2@example.com',
-        'formaddress.3-email': u'three+3@example.com',
+        'addresses.1-email': u'one+1@example.com',
+        'addresses.2-email': u'two+2@example.com',
+        'addresses.3-email': u'three+3@example.com',
     }
     form = FormUser(data, obj=user)
     assert form.is_valid()
@@ -580,7 +601,7 @@ def test_formset_model():
     assert user.name == data['name']
     assert db.query(Address).count() == 3
     addr = db.query(Address).first()
-    assert addr.email == data['formaddress.1-email']
+    assert addr.email == data['addresses.1-email']
     assert addr.user == user
 
 
@@ -631,9 +652,9 @@ def test_formset_missing_objs():
 
     data = {
         'name': u'Jane Doe',
-        'formaddress.1-email': u'one@example.org',
-        'formaddress.3-email': u'three@example.org',
-        'formaddress.4-email': u'four@example.org',
+        'addresses.1-email': u'one@example.org',
+        'addresses.3-email': u'three@example.org',
+        'addresses.4-email': u'four@example.org',
     }
     form = FormUser(data, user)
     assert form.is_valid()
@@ -653,9 +674,9 @@ def test_formset_save_to_dict():
 
     data = {
         'name': u'John Doe',
-        'formaddress.1-email': u'one@example.com',
-        'formaddress.2-email': u'two@example.com',
-        'formaddress.3-email': u'three@example.com',
+        'addresses.1-email': u'one@example.com',
+        'addresses.2-email': u'two@example.com',
+        'addresses.3-email': u'three@example.com',
     }
     form = FormUser(data)
 
@@ -682,9 +703,9 @@ def test_save_conflicting_field_names():
 
     data = {
         'name': u'John Doe',
-        'formvalue.1-val': u'one',
-        'formvalue.2-val': u'two',
-        'formvalue.3-val': u'three',
+        'values.1-val': u'one',
+        'values.2-val': u'two',
+        'values.3-val': u'three',
     }
     form = FormUser(data)
 

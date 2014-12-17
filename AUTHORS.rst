@@ -5,13 +5,10 @@ Credits
 Development Lead
 ====================================
 
-* `Juan-Pablo Scaletti`_ <juanpablo@lucumalabs.com>
-
+* `Juan-Pablo Scaletti <http://jpscaletti.com/>`_ <juanpablo@lucumalabs.com>
 
 Contributors
 ====================================
 
-None yet. Why not be the first?
+* `Javier Olaechea <http://www.puercopop.com/>`_
 
-
-.. _Juan-Pablo Scaletti: http://jpscaletti.com/

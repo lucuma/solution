@@ -1,4 +1,5 @@
 -r requirements.txt
+pytest
 pytest-cov
 sqlalchemy_wrapper
 wand

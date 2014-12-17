@@ -146,7 +146,10 @@ class Form(object):
         for name, subform in self._forms.items():
             obj_value = get_obj_value(obj, name)
             fclass = subform.__class__
-            subform_prefix = '{0}{1}.'.format(self._prefix, name.lower())
+            subform_prefix = '{prefix}{name}.'.format(
+                prefix=self._prefix,
+                name=name.lower()
+            )
 
             subform = fclass(
                 data,
@@ -160,23 +163,28 @@ class Form(object):
             self._forms[name] = subform
             setattr(self, name, subform)
 
-        # Initialize sub-sets
-        for name, subset in self._sets.items():
+        # Initialize form-sets
+        for name, formset in self._sets.items():
             obj_value = get_obj_value(obj, name)
-            sclass = subset.__class__
-            subset = sclass(
-                form_class=subset._form_class,
+            sclass = formset.__class__
+            formset_name = '{prefix}{name}'.format(
+                prefix=self._prefix,
+                name=name.lower()
+            )
+            
+            formset = sclass(
+                form_class=formset._form_class,
                 data=data,
                 objs=obj_value,
                 files=files,
                 locale=self._locale,
                 tz=self._tz,
-                prefix=self._prefix,
-                create_new=subset._create_new,
-                backref=subset._backref
+                name=formset_name,
+                create_new=formset._create_new,
+                backref=formset._backref
             )
-            self._sets[name] = subset
-            setattr(self, name, subset)
+            self._sets[name] = formset
+            setattr(self, name, formset)
 
         # Initialize fields
         for name, field in self._fields.items():
@@ -189,8 +197,8 @@ class Form(object):
     def reset(self):
         for subform in self._forms.values():
             subform.reset()
-        for subset in self._sets.values():
-            subset.reset()
+        for formset in self._sets.values():
+            formset.reset()
         for field in self._fields.values():
             field.reset()
 
@@ -232,12 +240,12 @@ class Form(object):
                 changed_fields.append(name)
 
         # Validate sub sets
-        for name, subset in self._sets.items():
-            if not subset.is_valid():
-                errors[name] = subset._errors
-                named_errors.update(subset._named_errors)
+        for name, formset in self._sets.items():
+            if not formset.is_valid():
+                errors[name] = formset._errors
+                named_errors.update(formset._named_errors)
                 continue
-            if subset.has_changed:
+            if formset.has_changed:
                 changed_fields.append(name)
 
         # Validate each field
@@ -288,8 +296,8 @@ class Form(object):
                 continue
             set_obj_value(obj, key, data)
 
-        for key, subset in self._sets.items():
-            data = subset.save(obj)
+        for key, formset in self._sets.items():
+            data = formset.save(obj)
             if not data:
                 continue
             set_obj_value(obj, key, data)

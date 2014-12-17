@@ -27,17 +27,16 @@ class FormSet(object):
     _forms = None
     _errors = None
     _named_errors = None
-    _prefix = u''
     missing_objs = None
     has_changed = False
 
     def __init__(self, form_class, data=None, objs=None, files=None,
-            locale='en', tz='utc', prefix=u'', create_new=True,
+            locale='en', tz='utc', create_new=True, name='',
             backref=None, parent=None):
         self._form_class = form_class
         self._locale = locale
         self._tz = tz
-        self._prefix = prefix
+        self._name = name
         self._create_new = bool(create_new)
         backref = backref or parent
         self._backref = backref
@@ -69,7 +68,7 @@ class FormSet(object):
 
     @property
     def form(self):
-        return self._form_class(prefix=self._get_prefix(1))
+        return self._form_class(name=self._get_fullname(1))
 
     def _init(self, data=None, objs=None, files=None):
         self._errors = {}
@@ -94,12 +93,12 @@ class FormSet(object):
 
         for i, obj in enumerate(objs, 1):
             num = i
-            form_prefix = self._get_prefix(num)
+            fullname = self._get_fullname(num)
             if (
                     (data or files)
                     and self._form_class._model
-                    and not has_data(data, form_prefix)
-                    and not has_data(files, form_prefix)
+                    and not has_data(data, fullname)
+                    and not has_data(files, fullname)
                 ):
                 missing_objs.append(obj)
                 continue
@@ -107,7 +106,7 @@ class FormSet(object):
             f = self._form_class(
                 data, obj=obj, files=files,
                 locale=self._locale, tz=self._tz,
-                prefix=form_prefix, backref=self._backref
+                prefix=fullname, backref=self._backref
             )
             forms.append(f)
         num += 1
@@ -123,25 +122,24 @@ class FormSet(object):
                 if get_obj_value(mo, self._backref, None):
                     set_obj_value(mo, self._backref, None)
 
-    def _get_prefix(self, num):
-        return '{0}{1}.{2}'.format(
-            self._prefix,
-            self._form_class.__name__.lower(),
-            num
+    def _get_fullname(self, num):
+        return '{name}.{num}'.format(
+            name=self._name or self._form_class.__name__.lower(),
+            num=num
         )
 
     def _find_new_forms(self, forms, num, data, files, locale, tz):
         """Acknowledge new forms created client-side.
         """
-        form_prefix = self._get_prefix(num)
-        while has_data(data, form_prefix) or has_data(files, form_prefix):
+        fullname = self._get_fullname(num)
+        while has_data(data, fullname) or has_data(files, fullname):
             f = self._form_class(
                 data, files=files, locale=locale, tz=tz,
-                prefix=form_prefix, backref=self._backref
+                prefix=fullname, backref=self._backref
             )
             forms.append(f)
             num += 1
-            form_prefix = self._get_prefix(num)
+            fullname = self._get_fullname(num)
         return forms
 
     def is_valid(self):
@@ -168,13 +166,12 @@ class FormSet(object):
         return [form.save(backref_obj) for form in self._forms]
 
 
-def has_data(d, prefix):
-    """Test if any of the `keys` of the `d` dictionary starts with `prefix`.
+def has_data(d, fullname):
+    """Test if any of the `keys` of the `d` dictionary starts with `fullname`.
     """
-    prefix = r'%s-' % (prefix, )
+    fullname = r'%s-' % (fullname, )
     for k in d:
-        if not k.startswith(prefix):
+        if not k.startswith(fullname):
             continue
         return True
     return False
-
