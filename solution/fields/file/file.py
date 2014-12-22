@@ -31,7 +31,7 @@ class File(Field):
     _type = 'file'
     hide_value = True
 
-    def __init__(self, base_path, **kwargs):
+    def __init__(self, base_path='.', **kwargs):
         # Backwards compatibility
         kwargs.setdefault('clean', kwargs.get('upload'))
 

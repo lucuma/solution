@@ -1,6 +1,8 @@
 *.py[cod]
 .DS_Store
 .idea
+*.sublime-project
+*.sublime-workspace
 
 # C extensions
 *.so

@@ -10,7 +10,7 @@ class Image(File):
     sure the image is of that size.
     """
 
-    def __init__(self, base_path, size=None, **kwargs):
+    def __init__(self, base_path='.', size=None, **kwargs):
         self.size = kwargs.get('size', None)
         if size:
             self.width = size[0]
