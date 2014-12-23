@@ -306,7 +306,7 @@ def test_render_file():
     assert (field(foo='bar') ==
             u'<input foo="bar" name="abc" type="file">')
 
-    field = f.File('.', validate=[f.Required])
+    field = f.File(validate=[f.Required])
     field.name = u'abc'
     assert (field() ==
             u'<input name="abc" type="file" required>')
@@ -315,7 +315,7 @@ def test_render_file():
 
 
 def test_validate_file():
-    field = f.File('.')
+    field = f.File()
     field.name = u'abc'
 
     field.load_data(obj_value=u'obj value')
@@ -325,4 +325,3 @@ def test_validate_file():
     field.load_data(obj_value=u'obj value', file_data=u'file data')
     assert field.validate() == u'file data'
     assert not field.error
-

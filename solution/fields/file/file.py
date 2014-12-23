@@ -52,6 +52,7 @@ class File(Field):
         """
         if isinstance(value, FileStorage):
             return self.storage.save(value)
+        return value
 
     def str_to_py(self, **kwargs):
         return self.str_value or self.file_data or self.obj_value
