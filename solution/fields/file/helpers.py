@@ -150,7 +150,7 @@ def resize_image(path, width_height):
     im.close()
 
 
-class Storage(object):
+class Uploader(object):
 
     def get_content_length(self, filesto):
         content_length = filesto.content_length
@@ -179,7 +179,7 @@ class Storage(object):
             raise UnsupportedMediaType()
 
 
-class FilesStorage(Storage):
+class FileSystemUploader(Uploader):
 
     def __init__(self, base_path, upload_to='', secret=False,
                  prefix='', allowed=None, denied=None, max_size=None):
@@ -251,7 +251,7 @@ class FilesStorage(Storage):
         bother setting the ones relevant to *this upload*.
 
         filesto
-        :   A `werkzeug.FileStorage`.
+        :   A `werkzeug.FileUploader`.
 
         upload_to
         :   Relative path to where to upload
@@ -332,4 +332,4 @@ class FilesStorage(Storage):
             pass
 
     def __repr__(self):
-        return '<FilesStorage "%s" secret=%s>' % (self.upload_to, self.secret)
+        return '<FileSystemUploader "%s" secret=%s>' % (self.upload_to, self.secret)

@@ -1,9 +1,9 @@
 # coding=utf-8
 from werkzeug.datastructures import FileStorage
-from solution.fields import Field, ValidationError
+from solution.fields import Field
 from solution.utils import Markup, get_html_attrs
 
-from .helpers import FilesStorage
+from .helpers import FileSystemUploader
 
 
 class File(Field):
@@ -36,7 +36,7 @@ class File(Field):
         kwargs.setdefault('clean', kwargs.get('upload'))
 
         self.base_path = base_path
-        self.storage = FilesStorage(
+        self.storage = FileSystemUploader(
             base_path=base_path,
             upload_to=kwargs.get('upload_to', ''),
             secret=kwargs.get('secret', False),

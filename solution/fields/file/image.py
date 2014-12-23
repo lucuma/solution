@@ -14,7 +14,7 @@ class Image(File):
         self.size = kwargs.get('size', None)
         if size:
             self.width = size[0]
-            self.height = size [1]
+            self.height = size[1]
         super(Image, self).__init__(base_path, **kwargs)
 
     def clean(self, value):
@@ -22,7 +22,7 @@ class Image(File):
         returns if needed.
 
         """
-        path = super(Image, self).clean(value, *args, **kwargs)
+        path = super(Image, self).clean(value)
         if path:
             self.resize_image(join(self.base_path, path))
             return path
@@ -30,15 +30,16 @@ class Image(File):
     def resize_image(self, image_path):
         import wand
 
-        if self.size: # Only resize if we have a size constraint.
-            with wand.image.Image(filename=image_path) as img:
-                result = Image.calculate_dimensions(
-                    img.size, self.size
-                )
-                if result:
-                    x, y, width, height = result
-                    img.crop(x, y, width=width, height=height)
-                    img.save(filename=image_path)
+        if not self.size:
+            return
+        with wand.image.Image(filename=image_path) as img:
+            result = Image.calculate_dimensions(
+                img.size, self.size
+            )
+            if result:
+                x, y, width, height = result
+                img.crop(x, y, width=width, height=height)
+                img.save(filename=image_path)
 
     @staticmethod
     def calculate_dimensions(image_size, desired_size):
