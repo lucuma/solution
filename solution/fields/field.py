@@ -54,7 +54,7 @@ class Field(object):
         self._set_validators(validate)
         self._default = default
         self.prepare = prepare
-        self.clean = clean
+        self.clean = clean or getattr(self, 'clean', None)
         self.hide_value = hide_value
         self.extra = kwargs
 
@@ -220,4 +220,3 @@ def validator_in(validator, validators_list):
         if (v == validator) or isinstance(v, validator):
             return True
     return False
-

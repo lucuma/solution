@@ -68,7 +68,7 @@ class FormSet(object):
 
     @property
     def form(self):
-        return self._form_class(name=self._get_fullname(1))
+        return self._form_class(prefix=self._get_fullname(1))
 
     def _init(self, data=None, objs=None, files=None):
         self._errors = {}
