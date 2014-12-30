@@ -30,7 +30,8 @@ class FormSet(object):
     missing_objs = None
     has_changed = False
 
-    def __init__(self, form_class, data=None, objs=None, files=None,
+    def __init__(
+            self, form_class, data=None, objs=None, files=None,
             locale='en', tz='utc', create_new=True, name='',
             backref=None, parent=None):
         self._form_class = form_class
@@ -83,7 +84,7 @@ class FormSet(object):
             files = FakeMultiDict(files)
         objs = objs or []
         try:
-            _ = iter(objs)
+            iter(objs)
         except TypeError:
             objs = [objs]
 
@@ -94,12 +95,9 @@ class FormSet(object):
         for i, obj in enumerate(objs, 1):
             num = i
             fullname = self._get_fullname(num)
-            if (
-                    (data or files)
-                    and self._form_class._model
+            if ((data or files)
                     and not has_data(data, fullname)
-                    and not has_data(files, fullname)
-                ):
+                    and not has_data(files, fullname)):
                 missing_objs.append(obj)
                 continue
 
@@ -112,8 +110,10 @@ class FormSet(object):
         num += 1
 
         if data and self._create_new:
-            forms = self._find_new_forms(forms, num, data, files,
-                locale=self._locale, tz=self._tz)
+            forms = self._find_new_forms(
+                forms, num, data, files,
+                locale=self._locale, tz=self._tz
+            )
 
         self._forms = forms
         self.missing_objs = missing_objs
@@ -150,12 +150,16 @@ class FormSet(object):
         named_errors = {}
 
         for name, form in enumerate(self._forms, 1):
-            if not form.is_valid():
-                errors[name] = form._errors
-                named_errors.update(form._named_errors)
-                continue
-            if form.has_changed:
+            if not form.has_input_data:
                 self.has_changed = True
+                continue
+            else:
+                if not form.is_valid():
+                    errors[name] = form._errors
+                    named_errors.update(form._named_errors)
+                    continue
+                if form.has_changed:
+                    self.has_changed = True
         if errors:
             self._errors = errors
             self._named_errors = named_errors
@@ -163,7 +167,10 @@ class FormSet(object):
         return True
 
     def save(self, backref_obj):
-        return [form.save(backref_obj) for form in self._forms]
+        return [
+            form.save(backref_obj) for form in self._forms
+            if form.has_input_data
+        ]
 
 
 def has_data(d, fullname):

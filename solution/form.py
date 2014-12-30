@@ -46,6 +46,8 @@ class Form(object):
     _errors = None
     _named_errors = None
 
+    _input_data = None
+
     cleaned_data = None
     changed_fields = None
 
@@ -84,7 +86,8 @@ class Form(object):
         self._named_errors = {}
 
         self._init_fields()
-        self._init_data(data, obj, files)
+        if data or obj or files:
+            self._init_data(data, obj, files)
 
     def _init_fields(self):
         """Creates the `_fields`, `_forms` asn `_sets` dicts.
@@ -150,7 +153,6 @@ class Form(object):
                 prefix=self._prefix,
                 name=name.lower()
             )
-
             subform = fclass(
                 data,
                 obj_value,
@@ -162,6 +164,7 @@ class Form(object):
             )
             self._forms[name] = subform
             setattr(self, name, subform)
+            self._input_data = self._input_data or subform._input_data
 
         # Initialize form-sets
         for name, formset in self._sets.items():
@@ -185,11 +188,14 @@ class Form(object):
             )
             self._sets[name] = formset
             setattr(self, name, formset)
+            for _form in formset._forms:
+                self._input_data = self._input_data or _form._input_data
 
         # Initialize fields
         for name, field in self._fields.items():
             subdata = data.getlist(self._prefix + name)
             subfiles = files.getlist(self._prefix + name)
+            self._input_data = self._input_data or subdata or subfiles
             obj_value = get_obj_value(obj, name)
             field.load_data(subdata, obj_value, file_data=subfiles,
                             locale=self._locale, tz=self._tz)
@@ -212,6 +218,10 @@ class Form(object):
 
     def __contains__(self, name):
         return (name in self._fields)
+
+    @property
+    def has_input_data(self):
+        return bool(self._input_data)
 
     @property
     def has_changed(self):
@@ -292,13 +302,13 @@ class Form(object):
 
         for key, subform in self._forms.items():
             data = subform.save(obj)
-            if not data:
+            if self._model and not data:
                 continue
             set_obj_value(obj, key, data)
 
         for key, formset in self._sets.items():
             data = formset.save(obj)
-            if not data:
+            if self._model and not data:
                 continue
             set_obj_value(obj, key, data)
 

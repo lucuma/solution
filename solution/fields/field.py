@@ -216,7 +216,7 @@ class Field(object):
 
 
 def validator_in(validator, validators_list):
-    for v in validators_list:
-        if (v == validator) or isinstance(v, validator):
+    for val in validators_list:
+        if (val == validator) or isinstance(val, validator):
             return True
     return False
