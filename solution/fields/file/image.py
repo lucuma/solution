@@ -11,7 +11,7 @@ class Image(File):
     """
 
     def __init__(self, base_path='.', size=None, **kwargs):
-        self.size = kwargs.get('size', None)
+        self.size = size
         if size:
             self.width = size[0]
             self.height = size[1]
@@ -28,7 +28,7 @@ class Image(File):
             return path
 
     def resize_image(self, image_path):
-        import wand
+        import wand.image
 
         if not self.size:
             return
