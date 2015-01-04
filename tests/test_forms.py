@@ -685,3 +685,56 @@ def test_form_data_prepare_and_clean():
 
     cleaned_data = form.save()
     assert cleaned_data == {'message': u'Hello World. Welcome'}
+
+
+def test_dont_save_not_used_fields():
+
+    class MySubForm(f.Form):
+        a = f.Text()
+        b = f.Text()
+        c = f.Text()
+
+    class MyForm(f.Form):
+        subject = f.Text()
+        email = f.Text()
+        foobar = f.Boolean()
+        message1 = f.Text()
+        message2 = f.Text()
+        subform = MySubForm()
+        formset = f.FormSet(MySubForm)
+
+    user_data = {
+        'email': u'new@example.com',
+        'foobar': False,
+        'subform.c': 4,
+        'formset.1-c': 54,
+        'formset.2-c': 64,
+        'formset.3-c': 74,
+    }
+    original_data = {
+        'subject': u'foo',
+        'email': u'test@example.com',
+        'subform': {
+            'a': 1,
+            'c': 3,
+        },
+        'formset': [
+            {'a': 51, 'c': 52},
+            {'a': 61, 'c': 62},
+            {'a': 71, 'c': 72},
+        ]
+    }
+
+    form = MyForm(user_data, original_data)
+    assert form.is_valid()
+    saved_data = form.save()
+
+    assert saved_data['subject'] == u'foo'
+    assert saved_data['email'] == u'new@example.com'
+    assert saved_data['foobar'] == False
+    assert 'message1' not in saved_data.keys()
+    assert 'message2' not in saved_data.keys()
+
+    assert saved_data['subform']['a'] == 1
+    assert 'b' not in saved_data['subform'].keys()
+    assert saved_data['subform']['c'] == 4
