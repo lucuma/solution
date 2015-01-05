@@ -320,7 +320,7 @@ class Form(object):
             (key, val) for key, val in self.cleaned_data.items()
             if (
                 (not isinstance(getattr(self, key), FormSet)) and
-                (getattr(self, key) is not None)
+                (not isinstance(getattr(self, key), Form))
             )
         ])
         if self._backref and backref_obj:
@@ -339,8 +339,7 @@ class Form(object):
         for key in self.changed_fields:
             if key in self.cleaned_data:
                 val = self.cleaned_data.get(key)
-                if val is not None:
-                    set_obj_value(obj, key, val)
+                set_obj_value(obj, key, val)
         return obj
 
     def __repr__(self):
