@@ -129,6 +129,8 @@ class Field(object):
             return None
 
     def str_to_py(self, **kwargs):
+        if self.str_value is None:
+            return self.obj_value
         return self.str_value
 
     def validate(self, form=None, cleaned_data=None, **kwargs):

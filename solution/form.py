@@ -339,8 +339,7 @@ class Form(object):
         for key in self.changed_fields:
             if key in self.cleaned_data:
                 val = self.cleaned_data.get(key)
-                if val is not None:
-                    set_obj_value(obj, key, val)
+                set_obj_value(obj, key, val)
         return obj
 
     def __repr__(self):
