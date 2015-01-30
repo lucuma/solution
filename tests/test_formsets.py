@@ -326,3 +326,30 @@ def test_formset_dict_delete_form():
             },
         ],
     }
+
+
+def test_formset_names():
+    class MyForm(f.Form):
+        a = f.Text(validate=[f.Required])
+        b = f.Text(validate=[f.Required])
+
+    class WrapForm(f.Form):
+        subs = f.FormSet(MyForm)
+
+    form = WrapForm({})
+    print('# form.subs.form.a.name ==', form.subs.form.a.name)
+    assert form.subs.form.a.name == 'subs.1-a'
+
+    form = WrapForm({}, {'a': 'foo', 'b': 'bar'})
+    print('# form.subs.form.a.name ==', form.subs.form.a.name)
+    assert form.subs.form.a.name == 'subs.1-a'
+
+    form = WrapForm({'subs.1-a': 'foo', 'subs.1-b': 'bar'})
+    print('# form.subs.form.a.name ==', form.subs.form.a.name)
+    print('# form.subs._forms[0].a.name ==', form.subs._forms[0].a.name)
+    assert form.subs.form.a.name == 'subs.1-a'
+    assert form.subs._forms[0].a.name == 'subs.1-a'
+
+
+if __name__ == '__main__':
+    test_formset_names()

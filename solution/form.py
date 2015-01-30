@@ -120,6 +120,7 @@ class Form(object):
             elif is_form:
                 forms[name] = field
             elif is_set:
+                field._name = self._prefix + name  # REALLY IMPORTANT
                 sets[name] = field
 
         self._fields = fields
@@ -174,15 +175,14 @@ class Form(object):
                 prefix=self._prefix,
                 name=name.lower()
             )
-
             formset = sclass(
                 form_class=formset._form_class,
+                name=formset_name,
                 data=data,
                 objs=obj_value,
                 files=files,
                 locale=self._locale,
                 tz=self._tz,
-                name=formset_name,
                 create_new=formset._create_new,
                 backref=formset._backref
             )
