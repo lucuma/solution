@@ -6,15 +6,15 @@
 
     An amazing form solution
 
-    :copyright: © 2012-2014 by `Juan Pablo Scaletti <http://jpscaletti.com>`_.
+    :copyright: © by `Juan Pablo Scaletti <http://jpscaletti.com>`_.
     :license: MIT, see LICENSE for more details.
 
 """
-from .form import Form
-from .formset import FormSet
-from .fields import *
-from .validators import *
-from .utils import Markup, get_html_attrs, to_unicode
+from .form import Form  # noqa
+from .formset import FormSet  # noqa
+from .fields import *  # noqa
+from .validators import *  # noqa
+from .utils import Markup, get_html_attrs, to_unicode  # noqa
 
 
 __version__ = '3.0.10'

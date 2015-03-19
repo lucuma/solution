@@ -4,7 +4,7 @@ Solution
 
 .. image:: https://badge.fury.io/py/Solution.png
     :target: http://badge.fury.io/py/Solution
-    
+
 .. image:: https://travis-ci.org/lucuma/solution.png?branch=master
         :target: https://travis-ci.org/lucuma/solution
 
@@ -14,8 +14,8 @@ Solution
 
 An amazing form solution
 
-* BSD License. See ``LICENSE`` for more details.
-* Documentation: http://solution.rtfd.org.
+* MIT License. See ``LICENSE`` for more details.
+
 
 Features
 ====================================
