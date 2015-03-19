@@ -1,4 +1,6 @@
 # coding=utf-8
+from hashlib import md5
+
 from .._compat import to_unicode, string_types
 from ..utils import Markup, get_html_attrs, escape
 from .field import Field
@@ -65,14 +67,20 @@ class BaseSelect(Field):
 
     def _render_item(self, item, kwargs, values, tmpl):
         val, label = item
+        item_id = u'{id}-{hash}'.format(
+            id=self.id,
+            hash=md5(label.encode('utf8')).hexdigest()[:8],
+        )
         kwargs['value'] = val
         kwargs['checked'] = (val in values or str(val) in values)
         html_attrs = get_html_attrs(kwargs)
-        return (tmpl
-                .replace(u'{attrs}', html_attrs)
-                .replace(u'{label}', escape(label))
-                .replace(u'{value}', escape(val))
-                )
+        return (
+            tmpl
+            .replace(u'{attrs}', html_attrs)
+            .replace(u'{label}', escape(label))
+            .replace(u'{value}', escape(val))
+            .replace(u'{id}', escape(item_id))
+        )
 
 
 class Select(BaseSelect):

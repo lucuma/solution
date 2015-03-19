@@ -86,8 +86,8 @@ class Form(object):
         self._named_errors = {}
 
         self._init_fields()
-        if data or obj or files:
-            self._init_data(data, obj, files)
+        # Even when there is no data we need this initialisation
+        self._init_data(data, obj, files)
 
     def _init_fields(self):
         """Creates the `_fields`, `_forms` asn `_sets` dicts.

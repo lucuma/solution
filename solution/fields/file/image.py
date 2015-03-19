@@ -3,6 +3,7 @@ from math import floor, ceil
 from os.path import join
 
 from .file import File
+from .helpers import IMAGES
 
 
 class Image(File):
@@ -15,6 +16,7 @@ class Image(File):
         if size:
             self.width = size[0]
             self.height = size[1]
+        kwargs.setdefault('allowed', IMAGES)
         super(Image, self).__init__(base_path, **kwargs)
 
     def clean(self, value):

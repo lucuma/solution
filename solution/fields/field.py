@@ -1,5 +1,7 @@
 # coding=utf-8
+from hashlib import md5
 import inspect
+import os
 
 from .. import validators as v
 from .._compat import to_unicode, implements_to_string
@@ -74,6 +76,18 @@ class Field(object):
         if callable(self._default):
             return self._default()
         return self._default
+
+    @property
+    def id(self):
+        if not hasattr(self, '_id'):
+            self._id = self._get_id()
+        return self._id
+
+    def _get_id(self):
+        return u'id-{name}-{random}'.format(
+            name=self.name,
+            random=md5(os.urandom(8)).hexdigest()[:8]
+        )
 
     def reset(self):
         self.str_value = None
