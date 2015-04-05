@@ -14,8 +14,6 @@ Solution
 
 An amazing form solution
 
-* MIT License. See ``LICENSE`` for more details.
-
 
 Features
 ====================================
@@ -25,3 +23,10 @@ Features
 * Extremely flexible in the field representation (defaulting to an HTML representation that might be good enough).
 * Easy individual field or form-wide validators.
 * Customizable cleanup functions.
+
+
+
+______
+
+:copyright: `Juan-Pablo Scaletti <http://jpscaletti.com>`_.
+:license: MIT, see LICENSE for more details.

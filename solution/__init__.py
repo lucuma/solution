@@ -6,7 +6,7 @@
 
     An amazing form solution
 
-    :copyright: © by `Juan Pablo Scaletti <http://jpscaletti.com>`_.
+    :copyright: `Juan-Pablo Scaletti <http://jpscaletti.com>`_.
     :license: MIT, see LICENSE for more details.
 
 """
