@@ -150,7 +150,10 @@ class Form(object):
         # Initialize sub-forms
         for name, subform in self._forms.items():
             obj_value = get_obj_value(obj, name)
-            fclass = subform.__class__
+            if inspect.isclass(subform):
+                fclass = subform
+            else:
+                fclass = subform.__class__
             subform_prefix = '{prefix}{name}.'.format(
                 prefix=self._prefix,
                 name=name.lower()
@@ -162,8 +165,9 @@ class Form(object):
                 locale=self._locale,
                 tz=self._tz,
                 prefix=subform_prefix,
-                backref=subform._backref
+                backref=getattr(subform, '_backref', None)
             )
+
             self._forms[name] = subform
             setattr(self, name, subform)
             self._input_data = self._input_data or subform._input_data
