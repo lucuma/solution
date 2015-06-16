@@ -104,7 +104,8 @@ class Form(object):
                 continue
             field = getattr(self, name)
             is_field = isinstance(field, Field)
-            is_form = isinstance(field, Form)
+            is_form = isinstance(field, Form) or (
+                inspect.isclass(field) and issubclass(field, Form))
             is_set = isinstance(field, FormSet)
 
             if is_field:

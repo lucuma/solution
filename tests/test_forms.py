@@ -242,12 +242,32 @@ def test_save():
     db.commit()
 
 
-def init_subform_with_classes():
+def init_subform_with_instances():
     class FormA(f.Form):
         a = f.Text()
 
     class WrapForm(f.Form):
         fa = FormA()
+
+    data = {
+        'fa.a': u'A',
+    }
+    form = WrapForm(data)
+    assert form.save() == data
+
+    user_data = {
+        'fa.a': u'AAA',
+    }
+    form = WrapForm(user_data, data)
+    assert form.save() == user_data
+
+
+def init_subform_with_classes():
+    class FormA(f.Form):
+        a = f.Text()
+
+    class WrapForm(f.Form):
+        fa = FormA
 
     data = {
         'fa.a': u'A',
@@ -360,7 +380,7 @@ def test_cascade_save():
     assert objb.b1 == data['fb.b1']
     assert objb.b2 == data['fb.b2']
 
-    ## Update
+    # Update
     data = {
         'wr': u'foo',
         'fa.a1': u'A1',
