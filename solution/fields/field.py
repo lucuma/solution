@@ -40,6 +40,10 @@ class Field(object):
         Do not render the current value a a string. Useful with passwords
         fields.
 
+    :param optional:
+        Do not validate if the value is empty. Default True unless the Required
+        validator is present
+
     """
     name = 'field'
     form = None
@@ -52,12 +56,15 @@ class Field(object):
     empty = True
 
     def __init__(self, validate=None, default=None, prepare=None, clean=None,
-                 hide_value=False, **kwargs):
+                 hide_value=False, optional=None, **kwargs):
         self._set_validators(validate)
         self._default = default
         self.prepare = prepare
         self.clean = clean or getattr(self, 'clean', None)
         self.hide_value = hide_value
+        if optional is None:
+            optional = not validator_in(v.Required, self.validators)
+        self.optional = optional
         self.extra = kwargs
 
     def _set_validators(self, validators):
@@ -67,9 +74,8 @@ class Field(object):
         defval = self.default_validator
         if defval and not validator_in(defval, validators):
             validators.append(defval)
-        self.validators = [val() if inspect.isclass(val) else val
-                           for val in validators]
-        self.optional = not validator_in(v.Required, self.validators)
+        self.validators = [
+            val() if inspect.isclass(val) else val for val in validators]
 
     @property
     def default(self):
