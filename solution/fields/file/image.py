@@ -51,7 +51,6 @@ class Image(File):
         anything. Otherwise, first calculate the (truncated) center and then
         take half the width and height (truncated again) for x and y.
 
-
         x0, y0: the center coordinates
         """
 

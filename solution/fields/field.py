@@ -78,6 +78,10 @@ class Field(object):
             val() if inspect.isclass(val) else val for val in validators]
 
     @property
+    def required(self):
+        return not self.optional
+
+    @property
     def default(self):
         if callable(self._default):
             return self._default()
