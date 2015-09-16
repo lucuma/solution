@@ -8,6 +8,10 @@ import solution as f
 to_unicode = f._compat.to_unicode
 
 
+def _clean(form, value, **kwargs):
+    return value
+
+
 def test_validation_error():
     v = f.ValidationError(u'olé')
     assert v.message == u'olé'
@@ -108,7 +112,7 @@ def test_render_text():
 
 
 def test_render_text_extra():
-    field = f.Text(data_modal=True, aria_label='test', foo='niet')
+    field = f.Text(data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = u'abc'
     field.load_data(u'123')
 
@@ -173,7 +177,7 @@ def test_render_number():
 
 
 def test_render_number_extra():
-    field = f.Number(data_modal=True, aria_label='test', foo='niet')
+    field = f.Number(data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = u'abc'
     field.load_data('123')
     assert field() == field.as_input()
@@ -238,7 +242,7 @@ def test_render_color():
 
 
 def test_render_color_extra():
-    field = f.Color(data_modal=True, aria_label='test', foo='niet')
+    field = f.Color(data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = u'abc'
     field.load_data('#ffaf2e')
 
@@ -321,7 +325,7 @@ def test_render_boolean():
 
 
 def test_render_boolean_extra():
-    field = f.Boolean(data_modal=True, aria_label='test', foo='niet')
+    field = f.Boolean(data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = u'abc'
 
     field.load_data(obj_value=True)
@@ -364,7 +368,7 @@ def test_render_file():
 
 
 def test_render_file_extra():
-    field = f.File('.', data_modal=True, aria_label='test', foo='niet')
+    field = f.File('.', data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = u'abc'
 
     assert field() == field.as_input()

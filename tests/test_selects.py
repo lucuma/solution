@@ -2,6 +2,10 @@
 import solution as f
 
 
+def _clean(form, value, **kwargs):
+    return value
+
+
 def test_render_select():
     items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'Curaçao'),
              (6, u'F'), (7, u'G'), (8, 'Curaçao')]
@@ -35,7 +39,7 @@ def test_render_select():
 def test_render_select_extra():
     items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'Curaçao'),
              (6, u'F'), (7, u'G'), (8, 'Curaçao')]
-    field = f.Select(items=items, data_modal=True, aria_label='test', foo='niet')
+    field = f.Select(items=items, data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = 'abc'
     field.load_data(obj_value=3)
 
@@ -99,7 +103,7 @@ def test_render_select_as_radios():
 
 def test_render_select_as_radios_extra():
     items = [(1, u'A'), (2, u'B'), (3, u'C')]
-    field = f.Select(items=items, data_modal=True, aria_label='test', foo='niet')
+    field = f.Select(items=items, data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = 'abc'
     field.load_data(obj_value=3)
 

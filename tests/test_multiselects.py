@@ -4,6 +4,10 @@ from operator import eq
 import solution as f
 
 
+def _clean(form, value, **kwargs):
+    return value
+
+
 def lists_are_equal(l1, l2):
     return all(map(eq, l1, l2))
 
@@ -40,7 +44,7 @@ def test_render_multiselect():
 def test_render_multiselect_extra():
     items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'),
              (6, u'F'), (7, u'G')]
-    field = f.MultiSelect(items=items, data_modal=True, aria_label='test', foo='niet')
+    field = f.MultiSelect(items=items, data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = 'abc'
     field.load_data(str_value=[], obj_value=[2, 4, 6])
 
@@ -101,7 +105,7 @@ def test_render_multiselect_as_checks():
 
 def test_render_multiselect_as_checks_extra():
     items = [(1, u'A'), (2, u'B'), (3, u'C')]
-    field = f.MultiSelect(items=items, data_modal=True, aria_label='test', foo='niet')
+    field = f.MultiSelect(items=items, data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = 'abc'
     field.load_data(obj_value=[1, 2])
 

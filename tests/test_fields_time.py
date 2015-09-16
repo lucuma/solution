@@ -7,6 +7,10 @@ import solution as f
 to_unicode = f._compat.to_unicode
 
 
+def _clean(form, value, **kwargs):
+    return value
+
+
 def test_render_time():
     field = f.Time()
     field.name = u'abc'
@@ -22,7 +26,7 @@ def test_render_time():
 
 
 def test_render_time_extra():
-    field = f.Time(data_modal=True, aria_label='test', foo='niet')
+    field = f.Time(data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = u'abc'
     field.load_data(obj_value=datetime.time(11, 55))
 

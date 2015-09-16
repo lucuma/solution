@@ -7,6 +7,10 @@ import solution as f
 to_unicode = f._compat.to_unicode
 
 
+def _clean(form, value, **kwargs):
+    return value
+
+
 def test_render_date():
     field = f.Date()
     field.name = u'abc'
@@ -22,7 +26,7 @@ def test_render_date():
 
 
 def test_render_date_extra():
-    field = f.Date(data_modal=True, aria_label='test', foo='niet')
+    field = f.Date(data_modal=True, aria_label='test', foo='niet', clean=_clean)
     field.name = u'abc'
     field.load_data(obj_value=date(1979, 5, 13))
 
