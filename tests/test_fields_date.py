@@ -21,6 +21,20 @@ def test_render_date():
             u'<input foo="bar" name="abc" type="text" value="1979-05-13">')
 
 
+def test_render_date_extra():
+    field = f.Date(data_modal=True, aria_label='test', foo='niet')
+    field.name = u'abc'
+    field.load_data(obj_value=date(1979, 5, 13))
+
+    assert field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="date" value="1979-05-13" data-modal>')
+    assert (field.as_textarea(foo='bar') ==
+            u'<textarea aria-label="test" foo="bar" name="abc" data-modal>1979-05-13</textarea>')
+    assert (field(foo='bar', type='text') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="text" value="1979-05-13" data-modal>')
+
+
 def test_render_required():
     field = f.Date(validate=[f.Required])
     field.name = u'abc'

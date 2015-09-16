@@ -37,6 +37,28 @@ def test_render_multiselect():
     assert field().startswith(u'<select name="abc" required multiple>')
 
 
+def test_render_multiselect_extra():
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'),
+             (6, u'F'), (7, u'G')]
+    field = f.MultiSelect(items=items, data_modal=True, aria_label='test', foo='niet')
+    field.name = 'abc'
+    field.load_data(str_value=[], obj_value=[2, 4, 6])
+
+    assert field() == field.as_select()
+    expected = (
+        '<select aria-label="test" foo="bar" name="abc" data-modal multiple>\n'
+        '<option value="1">A</option>\n'
+        '<option value="2" selected>B</option>\n'
+        '<option value="3">C</option>\n'
+        '<option value="4" selected>D</option>\n'
+        '<option value="5">E</option>\n'
+        '<option value="6" selected>F</option>\n'
+        '<option value="7">G</option>\n'
+        '</select>'
+    )
+    assert field(foo='bar') == expected
+
+
 def test_render_multiselect_groups():
     items1 = [u'First group', (1, u'A'), (2, u'B'), (3, u'C')]
     items2 = [(4, u'D'), (5, u'E'), (6, u'F')]
@@ -73,6 +95,22 @@ def test_render_multiselect_as_checks():
         '<label><input foo="bar" name="abc" type="checkbox" value="1" checked> A</label>\n'
         '<label><input foo="bar" name="abc" type="checkbox" value="2" checked> B</label>\n'
         '<label><input foo="bar" name="abc" type="checkbox" value="3"> C</label>'
+    )
+    assert field.as_checks(foo='bar') == expected
+
+
+def test_render_multiselect_as_checks_extra():
+    items = [(1, u'A'), (2, u'B'), (3, u'C')]
+    field = f.MultiSelect(items=items, data_modal=True, aria_label='test', foo='niet')
+    field.name = 'abc'
+    field.load_data(obj_value=[1, 2])
+
+    assert field() == field.as_checks()
+
+    expected = (
+        '<label><input aria-label="test" foo="bar" name="abc" type="checkbox" value="1" checked data-modal> A</label>\n'
+        '<label><input aria-label="test" foo="bar" name="abc" type="checkbox" value="2" checked data-modal> B</label>\n'
+        '<label><input aria-label="test" foo="bar" name="abc" type="checkbox" value="3" data-modal> C</label>'
     )
     assert field.as_checks(foo='bar') == expected
 
@@ -155,4 +193,3 @@ def test_validate_multiselect():
     field.load_data([u'xxx'])
     assert field.validate() is None
     assert field.error
-

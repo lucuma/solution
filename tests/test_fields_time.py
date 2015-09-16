@@ -21,6 +21,20 @@ def test_render_time():
             u'<input foo="bar" name="abc" type="text" value="11:55 AM">')
 
 
+def test_render_time_extra():
+    field = f.Time(data_modal=True, aria_label='test', foo='niet')
+    field.name = u'abc'
+    field.load_data(obj_value=datetime.time(11, 55))
+
+    assert field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="time" value="11:55 AM" data-modal>')
+    assert (field.as_textarea(foo='bar') ==
+            u'<textarea aria-label="test" foo="bar" name="abc" data-modal>11:55 AM</textarea>')
+    assert (field(foo='bar', type='text') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="text" value="11:55 AM" data-modal>')
+
+
 def test_render_required():
     field = f.Time(validate=[f.Required])
     field.name = u'abc'
@@ -70,7 +84,6 @@ def test_validate_24hours():
     field = f.Time()
     field.load_data(u'16:23:55')
     assert field.validate() == datetime.time(16, 23, 55)
-
 
 
 def test_validate_time_with_default():
