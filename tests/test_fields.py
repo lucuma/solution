@@ -107,6 +107,20 @@ def test_render_text():
             u'<input foo="bar" name="abc" type="password" value="">')
 
 
+def test_render_text_extra():
+    field = f.Text(data_modal=True, aria_label='test', foo='niet')
+    field.name = u'abc'
+    field.load_data(u'123')
+
+    assert field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="text" value="123" data-modal>')
+    assert (field.as_textarea(foo='bar') ==
+            u'<textarea aria-label="test" foo="bar" name="abc" data-modal>123</textarea>')
+    assert (field(foo='bar', type='email') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="email" value="123" data-modal>')
+
+
 def test_validate_text():
     field = f.Text(validate=[f.Required])
     field.name = u'abc'
@@ -156,6 +170,19 @@ def test_render_number():
             u'<input name="abc" type="number" value="123" required>')
     assert (field(required=False) ==
             u'<input name="abc" type="number" value="123">')
+
+
+def test_render_number_extra():
+    field = f.Number(data_modal=True, aria_label='test', foo='niet')
+    field.name = u'abc'
+    field.load_data('123')
+    assert field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="number" value="123" data-modal>')
+    assert (field.as_textarea(foo='bar') ==
+            u'<textarea aria-label="test" foo="bar" name="abc" data-modal>123</textarea>')
+    assert (field(foo='bar', type='score') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="score" value="123" data-modal>')
 
 
 def test_validate_number():
@@ -208,6 +235,18 @@ def test_render_color():
             u'<input name="abc" type="color" value="#ffaf2e" required>')
     assert (field(required=False) ==
             u'<input name="abc" type="color" value="#ffaf2e">')
+
+
+def test_render_color_extra():
+    field = f.Color(data_modal=True, aria_label='test', foo='niet')
+    field.name = u'abc'
+    field.load_data('#ffaf2e')
+
+    assert field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="color" value="#ffaf2e" data-modal>')
+    assert (field(foo='bar', type='text') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="text" value="#ffaf2e" data-modal>')
 
 
 def test_validate_color():
@@ -281,6 +320,16 @@ def test_render_boolean():
     assert field(required=False) == u'<input name="abc" type="checkbox">'
 
 
+def test_render_boolean_extra():
+    field = f.Boolean(data_modal=True, aria_label='test', foo='niet')
+    field.name = u'abc'
+
+    field.load_data(obj_value=True)
+    assert field() == field.as_checkbox()
+    assert (field(foo='bar') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="checkbox" checked data-modal>')
+
+
 def test_validate_boolean():
     field = f.Boolean()
 
@@ -312,6 +361,15 @@ def test_render_file():
             u'<input name="abc" type="file" required>')
     assert (field(required=False) ==
             u'<input name="abc" type="file">')
+
+
+def test_render_file_extra():
+    field = f.File('.', data_modal=True, aria_label='test', foo='niet')
+    field.name = u'abc'
+
+    assert field() == field.as_input()
+    assert (field(foo='bar') ==
+            u'<input aria-label="test" foo="bar" name="abc" type="file" data-modal>')
 
 
 def test_validate_file():

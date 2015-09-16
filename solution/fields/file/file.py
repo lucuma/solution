@@ -61,11 +61,13 @@ class File(Field):
         return self.as_input(**kwargs)
 
     def as_input(self, **kwargs):
-        kwargs.setdefault('type', self._type)
-        kwargs['name'] = self.name
-        if kwargs['type'] != self._type:
-            kwargs['value'] = self.to_string(**kwargs)
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs.setdefault('type', self._type)
+        attrs['name'] = self.name
+        if attrs['type'] != self._type:
+            attrs['value'] = self.to_string(**attrs)
         if not self.optional and not self.obj_value:
-            kwargs.setdefault('required', True)
-        html = u'<input %s>' % get_html_attrs(kwargs)
+            attrs.setdefault('required', True)
+        html = u'<input %s>' % get_html_attrs(attrs)
         return Markup(html)

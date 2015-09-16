@@ -52,20 +52,24 @@ class Time(Text):
         return tt.strftime(self.format).strip()
 
     def as_input(self, format=None, locale=None, **kwargs):
-        kwargs['type'] = kwargs.setdefault('type', self._type)
-        kwargs['name'] = self.name
-        kwargs['value'] = self.to_string(**kwargs)
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs['type'] = attrs.setdefault('type', self._type)
+        attrs['name'] = self.name
+        attrs['value'] = self.to_string(**attrs)
         if not self.optional:
-            kwargs.setdefault('required', True)
-        html = u'<input %s>' % get_html_attrs(kwargs)
+            attrs.setdefault('required', True)
+        html = u'<input %s>' % get_html_attrs(attrs)
         return Markup(html)
 
     def as_textarea(self, format=None, locale=None, **kwargs):
-        kwargs['name'] = self.name
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs['name'] = self.name
         if not self.optional:
-            kwargs.setdefault('required', True)
-        html_attrs = get_html_attrs(kwargs)
-        value = self.to_string(**kwargs)
+            attrs.setdefault('required', True)
+        html_attrs = get_html_attrs(attrs)
+        value = self.to_string(**attrs)
         html = u'<textarea %s>%s</textarea>' % (html_attrs, value)
         return Markup(html)
 

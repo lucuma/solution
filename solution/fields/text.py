@@ -39,19 +39,23 @@ class Text(Field):
         return self.as_input(**kwargs)
 
     def as_input(self, **kwargs):
-        kwargs.setdefault('type', self._type)
-        kwargs.setdefault('name', self.name)
-        kwargs.setdefault('value', self.to_string(**kwargs))
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs.setdefault('type', self._type)
+        attrs.setdefault('name', self.name)
+        attrs.setdefault('value', self.to_string(**attrs))
         if not self.optional:
-            kwargs.setdefault('required', True)
-        html = u'<input %s>' % get_html_attrs(kwargs)
+            attrs.setdefault('required', True)
+        html = u'<input %s>' % get_html_attrs(attrs)
         return Markup(html)
 
     def as_textarea(self, **kwargs):
-        kwargs['name'] = self.name
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs['name'] = self.name
         if not self.optional:
-            kwargs.setdefault('required', True)
-        html_attrs = get_html_attrs(kwargs)
-        value = kwargs.get('value', self.to_string(**kwargs))
+            attrs.setdefault('required', True)
+        html_attrs = get_html_attrs(attrs)
+        value = attrs.get('value', self.to_string(**attrs))
         html = u'<textarea %s>%s</textarea>' % (html_attrs, value)
         return Markup(html)

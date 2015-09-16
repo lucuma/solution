@@ -56,14 +56,15 @@ class Boolean(Field):
         return self.as_checkbox(**kwargs)
 
     def as_checkbox(self, **kwargs):
-        kwargs.setdefault('type', 'checkbox')
-        kwargs['name'] = self.name
-        value = self.to_string(**kwargs)
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs.setdefault('type', 'checkbox')
+        attrs['name'] = self.name
+        value = self.to_string(**attrs)
         is_true = value and (value.lower() not in self.falsy)
-        if is_true and kwargs['type'] == 'checkbox':
-            kwargs['checked'] = True
+        if is_true and attrs['type'] == 'checkbox':
+            attrs['checked'] = True
         if not self.optional:
-            kwargs.setdefault('required', True)
-        html = u'<input %s>' % get_html_attrs(kwargs)
+            attrs.setdefault('required', True)
+        html = u'<input %s>' % get_html_attrs(attrs)
         return Markup(html)
-

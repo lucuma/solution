@@ -301,11 +301,13 @@ class MultiSelect(BaseSelect):
             It follows the same rules as `get_html_attrs`
 
         """
-        kwargs['name'] = self.name
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs['name'] = self.name
         if not self.optional:
-            kwargs['required'] = True
-        html = [u'<select %s multiple>' % get_html_attrs(kwargs)]
-        values = self.to_string(**kwargs) or []
+            attrs['required'] = True
+        html = [u'<select %s multiple>' % get_html_attrs(attrs)]
+        values = self.to_string(**attrs) or []
         items = _items or self.items
 
         for item in items:
@@ -329,19 +331,20 @@ class MultiSelect(BaseSelect):
             It follows the same rules as `get_html_attrs`
 
         """
-        kwargs['type'] = 'checkbox'
-        kwargs['name'] = self.name
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs['type'] = 'checkbox'
+        attrs['name'] = self.name
         html = []
         tmpl = to_unicode(tmpl)
-        values = self.to_string(**kwargs) or []
+        values = self.to_string(**attrs) or []
         items = _items or self.items
 
         for item in items:
             if isinstance(item, list):
-                html.extend(self._render_fieldset(item, kwargs, values, tmpl))
+                html.extend(self._render_fieldset(item, attrs, values, tmpl))
             else:
-                html.append(self._render_item(item, kwargs, values, tmpl))
+                html.append(self._render_item(item, attrs, values, tmpl))
         return Markup('\n'.join(html))
 
     as_checkboxes = as_checks
-

@@ -100,4 +100,3 @@ class Collection(Text):
     def _split_values(self, str_value):
         values = re.split(self.rxsep, str_value.strip())
         return filter(lambda x: x != u'', values)
-

@@ -84,4 +84,3 @@ def normalize_rgb(r, g, b, a):
     if a:
         color += '%02x' % a
     return color
-
