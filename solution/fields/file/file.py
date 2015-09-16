@@ -38,12 +38,12 @@ class File(Field):
         self.base_path = base_path
         self.storage = FileSystemUploader(
             base_path=base_path,
-            upload_to=kwargs.get('upload_to', ''),
-            secret=kwargs.get('secret', False),
-            prefix=kwargs.get('prefix', ''),
-            allowed=kwargs.get('allowed', None),
-            denied=kwargs.get('denied', None),
-            max_size=kwargs.get('max_size', None),
+            upload_to=kwargs.pop('upload_to', ''),
+            secret=kwargs.pop('secret', False),
+            prefix=kwargs.pop('prefix', ''),
+            allowed=kwargs.pop('allowed', None),
+            denied=kwargs.pop('denied', None),
+            max_size=kwargs.pop('max_size', None),
         )
         super(File, self).__init__(**kwargs)
 

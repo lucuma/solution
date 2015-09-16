@@ -368,7 +368,10 @@ def test_render_file():
 
 
 def test_render_file_extra():
-    field = f.File('.', data_modal=True, aria_label='test', foo='niet', clean=_clean)
+    field = f.File(
+        '.', data_modal=True, aria_label='test', foo='niet', clean=_clean,
+        upload_to='aaaa', secret=False
+    )
     field.name = u'abc'
 
     assert field() == field.as_input()
