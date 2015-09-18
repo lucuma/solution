@@ -156,7 +156,7 @@ def test_formset_model():
     assert addr.user == user
 
 
-def test_formset_missing_objs():
+def test_formset_delete_objs():
     db = SQLAlchemy()
 
     class User(db.Model):
@@ -204,6 +204,17 @@ def test_formset_missing_objs():
     data = {
         'name': u'Jane Doe',
         'addresses.1-email': u'one@example.org',
+        'addresses.3-email': u'three@example.org',
+        'addresses.4-email': u'four@example.org',
+    }
+    form = FormUser(data, user)
+    assert form.is_valid()
+    assert not form.addresses.missing_objs
+
+    data = {
+        'name': u'Jane Doe',
+        'addresses.1-email': u'one@example.org',
+        'addresses.2-_deleted': u'1',
         'addresses.3-email': u'three@example.org',
         'addresses.4-email': u'four@example.org',
     }

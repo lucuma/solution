@@ -95,9 +95,7 @@ class FormSet(object):
         for i, obj in enumerate(objs, 1):
             num = i
             fullname = self._get_fullname(num)
-            if ((data or files)
-                    and not has_data(data, fullname)
-                    and not has_data(files, fullname)):
+            if has_been_deleted(data, fullname):
                 missing_objs.append(obj)
                 continue
 
@@ -182,3 +180,7 @@ def has_data(d, fullname):
             continue
         return True
     return False
+
+
+def has_been_deleted(d, fullname):
+    return '{}-_deleted'.format(fullname) in d
