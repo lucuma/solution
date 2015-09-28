@@ -183,4 +183,4 @@ def has_data(d, fullname):
 
 
 def has_been_deleted(d, fullname):
-    return '{}-_deleted'.format(fullname) in d
+    return '{}__deleted'.format(fullname) in d

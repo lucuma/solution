@@ -202,8 +202,14 @@ class Form(object):
             subfiles = files.getlist(self._prefix + name)
             self._input_data = self._input_data or subdata or subfiles
             obj_value = get_obj_value(obj, name)
+            was_deleted = self._prefix + name + '__deleted' in data
+            if was_deleted:
+                subdata = obj_value = subfiles = None
             field.load_data(subdata, obj_value, file_data=subfiles,
                             locale=self._locale, tz=self._tz)
+            # delete field data
+            if was_deleted:
+                field._deleted = True
 
     def reset(self):
         for subform in self._forms.values():
@@ -272,6 +278,9 @@ class Form(object):
                 named_errors[field.name] = field.error
                 continue
             cleaned_data[name] = py_value
+            if hasattr(field, '_deleted'):
+                cleaned_data[name] = None
+                field.has_changed = True
             if field.has_changed:
                 changed_fields.append(name)
 
@@ -288,8 +297,8 @@ class Form(object):
             self._named_errors = named_errors
             return False
 
-        self.cleaned_data = self.clean(cleaned_data)
         self.changed_fields = changed_fields
+        self.cleaned_data = self.clean(cleaned_data)
         self.validated = True
         return True
 

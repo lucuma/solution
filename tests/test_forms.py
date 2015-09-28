@@ -480,3 +480,34 @@ def test_missing_fields_dict():
     form = ContactForm({'subject': u''}, contact)
     new_contact = form.save()
     assert new_contact['subject'] == u''
+
+
+def test_delete_field():
+    data = {
+        'subject': u'Hello',
+        'message': u'Welcome',
+        'email': u'elliot.anderson@ecorp.com',
+        'email__deleted': 1,
+    }
+    form = ContactForm(data)
+    obj = form.save()
+    print(obj.keys())
+    assert obj['email'] == None
+    assert obj['subject'] == data['subject']
+    assert obj['message'] == data['message']
+
+
+def test_delete_file_field():
+    class ProfileForm(f.Form):
+        photo = f.File()
+
+    profile = {
+        'photo': u'a/b/c.png',
+    }
+    data = {
+        'photo': u'',
+        'photo__deleted': 1,
+    }
+    form = ProfileForm(data, profile)
+    obj = form.save()
+    assert obj['photo'] == None

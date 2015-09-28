@@ -214,7 +214,7 @@ def test_formset_delete_objs():
     data = {
         'name': u'Jane Doe',
         'addresses.1-email': u'one@example.org',
-        'addresses.2-_deleted': u'1',
+        'addresses.2_deleted': u'1',
         'addresses.3-email': u'three@example.org',
         'addresses.4-email': u'four@example.org',
     }
