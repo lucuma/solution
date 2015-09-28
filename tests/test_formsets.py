@@ -116,7 +116,7 @@ def test_formset_model():
         name = f.Text()
         addresses = f.FormSet(FormAddress, parent='user')
 
-    ## Save
+    # Save
 
     data = {
         'name': u'John Doe',
@@ -135,7 +135,7 @@ def test_formset_model():
     assert addr.email == data['addresses.1-email']
     assert addr.user == user
 
-    ## Update
+    # Update
 
     user = db.query(User).first()
     data = {
@@ -214,7 +214,7 @@ def test_formset_delete_objs():
     data = {
         'name': u'Jane Doe',
         'addresses.1-email': u'one@example.org',
-        'addresses.2_deleted': u'1',
+        'addresses.2__deleted': u'1',
         'addresses.3-email': u'three@example.org',
         'addresses.4-email': u'four@example.org',
     }
@@ -232,7 +232,7 @@ def test_formset_save_to_dict():
         name = f.Text()
         addresses = f.FormSet(FormAddress, parent='user')
 
-    ## Save
+    # Save
 
     data = {
         'name': u'John Doe',
@@ -261,7 +261,7 @@ def test_save_conflicting_field_names():
         name = f.Text()
         values = f.FormSet(FormValue, parent='user')
 
-    ## Save
+    # Save
 
     data = {
         'name': u'John Doe',
