@@ -25,15 +25,13 @@ class Image(File):
 
         """
         path = super(Image, self).clean(value)
-        if path:
+        if path and self.size:
             self.resize_image(join(self.base_path, path))
-            return path
+        return path
 
     def resize_image(self, image_path):
         import wand.image
 
-        if not self.size:
-            return
         with wand.image.Image(filename=image_path) as img:
             result = Image.calculate_dimensions(
                 img.size, self.size

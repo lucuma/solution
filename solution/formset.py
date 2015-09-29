@@ -115,10 +115,18 @@ class FormSet(object):
 
         self._forms = forms
         self.missing_objs = missing_objs
+
+        # Deattach the missing objects from their former parent
         if self._backref:
             for mo in missing_objs:
                 if get_obj_value(mo, self._backref, None):
                     set_obj_value(mo, self._backref, None)
+
+        # Delete the missing objects if possible
+        if missing_objs:
+            for mo in missing_objs:
+                if hasattr(mo, 'db'):
+                    mo.db.session.delete(mo)
 
     def _get_fullname(self, num):
         return '{name}.{num}'.format(
