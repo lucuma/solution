@@ -5,8 +5,8 @@ Solution
 .. image:: https://badge.fury.io/py/Solution.png
     :target: http://badge.fury.io/py/Solution
 
-.. image:: https://travis-ci.org/lucuma/solution.png?branch=master
-        :target: https://travis-ci.org/lucuma/solution
+.. image:: https://travis-ci.org/jpscaletti/solution.png?branch=master
+        :target: https://travis-ci.org/jpscaletti/solution
 
 .. image:: https://pypip.in/d/Solution/badge.png
         :target: https://crate.io/packages/Solution?version=latest

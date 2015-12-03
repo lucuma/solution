@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ------------------------------------
 
-Report bugs at https://github.com/lucuma/solution/issues.
+Report bugs at https://github.com/jpscaletti/solution/issues.
 
 If you are reporting a bug, please include:
 
@@ -39,7 +39,7 @@ Solution could always use more documentation, whether as part of the  official S
 Submit Feedback
 ------------------------------------
 
-The best way to send feedback is to file an issue at https://github.com/lucuma/solution/issues.
+The best way to send feedback is to file an issue at https://github.com/jpscaletti/solution/issues.
 
 If you are proposing a feature:
 
