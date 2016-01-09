@@ -7,5 +7,6 @@ from .simple_date import SimpleDate
 from .file import File, Image, IMAGES, DOCUMENTS, DATA, ARCHIVES
 from .number import Number
 from .select import Select, MultiSelect
+from .splitted_datetime import SplittedDateTime
 from .text import Text
 from .time import Time

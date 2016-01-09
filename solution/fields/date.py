@@ -37,7 +37,7 @@ class Date(Text):
         fields.
 
     :param tz:
-        Default timezone for this field. Overwrite the form's timezone.
+        Default timezone for this field.
 
     """
     _type = 'date'
@@ -60,14 +60,14 @@ class Date(Text):
         loc_dt = self.tz.localize(dt)
         return loc_dt.astimezone(pytz.utc)
 
-    def py_to_str(self, locale=None, **kwargs):
+    def py_to_str(self, **kwargs):
         dt = self.obj_value or self.default
         if not dt:
             return u''
         dt = self._to_timezone(dt)
         return '{dt.year}-{dt.month:02d}-{dt.day:02d}'.format(dt=dt)
 
-    def as_input(self, locale=None, **kwargs):
+    def as_input(self, **kwargs):
         attrs = self.extra.copy()
         attrs.update(kwargs)
         attrs['type'] = attrs.setdefault('type', self._type)
@@ -78,7 +78,7 @@ class Date(Text):
         html = u'<input %s>' % get_html_attrs(attrs)
         return Markup(html)
 
-    def as_textarea(self, locale=None, **kwargs):
+    def as_textarea(self, **kwargs):
         attrs = self.extra.copy()
         attrs.update(kwargs)
         attrs['name'] = self.name
@@ -89,7 +89,7 @@ class Date(Text):
         html = u'<textarea %s>%s</textarea>' % (html_attrs, value)
         return Markup(html)
 
-    def str_to_py(self, locale=None):
+    def str_to_py(self, **kwargs):
         if not self.str_value:
             return self.default or None
         try:

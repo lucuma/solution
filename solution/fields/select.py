@@ -272,6 +272,7 @@ class MultiSelect(BaseSelect):
             yield item
 
     def _clean_data(self, str_value, file_data, obj_value):
+        """This overwrite is neccesary for work with multivalues"""
         str_value = str_value or None
         obj_value = obj_value or None
         return (str_value, None, obj_value)
