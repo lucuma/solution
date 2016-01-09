@@ -17,4 +17,4 @@ from .validators import *  # noqa
 from .utils import Markup, get_html_attrs, to_unicode  # noqa
 
 
-__version__ = '5.0.0'
+__version__ = '5.0.1'
