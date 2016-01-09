@@ -1,6 +1,5 @@
 # coding=utf-8
 import datetime
-import re
 
 from .. import validators as v
 from ..utils import Markup, get_html_attrs
@@ -8,16 +7,17 @@ from .field import ValidationError
 from .text import Text
 
 
-class Time(Text):
+class SimpleDate(Text):
 
-    """A time field formatted as 'HH:mm AA'. Examples: 5:03 AM, 11:00 PM
+    """A date field formatted as yyy-MM-dd. Example: 1980-07-28
+    This field DOES NOT make any timezone conversions
 
     :param validate:
         An list of validators. This will evaluate the current `value` when
         the method `validate` is called.
 
     :param default:
-        Default value. It must be a `datetime.time`.
+        Default value. It must be a `date` or `datetime`.
 
     :param prepare:
         An optional function that takes the current value as a string
@@ -29,28 +29,24 @@ class Time(Text):
         cleaned `None` must be returned instead.
 
     :param hide_value:
-        Do not render the current value a a string.
+        Do not render the current value a a string. Useful with passwords
+        fields.
 
     """
-    _type = 'time'
-    default_validator = v.IsTime
-    rx_time = re.compile(
-        '(?P<hour>[0-9]{1,2}):(?P<minute>[0-9]{1,2})(:(?P<second>[0-9]{1,2}))?\s?(?P<tt>am|pm)?',
-        re.IGNORECASE
-    )
+    _type = 'date'
+    default_validator = v.IsDate
 
-    def __init__(self, format='%l:%M %p', **kwargs):
-        self.format = format
+    def __init__(self, **kwargs):
         kwargs.setdefault('default', None)
-        return super(Time, self).__init__(**kwargs)
+        return super(SimpleDate, self).__init__(**kwargs)
 
-    def py_to_str(self, format=None, locale=None, **kwargs):
-        tt = self.obj_value or self.default
-        if not tt:
+    def py_to_str(self, locale=None, **kwargs):
+        dt = self.obj_value or self.default
+        if not dt:
             return u''
-        return tt.strftime(self.format).strip()
+        return dt.isoformat()
 
-    def as_input(self, format=None, locale=None, **kwargs):
+    def as_input(self, locale=None, **kwargs):
         attrs = self.extra.copy()
         attrs.update(kwargs)
         attrs['type'] = attrs.setdefault('type', self._type)
@@ -61,7 +57,7 @@ class Time(Text):
         html = u'<input %s>' % get_html_attrs(attrs)
         return Markup(html)
 
-    def as_textarea(self, format=None, locale=None, **kwargs):
+    def as_textarea(self, locale=None, **kwargs):
         attrs = self.extra.copy()
         attrs.update(kwargs)
         attrs['name'] = self.name
@@ -72,19 +68,11 @@ class Time(Text):
         html = u'<textarea %s>%s</textarea>' % (html_attrs, value)
         return Markup(html)
 
-    def str_to_py(self, format=None, locale=None):
+    def str_to_py(self, locale=None):
         if not self.str_value:
             return self.default or None
-        match = self.rx_time.match(self.str_value.upper())
-        if not match:
-            raise ValidationError
         try:
-            gd = match.groupdict()
-            hour = int(gd['hour'])
-            minute = int(gd['minute'])
-            second = int(gd['second'] or 0)
-            if gd['tt'] == 'PM':
-                hour += 12
-            return datetime.time(hour, minute, second)
+            dt = [int(f) for f in self.str_value.split('-')]
+            return datetime.date(*dt)
         except (ValueError, TypeError):
             raise ValidationError

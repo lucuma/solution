@@ -1,6 +1,7 @@
 # coding=utf-8
-from datetime import date
+from datetime import datetime
 
+import pytz
 import solution as f
 
 
@@ -12,31 +13,32 @@ def _clean(form, value, **kwargs):
 
 
 def test_render_date():
-    field = f.Date()
+    field = f.Date(tz='America/Lima')  # utc-5
     field.name = u'abc'
-    field.load_data(obj_value=date(1979, 5, 13))
+    field.load_data(obj_value=datetime(1979, 5, 30, 4, 0, 0))
 
     assert field() == field.as_input()
     assert (field(foo='bar') ==
-            u'<input foo="bar" name="abc" type="date" value="1979-05-13">')
+            u'<input foo="bar" name="abc" type="date" value="1979-05-29">')
     assert (field.as_textarea(foo='bar') ==
-            u'<textarea foo="bar" name="abc">1979-05-13</textarea>')
+            u'<textarea foo="bar" name="abc">1979-05-29</textarea>')
     assert (field(foo='bar', type='text') ==
-            u'<input foo="bar" name="abc" type="text" value="1979-05-13">')
+            u'<input foo="bar" name="abc" type="text" value="1979-05-29">')
 
 
 def test_render_date_extra():
-    field = f.Date(data_modal=True, aria_label='test', foo='niet', clean=_clean)
+    field = f.Date(tz='America/Lima', data_modal=True, aria_label='test',
+                   foo='niet', clean=_clean)
     field.name = u'abc'
-    field.load_data(obj_value=date(1979, 5, 13))
+    field.load_data(obj_value=datetime(1979, 5, 30, 4, 0, 0))
 
     assert field() == field.as_input()
     assert (field(foo='bar') ==
-            u'<input aria-label="test" foo="bar" name="abc" type="date" value="1979-05-13" data-modal>')
+            u'<input aria-label="test" foo="bar" name="abc" type="date" value="1979-05-29" data-modal>')
     assert (field.as_textarea(foo='bar') ==
-            u'<textarea aria-label="test" foo="bar" name="abc" data-modal>1979-05-13</textarea>')
+            u'<textarea aria-label="test" foo="bar" name="abc" data-modal>1979-05-29</textarea>')
     assert (field(foo='bar', type='text') ==
-            u'<input aria-label="test" foo="bar" name="abc" type="text" value="1979-05-13" data-modal>')
+            u'<input aria-label="test" foo="bar" name="abc" type="text" value="1979-05-29" data-modal>')
 
 
 def test_render_required():
@@ -47,30 +49,33 @@ def test_render_required():
 
 
 def test_render_default():
-    field = f.Date(default=date(2013, 7, 28))
+    field = f.Date(default=datetime(2013, 7, 28, 4, 0, 0))  # default tz is utc
     field.name = u'abc'
     assert field() == u'<input name="abc" type="date" value="2013-07-28">'
 
+    field = f.Date(tz='America/Lima', default=datetime(2013, 7, 28, 4, 0, 0))
+    field.name = u'abc'
+    assert field() == u'<input name="abc" type="date" value="2013-07-27">'
+
 
 def test_validate_date():
-    field = f.Date()
+    field = f.Date(tz='America/Lima')
     assert field.validate() is None
 
-    field = f.Date()
+    field = f.Date(tz='America/Lima')
     field.load_data(u'1979-05-13')
-    assert field.validate() == date(1979, 5, 13)
+    assert field.validate() == datetime(1979, 5, 13, 5, 0, 0, tzinfo=pytz.utc)
 
-    field = f.Date()
+    field = f.Date(tz='America/Lima')
     field.load_data([u'1979-05-13'])
-    assert field.validate() == date(1979, 5, 13)
+    assert field.validate() == datetime(1979, 5, 13, 5, 0, 0, tzinfo=pytz.utc)
 
-    field = f.Date()
+    field = f.Date(tz='America/Lima')
     field.load_data(u'invalid')
     assert field.validate() is None
 
 
 def test_validate_date_with_default():
-    today = date.today()
-    field = f.Date(default=today)
-    assert field.validate() == today
-
+    now = datetime.utcnow()
+    field = f.Date(default=now)
+    assert field.validate() == now
