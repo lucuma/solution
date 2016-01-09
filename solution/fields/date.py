@@ -4,7 +4,9 @@ import datetime
 import pytz
 
 from .. import validators as v
+from .._compat import string_types
 from ..utils import Markup, get_html_attrs
+
 from .field import ValidationError
 from .text import Text
 
@@ -43,21 +45,29 @@ class Date(Text):
     _type = 'date'
     default_validator = v.IsDate
 
-    def __init__(self, tz='utc', **kwargs):
+    def __init__(self, **kwargs):
         kwargs.setdefault('default', None)
-        self.tz = pytz.timezone(tz)
         return super(Date, self).__init__(**kwargs)
+
+    def _get_tz(self):
+        tz = self.tz or pytz.utc
+        if tz and isinstance(tz, string_types):
+            tz = pytz.timezone(tz)
+        self.tz = tz
+        return tz
 
     def _to_timezone(self, dt):
         """Takes a naive timezone with an utc value and return it formatted as a
         local timezone."""
+        tz = self._get_tz()
         utc_dt = pytz.utc.localize(dt)
-        return utc_dt.astimezone(self.tz)
+        return utc_dt.astimezone(tz)
 
     def _to_utc(self, dt):
         """Takes a naive timezone with an localized value and return it formatted
         as utc."""
-        loc_dt = self.tz.localize(dt)
+        tz = self._get_tz()
+        loc_dt = tz.localize(dt)
         return loc_dt.astimezone(pytz.utc)
 
     def py_to_str(self, **kwargs):

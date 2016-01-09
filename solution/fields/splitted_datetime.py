@@ -5,7 +5,9 @@ import re
 import pytz
 
 from .. import validators as v
+from .._compat import string_types
 from ..utils import Markup, get_html_attrs
+
 from .field import ValidationError
 from .field import Field
 
@@ -45,11 +47,17 @@ class SplittedDateTime(Field):
         re.IGNORECASE
     )
 
-    def __init__(self, time_format='%l:%M %p', tz='utc', **kwargs):
+    def __init__(self, time_format='%l:%M %p', **kwargs):
         kwargs.setdefault('default', [])
-        self.tz = pytz.timezone(tz)
         self.time_format = time_format
         return super(SplittedDateTime, self).__init__(**kwargs)
+
+    def _get_tz(self):
+        tz = self.tz or pytz.utc
+        if tz and isinstance(tz, string_types):
+            tz = pytz.timezone(tz)
+        self.tz = tz
+        return tz
 
     def _clean_data(self, str_value, file_data, obj_value):
         """This overwrite is neccesary for work with multivalues"""
@@ -60,13 +68,15 @@ class SplittedDateTime(Field):
     def _to_timezone(self, dt):
         """Takes a naive timezone with an utc value and return it formatted as a
         local timezone."""
+        tz = self._get_tz()
         utc_dt = pytz.utc.localize(dt)
-        return utc_dt.astimezone(self.tz)
+        return utc_dt.astimezone(tz)
 
     def _to_utc(self, dt):
         """Takes a naive timezone with an localized value and return it formatted
         as utc."""
-        loc_dt = self.tz.localize(dt)
+        tz = self._get_tz()
+        loc_dt = tz.localize(dt)
         return loc_dt.astimezone(pytz.utc)
 
     def _str_to_datetime(self, str_value):

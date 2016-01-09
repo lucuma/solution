@@ -79,3 +79,12 @@ def test_validate_date_with_default():
     now = datetime.utcnow()
     field = f.Date(default=now)
     assert field.validate() == now
+
+
+def test_form_tz():
+    class MyForm(f.Form):
+        mydate = f.Date()
+
+    dt = datetime(1979, 5, 30, 4, 0, 0)
+    form = MyForm({}, {'mydate': dt}, tz='America/Lima')
+    assert form.mydate.as_input() == u'<input name="mydate" type="date" value="1979-05-29">'

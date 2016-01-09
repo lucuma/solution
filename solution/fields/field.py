@@ -2,9 +2,10 @@
 from hashlib import md5
 import inspect
 import os
+import pytz
 
 from .. import validators as v
-from .._compat import to_unicode, implements_to_string
+from .._compat import string_types, to_unicode, implements_to_string
 from ..utils import Markup, get_html_attrs
 
 
@@ -56,7 +57,7 @@ class Field(object):
     empty = True
 
     def __init__(self, validate=None, default=None, prepare=None, clean=None,
-                 hide_value=False, optional=None, **kwargs):
+                 hide_value=False, optional=None, locale=None, tz=None, **kwargs):
         self._set_validators(validate)
         self._default = default
         self.prepare = prepare
@@ -65,6 +66,8 @@ class Field(object):
         if optional is None:
             optional = not validator_in(v.Required, self.validators)
         self.optional = optional
+        self.locale = locale
+        self.tz = tz
         self.extra = kwargs
 
     def _set_validators(self, validators):
@@ -106,7 +109,7 @@ class Field(object):
         self.empty = True
 
     def load_data(self, str_value=None, obj_value=None,
-                  file_data=None, **kwargs):
+                  file_data=None, locale=None, tz=None, **kwargs):
         str_value, file_data, obj_value = self._clean_data(
             str_value, file_data, obj_value)
         if self.prepare:
@@ -115,6 +118,13 @@ class Field(object):
         self.file_data = file_data
         self.obj_value = obj_value
         self.empty = not bool(str_value or file_data or obj_value)
+
+        self.locale = self.locale or locale
+
+        tz = self.tz or tz or pytz.utc
+        if tz and isinstance(tz, string_types):
+            tz = pytz.timezone(tz)
+        self.tz = tz
 
     def _clean_data(self, str_value, file_data, obj_value):
         if isinstance(str_value, (list, tuple)):
