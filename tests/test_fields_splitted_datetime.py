@@ -12,7 +12,7 @@ def _clean(form, value, **kwargs):
     return value
 
 
-def test_render_date():
+def test_render_field():
     field = f.SplittedDateTime(tz='America/Lima')  # utc-5
     field.name = u'abc'
     field.load_data(obj_value=datetime(1979, 5, 30, 4, 20, 0))
@@ -24,6 +24,11 @@ def test_render_date():
     assert (field(foo='bar', type='text') ==
             u'<input foo="bar" name="abc" type="text" value="1979-05-29">'
             u'<input foo="bar" name="abc" type="text" value="11:20 PM">')
+
+    assert (field.as_input_date(foo='bar') ==
+            u'<input foo="bar" name="abc" type="date" value="1979-05-29">')
+    assert (field.as_input_time(foo='bar') ==
+            u'<input foo="bar" name="abc" type="time" value="11:20 PM">')
 
 
 def test_render_date_extra():

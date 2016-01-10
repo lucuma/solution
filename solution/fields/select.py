@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import absolute_import
 from hashlib import md5
 
 from .._compat import to_unicode, string_types

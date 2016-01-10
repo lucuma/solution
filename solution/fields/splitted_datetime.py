@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import absolute_import
 import datetime
 import re
 
@@ -134,6 +135,42 @@ class SplittedDateTime(Field):
         html_time = u'<input %s>' % get_html_attrs(attrs)
 
         return Markup(html_date + html_time)
+
+    def as_input_date(self, **kwargs):
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs['name'] = self.name
+        if not self.optional:
+            attrs.setdefault('required', True)
+        attrs['type'] = attrs.get('type') or 'date'
+
+        str_dt = ''
+        ldt = self.to_string(**attrs)
+        if ldt:
+            str_dt = '{dt.year}-{dt.month:02d}-{dt.day:02d}'.format(dt=ldt.date())
+
+        attrs['value'] = str_dt
+        html_date = u'<input %s>' % get_html_attrs(attrs)
+
+        return Markup(html_date)
+
+    def as_input_time(self, **kwargs):
+        attrs = self.extra.copy()
+        attrs.update(kwargs)
+        attrs['name'] = self.name
+        if not self.optional:
+            attrs.setdefault('required', True)
+        attrs['type'] = attrs.get('type') or 'time'
+
+        str_tt = ''
+        ldt = self.to_string(**attrs)
+        if ldt:
+            str_tt = ldt.time().strftime(self.time_format).strip()
+
+        attrs['value'] = str_tt
+        html_time = u'<input %s>' % get_html_attrs(attrs)
+
+        return Markup(html_time)
 
     def __call__(self, **kwargs):
         return self.as_inputs(**kwargs)

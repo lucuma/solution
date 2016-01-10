@@ -1,4 +1,6 @@
 # coding=utf-8
+from __future__ import absolute_import
+
 from ..utils import Markup, get_html_attrs
 from .field import Field
 
