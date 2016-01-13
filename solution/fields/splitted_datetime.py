@@ -123,8 +123,11 @@ class SplittedDateTime(Field):
         str_dt = str_tt = ''
         ldt = self.to_string(**attrs)
         if ldt:
-            str_dt = '{dt.year}-{dt.month:02d}-{dt.day:02d}'.format(dt=ldt.date())
-            str_tt = ldt.time().strftime(self.time_format).strip()
+            if isinstance(ldt, list):
+                str_dt, str_tt = ldt
+            else:
+                str_dt = '{dt.year}-{dt.month:02d}-{dt.day:02d}'.format(dt=ldt.date())
+                str_tt = ldt.time().strftime(self.time_format).strip()
 
         attrs['type'] = _forced_type or 'date'
         attrs['value'] = str_dt
@@ -147,7 +150,10 @@ class SplittedDateTime(Field):
         str_dt = ''
         ldt = self.to_string(**attrs)
         if ldt:
-            str_dt = '{dt.year}-{dt.month:02d}-{dt.day:02d}'.format(dt=ldt.date())
+            if isinstance(ldt, list):
+                str_dt = ldt[0]
+            else:
+                str_dt = '{dt.year}-{dt.month:02d}-{dt.day:02d}'.format(dt=ldt.date())
 
         attrs['value'] = str_dt
         html_date = u'<input %s>' % get_html_attrs(attrs)
@@ -165,7 +171,10 @@ class SplittedDateTime(Field):
         str_tt = ''
         ldt = self.to_string(**attrs)
         if ldt:
-            str_tt = ldt.time().strftime(self.time_format).strip()
+            if isinstance(ldt, list):
+                str_tt = ldt[1]
+            else:
+                str_tt = ldt.time().strftime(self.time_format).strip()
 
         attrs['value'] = str_tt
         html_time = u'<input %s>' % get_html_attrs(attrs)
