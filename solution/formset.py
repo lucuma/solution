@@ -69,10 +69,19 @@ class FormSet(object):
 
     @property
     def form(self):
-        return self.get_form(1)
+        return self.get_empty_form(1)
 
     def get_form(self, index):
-        """Returns the n-index form, even if it doesn't currently exists.
+        """Returns the n-index form, where index is 1-based.
+        the form'll be filled with data if it exists or empty if not
+        """
+        index = max(1, index)
+        if len(self._forms) >= index:
+            return self._forms[index - 1]
+        return self.get_empty_form(index)
+
+    def get_empty_form(self, index):
+        """Returns an empty n-index form, where index is 1-based.
         """
         return self._form_class(prefix=self._get_fullname(index))
 
