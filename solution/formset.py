@@ -69,7 +69,12 @@ class FormSet(object):
 
     @property
     def form(self):
-        return self._form_class(prefix=self._get_fullname(1))
+        return self.get_form(1)
+
+    def get_form(self, index):
+        """Returns the n-index form, even if it doesn't currently exists.
+        """
+        return self._form_class(prefix=self._get_fullname(index))
 
     def _init(self, data=None, objs=None, files=None):
         self._errors = {}

@@ -325,7 +325,6 @@ class Form(object):
             if self._model and not data:
                 continue
             set_obj_value(obj, key, data)
-
         return obj
 
     def _save_new_object(self, backref_obj=None):
