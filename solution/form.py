@@ -2,6 +2,11 @@
 from copy import copy
 import inspect
 
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from ._compat import itervalues
 from .fields import Field
 from .formset import FormSet
@@ -127,6 +132,25 @@ class Form(object):
         self._fields = fields
         self._forms = forms
         self._sets = sets
+
+    def as_dict(self):
+        dd = {
+            field.name: field.as_dict()
+            for field in self._fields.values()
+        }
+        dd.update({
+            name: form.as_dict()
+            for name, form in self._forms.items()
+        })
+        dd.update({
+            name: formset.as_dict()
+            for name, formset in self._sets.items()
+        })
+        return dd
+
+    def as_json(self):
+        """Useful for inserting the form data as a JavaScript object."""
+        return json.dumps(self.as_dict())
 
     def prepare(self, data):
         """You can overwrite this method to store the logic of pre-processing

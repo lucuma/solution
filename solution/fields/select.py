@@ -150,6 +150,11 @@ class Select(BaseSelect):
             return self.as_select(_items=items, **kwargs)
         return self.as_radios(_items=items, **kwargs)
 
+    def as_dict(self):
+        dd = Field.as_dict(self)
+        dd['items'] = self.items
+        return dd
+
     def as_select(self, _items=None, **kwargs):
         """Render the field as a `<select>` element.
 
@@ -271,6 +276,12 @@ class MultiSelect(BaseSelect):
     def __iter__(self):
         for item in self.items:
             yield item
+
+    def as_dict(self):
+        dd = Field.as_dict(self)
+        dd['items'] = self.items
+        dd['value'] = dd.get('value') or []
+        return dd
 
     def _clean_data(self, str_value, file_data, obj_value):
         """This overwrite is neccesary for work with multivalues"""

@@ -142,6 +142,9 @@ class FormSet(object):
                 if hasattr(mo, 'db'):
                     mo.db.session.delete(mo)
 
+    def as_dict(self):
+        return [form.as_dict() for form in self._forms]
+
     def _get_fullname(self, num):
         return '{name}.{num}'.format(
             name=self._name or self._form_class.__name__.lower(),

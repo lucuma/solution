@@ -237,3 +237,26 @@ def test_validate_select_with_groups_and_type():
 
     field.load_data(u'2')
     assert field.validate() == 2
+
+
+def test_select_as_dict():
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'Curaçao'),
+             (6, u'F'), (7, u'G'), (8, 'Curaçao')]
+    field = f.Select(items=items)
+    field.name = u'abc'
+
+    expdict = {
+        'name': u'abc',
+        'items': items,
+        'value': u'',
+        'error': '',
+    }
+    result = sorted(list(field.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected
+
+    field.load_data(obj_value=3)
+    expdict['value'] = '3'
+    result = sorted(list(field.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected

@@ -6,7 +6,7 @@ import solution as f
 
 
 class ContactForm(f.Form):
-    subject = f.Text(validate=[f.Required])
+    subject = f.Text(validate=[f.Required(u'required')])
     email = f.Text(validate=[f.ValidEmail])
     message = f.Text(validate=[
         f.Required(message=u'write something!')
@@ -54,9 +54,15 @@ def test_obj_data():
     }
     form = ContactForm(data, obj=obj)
     expected = {
-        'subject': '<input name="subject" type="text" value="%s" required>' % data['subject'],
-        'email': '<input name="email" type="text" value="%s">' % obj['email'],
-        'message': '<input name="message" type="text" value="%s" required>' % data['message'],
+        'subject': '<input name="subject" type="text" value="{}" required>'.format(
+            data['subject']
+        ),
+        'email': '<input name="email" type="text" value="{}">'.format(
+            obj['email']
+        ),
+        'message': '<input name="message" type="text" value="{}" required>'.format(
+            data['message']
+        ),
     }
     for field in form:
         assert expected[field.name] == field()
@@ -511,3 +517,162 @@ def test_delete_file_field():
     form = ProfileForm(data, profile)
     obj = form.save()
     assert obj['photo'] == None
+
+
+def test_simple_form_as_dict():
+    data = {
+        'subject': u'Hello',
+    }
+    obj = {
+        'email': u'info@lucumalabs.com',
+    }
+    form = ContactForm(data, obj=obj)
+
+    expdict = {
+        u'subject': {
+            'name': u'subject',
+            'value': data[u'subject'],
+            'error': u'',
+        },
+        u'email': {
+            'name': u'email',
+            'value': obj['email'],
+            'error': u'',
+        },
+        u'message': {
+            'name': u'message',
+            'value': u'',
+            'error': u'',
+        },
+    }
+    result = sorted(list(form.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected
+
+    assert not form.is_valid()
+    expdict = {
+        u'subject': {
+            'name': u'subject',
+            'value': data[u'subject'],
+            'error': u'',
+        },
+        u'email': {
+            'name': u'email',
+            'value': obj['email'],
+            'error': u'',
+        },
+        u'message': {
+            'name': u'message',
+            'value': u'',
+            'error': u'write something!',
+        },
+    }
+    result = sorted(list(form.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected
+    assert form.as_json()
+
+
+def test_simple_prefixed_form_as_dict():
+    data = {
+        'meh-subject': u'Hello',
+    }
+    obj = {
+        'email': u'info@lucumalabs.com',
+    }
+    form = ContactForm(data, obj=obj, prefix=u'meh')
+
+    expdict = {
+        u'meh-subject': {
+            'name': u'meh-subject',
+            'value': data[u'meh-subject'],
+            'error': u'',
+        },
+        u'meh-email': {
+            'name': u'meh-email',
+            'value': obj['email'],
+            'error': u'',
+        },
+        u'meh-message': {
+            'name': u'meh-message',
+            'value': u'',
+            'error': u'',
+        },
+    }
+    print(form.as_dict())
+    result = sorted(list(form.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected
+    assert form.as_json()
+
+
+def test_form_with_subform_as_dict():
+    class FormA(f.Form):
+        a = f.Text()
+
+    class WrapForm(f.Form):
+        fa = FormA
+
+    data = {
+        'fa.a': u'A',
+    }
+    form = WrapForm(data)
+
+    expdict = {
+        'fa': {
+            'fa.a': {
+                'name': u'fa.a',
+                'value': u'A',
+                'error': u'',
+            }
+        },
+    }
+    result = sorted(list(form.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected
+    assert form.as_json()
+
+
+def test_form_with_formset_as_dict():
+    class MyForm(f.Form):
+        a = f.Text(validate=[f.Required])
+        b = f.Text(validate=[f.Required])
+
+    class WrapForm(f.Form):
+        subs = f.FormSet(MyForm)
+
+    form = WrapForm({'subs.1-a': 'foo', 'subs.2-b': 'bar'})
+
+    expdict = {
+        'subs': [
+            {
+                'subs.1-a': {
+                    'name': u'subs.1-a',
+                    'value': u'foo',
+                    'error': u'',
+                },
+                'subs.1-b': {
+                    'name': u'subs.1-b',
+                    'value': u'',
+                    'error': u'',
+                },
+            },
+            {
+                'subs.2-a': {
+                    'name': u'subs.2-a',
+                    'value': u'',
+                    'error': u'',
+                },
+                'subs.2-b': {
+                    'name': u'subs.2-b',
+                    'value': u'bar',
+                    'error': u'',
+                },
+            },
+        ],
+    }
+    print(form.as_dict())
+    result = sorted(list(form.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected
+    assert form.as_json()

@@ -390,3 +390,19 @@ def test_validate_file():
     field.load_data(obj_value=u'obj value', file_data=u'file data')
     assert field.validate() == u'file data'
     assert not field.error
+
+
+def test_field_as_dict():
+    message = u'Lorem ipsum'
+    field = f.Field(validate=[f.Required(message)])
+    field.name = u'abc'
+    assert field.validate() is None
+
+    expdict = {
+        'name': u'abc',
+        'value': u'',
+        'error': message,
+    }
+    result = sorted(list(field.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected

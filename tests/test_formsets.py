@@ -360,7 +360,3 @@ def test_formset_names():
     print('# form.subs._forms[0].a.name ==', form.subs._forms[0].a.name)
     assert form.subs.form.a.name == 'subs.1-a'
     assert form.subs._forms[0].a.name == 'subs.1-a'
-
-
-if __name__ == '__main__':
-    test_formset_names()

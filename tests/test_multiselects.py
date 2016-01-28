@@ -197,3 +197,26 @@ def test_validate_multiselect():
     field.load_data([u'xxx'])
     assert field.validate() is None
     assert field.error
+
+
+def test_multiselect_as_dict():
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'Curaçao'),
+             (6, u'F'), (7, u'G'), (8, 'Curaçao')]
+    field = f.MultiSelect(items=items)
+    field.name = u'abc'
+
+    expdict = {
+        'name': u'abc',
+        'items': items,
+        'value': [],
+        'error': '',
+    }
+    result = sorted(list(field.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected
+
+    field.load_data([u'2', u'3'])
+    expdict['value'] = [u'2', u'3']
+    result = sorted(list(field.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected

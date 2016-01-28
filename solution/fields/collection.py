@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import inspect
 import re
 
+from .field import Field
 from .text import Text
 
 
@@ -58,6 +59,11 @@ class Collection(Text):
         self.filters = [f() if inspect.isclass(f) else f for f in filters]
         super(Collection, self).__init__(**kwargs)
 
+    def as_dict(self):
+        dd = Field.as_dict(self)
+        dd['value'] = self._split_values(self.str_value) or []
+        return dd
+
     def _clean_data(self, str_value, file_data, obj_value):
         if isinstance(str_value, (list, tuple)):
             if len(str_value):
@@ -99,5 +105,7 @@ class Collection(Text):
         return self.sep.join(self.obj_value)
 
     def _split_values(self, str_value):
+        if not str_value:
+            return []
         values = re.split(self.rxsep, str_value.strip())
         return filter(lambda x: x != u'', values)

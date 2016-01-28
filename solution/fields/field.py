@@ -251,6 +251,13 @@ class Field(object):
         )
         return Markup(html)
 
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'value': self.value or u'',
+            'error': self.error.message if self.error else u'',
+        }
+
 
 def validator_in(validator, validators_list):
     for val in validators_list:

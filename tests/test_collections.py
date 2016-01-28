@@ -8,7 +8,7 @@ def lists_are_equal(l1, l2):
     return all(map(eq, l1, l2))
 
 
-def test_render_collection():
+def test_render_():
     field = f.Collection()
     field.name = 'abc'
     field.load_data(u'a, b,c')
@@ -73,3 +73,23 @@ def test_filter_collection():
     field.name = 'abc'
     field.load_data([u'a@example.com,b@example.com'])
     assert field.validate() == [u'a@example.com', u'b@example.com']
+
+
+def test_collection_as_dict():
+    field = f.Collection()
+    field.name = 'abc'
+
+    expdict = {
+        'name': u'abc',
+        'value': [],
+        'error': '',
+    }
+    result = sorted(list(field.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected
+
+    field.load_data(u'a, b,c')
+    expdict['value'] = u'a,b,c'.split(',')
+    result = sorted(list(field.as_dict().items()))
+    expected = sorted(list(expdict.items()))
+    assert result == expected
