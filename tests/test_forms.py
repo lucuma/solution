@@ -670,6 +670,19 @@ def test_form_with_formset_as_dict():
                 },
             },
         ],
+
+        '_subs_form': {
+            'subs.1-a': {
+                'name': u'subs.1-a',
+                'value': u'',
+                'error': u'',
+            },
+            'subs.1-b': {
+                'name': u'subs.1-b',
+                'value': u'',
+                'error': u'',
+            },
+        },
     }
     print(form.as_dict())
     result = sorted(list(form.as_dict().items()))

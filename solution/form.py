@@ -146,6 +146,10 @@ class Form(object):
             name: formset.as_dict()
             for name, formset in self._sets.items()
         })
+        dd.update({
+            '_{}_form'.format(name): formset.form.as_dict()
+            for name, formset in self._sets.items()
+        })
         return dd
 
     def as_json(self):
