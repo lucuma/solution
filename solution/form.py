@@ -10,7 +10,7 @@ except ImportError:
 from ._compat import itervalues
 from .fields import Field
 from .formset import FormSet
-from .utils import FakeMultiDict, get_obj_value, set_obj_value
+from .utils import FakeMultiDict, get_obj_value, set_obj_value, json_serial
 
 
 class Form(object):
@@ -154,7 +154,7 @@ class Form(object):
 
     def as_json(self):
         """Useful for inserting the form data as a JavaScript object."""
-        return json.dumps(self.as_dict())
+        return json.dumps(self.as_dict(), default=json_serial)
 
     def prepare(self, data):
         """You can overwrite this method to store the logic of pre-processing

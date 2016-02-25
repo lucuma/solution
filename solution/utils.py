@@ -1,4 +1,5 @@
 # coding=utf-8
+import datetime
 import re
 from xml.sax.saxutils import quoteattr
 
@@ -90,3 +91,10 @@ def set_obj_value(obj, name, value):
         obj[name] = value
     else:
         setattr(obj, name, value)
+
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+    if isinstance(obj, datetime.date):
+        serial = obj.isoformat()
+        return serial

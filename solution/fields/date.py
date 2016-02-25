@@ -109,4 +109,4 @@ class Date(Text):
         except (ValueError, TypeError):
             raise ValidationError
         dt = self._to_utc(dt)
-        return dt
+        return dt.replace(tzinfo=None)
