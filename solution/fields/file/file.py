@@ -36,15 +36,18 @@ class File(Field):
         kwargs.setdefault('clean', kwargs.get('upload'))
 
         self.base_path = base_path
-        self.storage = FileSystemUploader(
-            base_path=base_path,
-            upload_to=kwargs.pop('upload_to', ''),
-            secret=kwargs.pop('secret', False),
-            prefix=kwargs.pop('prefix', ''),
-            allowed=kwargs.pop('allowed', None),
-            denied=kwargs.pop('denied', None),
-            max_size=kwargs.pop('max_size', None),
-        )
+        if base_path is None:
+            self.storage = None
+        else:
+            self.storage = FileSystemUploader(
+                base_path=base_path,
+                upload_to=kwargs.pop('upload_to', ''),
+                secret=kwargs.pop('secret', False),
+                prefix=kwargs.pop('prefix', ''),
+                allowed=kwargs.pop('allowed', None),
+                denied=kwargs.pop('denied', None),
+                max_size=kwargs.pop('max_size', None),
+            )
         super(File, self).__init__(**kwargs)
 
     def clean(self, value):

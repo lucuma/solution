@@ -173,7 +173,7 @@ class Uploader(object):
         self.check_file_extension(ext, allowed, denied)
 
     def check_file_extension(self, ext, allowed, denied):
-        if allowed is not True and not ext in allowed:
+        if allowed is not True and ext not in allowed:
             raise UnsupportedMediaType()
         if denied and ext in denied:
             raise UnsupportedMediaType()
