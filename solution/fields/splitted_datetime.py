@@ -49,7 +49,7 @@ class SplittedDateTime(Field):
     )
 
     def __init__(self, time_format='%l:%M %p', **kwargs):
-        kwargs.setdefault('default', [])
+        kwargs.setdefault('default', None)
         self.time_format = time_format
         return super(SplittedDateTime, self).__init__(**kwargs)
 

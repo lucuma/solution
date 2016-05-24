@@ -75,7 +75,7 @@ class Time(Text):
 
     def str_to_py(self, format=None, locale=None):
         if not self.str_value:
-            return self.default or None
+            return None
         match = self.rx_time.match(self.str_value.upper())
         if not match:
             raise ValidationError

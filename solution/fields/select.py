@@ -261,7 +261,7 @@ class MultiSelect(BaseSelect):
     """
 
     def __init__(self, items, type=None, create=False, **kwargs):
-        kwargs.setdefault('default', [])
+        kwargs.setdefault('default', None)
         self._items = items
         self._type = type
         self._create = create

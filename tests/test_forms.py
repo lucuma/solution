@@ -26,7 +26,9 @@ def test_fields():
         'message': '<input name="message" type="text" value="" required>',
     }
     for field in form:
-        assert expected[field.name] == field()
+        field_str = field()
+        print(field_str)
+        assert expected[field.name] == field_str
 
 
 def test_initial_data():

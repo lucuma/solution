@@ -71,7 +71,7 @@ class SimpleDate(Text):
 
     def str_to_py(self, locale=None):
         if not self.str_value:
-            return self.default or None
+            return None
         try:
             dt = [int(f) for f in self.str_value.split('-')]
             return datetime.date(*dt)

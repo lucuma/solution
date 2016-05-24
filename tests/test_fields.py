@@ -182,11 +182,17 @@ def test_validate_text():
     field = f.Text(validate=[f.Required])
     field.name = u'abc'
 
+    field.load_data()
+    assert field.validate() is None
+    assert field.error
+
     field.load_data(u'')
+    # assert field.validate() == u''
     assert field.validate() is None
     assert field.error
 
     field.load_data(u' ')
+    # assert field.validate() == u' '
     assert field.validate() is None
     assert field.error
 
@@ -422,17 +428,22 @@ def test_render_boolean_extra():
 def test_validate_boolean():
     field = f.Boolean()
 
-    for val in [None, u'', u'0', u'no', u'off', u'false', u'NO', 'fAlsE']:
-        print(val)
+    for val in [u'', u'0', u'no', u'off', u'false', u'NO', 'fAlsE']:
         field.load_data(val)
-        assert field.validate() == False
+        value = field.validate()
+        # print(value)
+        assert value == False
 
     for val in [u'1', u'ok', u'yes', u'Of course!!!1', u'whatever']:
         field.load_data(val)
-        assert field.validate() == True
+        value = field.validate()
+        # print(value)
+        assert value == True
 
     field = f.Boolean(validate=[f.Required])
-    assert field.validate() is None
+    value = field.validate()
+    print(value)
+    assert value is None
     assert field.error
 
 

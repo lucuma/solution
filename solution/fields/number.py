@@ -37,10 +37,10 @@ class Number(Text):
 
     def str_to_py(self, **kwargs):
         if not self.str_value:
-            return self.obj_value
+            return None
         try:
             if self.type == int:
                 return int(float(self.str_value))
             return self.type(self.str_value)
         except Exception:
-            return self.obj_value
+            return None

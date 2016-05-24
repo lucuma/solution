@@ -154,7 +154,10 @@ class Field(object):
         return self.str_value
 
     def py_to_str(self, **kwargs):
-        return to_unicode(self.obj_value or self.default)
+        value = self.obj_value or self.default
+        if value is None:
+            value = u''
+        return to_unicode(value)
 
     def to_python(self, **kwargs):
         try:
@@ -164,8 +167,6 @@ class Field(object):
             return None
 
     def str_to_py(self, **kwargs):
-        if self.str_value is None:
-            return self.obj_value
         return self.str_value
 
     def validate(self, form=None, cleaned_data=None, **kwargs):
@@ -177,13 +178,13 @@ class Field(object):
         self.error = None
         py_value = self.to_python(**kwargs)
         # Do not validate empty fields if are optional
-        if self.optional and self.is_empty(py_value):
-            py_value = self.default or py_value
-        else:
+        if not self.is_empty(py_value) or not self.optional:
             py_value = self.validate_value(form, py_value)
-
         py_value = self.clean_value(py_value, **kwargs)
         self.has_changed = (py_value != self.obj_value)
+
+        if py_value is None:
+            py_value = self.obj_value or self.default
         return py_value
 
     def clean_value(self, py_value, **kwargs):
@@ -196,7 +197,7 @@ class Field(object):
             return None
 
     def is_empty(self, py_value):
-        return not py_value
+        return py_value is None or py_value == []
 
     def validate_value(self, form, py_value):
         for validator in self.validators:

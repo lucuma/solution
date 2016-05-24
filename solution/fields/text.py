@@ -34,7 +34,7 @@ class Text(Field):
     default_validator = None
 
     def __init__(self, **kwargs):
-        kwargs.setdefault('default', u'')
+        kwargs.setdefault('default', None)
         super(Text, self).__init__(**kwargs)
 
     def __call__(self, **kwargs):

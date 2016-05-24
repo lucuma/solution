@@ -102,7 +102,7 @@ class Date(Text):
 
     def str_to_py(self, **kwargs):
         if not self.str_value:
-            return self.default or None
+            return None
         try:
             ldt = [int(f) for f in self.str_value.split('-')]
             dt = datetime.datetime(*ldt)
