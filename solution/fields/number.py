@@ -36,9 +36,11 @@ class Number(Text):
         super(Number, self).__init__(**kwargs)
 
     def str_to_py(self, **kwargs):
+        if not self.str_value:
+            return self.obj_value
         try:
             if self.type == int:
                 return int(float(self.str_value))
             return self.type(self.str_value)
         except Exception:
-            return None
+            return self.obj_value

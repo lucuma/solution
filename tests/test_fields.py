@@ -22,17 +22,60 @@ def test_validation_error():
 
 def test_field():
     field = f.Field()
-    value = u'abc'
-    field.load_data(value)
-    assert field.to_string() == value
-    assert field.validate() == value
+    user_value = u'abc'
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+
+def test_field_load_obj_data():
+    field = f.Field()
+    obj_value = u'cde'
+    field.load_data(None, obj_value)
+    assert field.validate() == obj_value
+
+
+def test_field_load_both_data():
+    field = f.Field()
+    user_value = u'abc'
+    obj_value = u'cde'
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
 
 
 def test_field_default():
-    value = u'abc'
-    field = f.Field(default=value)
-    assert field.to_string() == value
-    assert field.validate() == value
+    default = u'nnn'
+    field = f.Field(default=default)
+    assert field.validate() == default
+
+    field.load_data(None, None)
+    assert field.validate() == default
+
+
+def test_field_default_with_user_data():
+    default = u'nnn'
+    field = f.Field(default=default)
+    user_value = u'abc'
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+
+def test_field_default_with_obj_data():
+    default = u'nnn'
+    field = f.Field(default=default)
+    obj_value = u'cde'
+
+    field.load_data(None, obj_value)
+    assert field.validate() == obj_value
+
+
+def test_field_default_with_both_data():
+    default = u'nnn'
+    field = f.Field(default=default)
+    user_value = u'abc'
+    obj_value = u'cde'
+
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
 
 
 def test_reset():
@@ -151,7 +194,6 @@ def test_validate_text():
 def test_text_default():
     value = u'abc'
     field = f.Text(default=value)
-    assert field.to_string() == value
     assert field.validate() == value
 
 
@@ -215,10 +257,54 @@ def test_number_types():
     assert field.validate() == Decimal('3.02')
 
 
+def test_number_load_obj_data():
+    field = f.Number()
+    obj_value = 20
+    field.load_data(None, obj_value)
+    assert field.validate() == obj_value
+
+
+def test_number_load_both_data():
+    field = f.Number()
+    user_value = 10
+    obj_value = 20
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
+
+
 def test_number_default():
-    field = f.Number(default=5)
-    assert field.to_string() == u'5'
-    assert field.validate() == 5
+    default = 5
+    field = f.Number(default=default)
+    assert field.validate() == default
+
+    field.load_data(None, None)
+    assert field.validate() == default
+
+
+def test_number_default_with_user_data():
+    default = 5
+    field = f.Number(default=default)
+    user_value = 10
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+
+def test_number_default_with_obj_data():
+    default = 5
+    field = f.Number(default=default)
+    obj_value = 20
+
+    field.load_data(None, obj_value)
+    assert field.validate() == obj_value
+
+
+def test_number_default_with_both_data():
+    default = 5
+    field = f.Number(default=default)
+    user_value = 10
+    obj_value = 20
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
 
 
 def test_render_color():
@@ -298,7 +384,6 @@ def test_validate_color():
 
 def test_color_default():
     field = f.Color(default='#ffaf2e')
-    assert field.to_string() == u'#ffaf2e'
     assert field.validate() == u'#ffaf2e'
 
 
