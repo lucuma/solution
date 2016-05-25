@@ -46,7 +46,7 @@ class Boolean(Field):
 
     def str_to_py(self, **kwargs):
         if self.str_value is None:
-            return None
+            return False
         if self.str_value.lower() in self.falsy:
             return False
         return True

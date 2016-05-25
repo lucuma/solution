@@ -2,6 +2,7 @@
 from __future__ import print_function
 from decimal import Decimal
 
+import pytest
 import solution as f
 
 
@@ -20,67 +21,66 @@ def test_validation_error():
     assert v.message
 
 
-def test_field():
-    field = f.Field()
-    user_value = u'abc'
-    field.load_data(user_value)
-    assert field.validate() == user_value
+testdata = [
+    (f.Field, None, u'user', u'obj', u'user'),
+    (f.Field, None, None, u'obj', u'obj'),
+    (f.Field, u'default', None, None, u'default'),
+    (f.Field, u'default', u'user', None, u'user'),
+    (f.Field, u'default', None, u'obj', u'obj'),
+    (f.Field, u'default', u'user', u'obj', u'user'),
+    (f.Field, u'default', u'', u'obj', u''),
+
+    (f.Number, None, 10, 20, 10),
+    (f.Number, None, None, 20, 20),
+    (f.Number, 5, None, None, 5),
+    (f.Number, 5, 10, None, 10),
+    (f.Number, 5, None, 20, 20),
+    (f.Number, 5, 10, 20, 10),
+    (f.Number, 5, u'', 20, None),
+
+    # Ni el valor por defecto ni el del obj se usan nunca
+    (f.Boolean, None, u'1', None, True),
+    (f.Boolean, True, u'1', None, True),
+    (f.Boolean, False, u'1', None, True),
+    (f.Boolean, None, u'1', u'0', True),
+    (f.Boolean, True, u'1', u'0', True),
+    (f.Boolean, False, u'1', u'0', True),
+    (f.Boolean, None, u'1', u'1', True),
+    (f.Boolean, True, u'1', u'1', True),
+    (f.Boolean, False, u'1', u'1', True),
+
+    (f.Boolean, None, u'0', None, False),
+    (f.Boolean, True, u'0', None, False),
+    (f.Boolean, False, u'0', None, False),
+    (f.Boolean, None, u'0', u'0', False),
+    (f.Boolean, True, u'0', u'0', False),
+    (f.Boolean, False, u'0', u'0', False),
+    (f.Boolean, None, u'0', u'1', False),
+    (f.Boolean, True, u'0', u'1', False),
+    (f.Boolean, False, u'0', u'1', False),
+
+    (f.Boolean, None, None, None, False),
+    (f.Boolean, True, None, None, False),
+    (f.Boolean, False, None, None, False),
+    (f.Boolean, None, None, u'0', False),
+    (f.Boolean, True, None, u'0', False),
+    (f.Boolean, False, None, u'0', False),
+    (f.Boolean, None, None, u'1', False),
+    (f.Boolean, True, None, u'1', False),
+    (f.Boolean, False, None, u'1', False),
+]
 
 
-def test_field_load_obj_data():
-    field = f.Field()
-    obj_value = u'cde'
-    field.load_data(None, obj_value)
-    assert field.validate() == obj_value
-
-
-def test_field_load_both_data():
-    field = f.Field()
-    user_value = u'abc'
-    obj_value = u'cde'
+@pytest.mark.parametrize('TheField,default,user_value,obj_value,expected', testdata)
+def test_field(TheField, default, user_value, obj_value, expected):
+    field = TheField(default=default)
     field.load_data(user_value, obj_value)
-    assert field.validate() == user_value
-
-
-def test_field_default():
-    default = u'nnn'
-    field = f.Field(default=default)
-    assert field.validate() == default
-
-    field.load_data(None, None)
-    assert field.validate() == default
-
-
-def test_field_default_with_user_data():
-    default = u'nnn'
-    field = f.Field(default=default)
-    user_value = u'abc'
-    field.load_data(user_value)
-    assert field.validate() == user_value
-
-
-def test_field_default_with_obj_data():
-    default = u'nnn'
-    field = f.Field(default=default)
-    obj_value = u'cde'
-
-    field.load_data(None, obj_value)
-    assert field.validate() == obj_value
-
-
-def test_field_default_with_both_data():
-    default = u'nnn'
-    field = f.Field(default=default)
-    user_value = u'abc'
-    obj_value = u'cde'
-
-    field.load_data(user_value, obj_value)
-    assert field.validate() == user_value
+    assert field.validate() == expected
 
 
 def test_reset():
     field = f.Field()
-    field.load_data('a', 'b', 'c')
+    field.load_data(u'user', u'obj', u'file')
     assert (field.str_value and field.obj_value and field.file_data and
             not field.empty)
     field.reset()
@@ -187,14 +187,12 @@ def test_validate_text():
     assert field.error
 
     field.load_data(u'')
-    # assert field.validate() == u''
-    assert field.validate() is None
-    assert field.error
+    assert field.validate() == u''
+    assert not field.error
 
     field.load_data(u' ')
-    # assert field.validate() == u' '
-    assert field.validate() is None
-    assert field.error
+    assert field.validate() == u' '
+    assert not field.error
 
 
 def test_text_default():
@@ -245,7 +243,7 @@ def test_validate_number():
     assert field.validate() == 123
 
     field.load_data('defg')
-    assert not field.validate()
+    assert field.validate() is None
     assert field.error
 
 
@@ -261,56 +259,6 @@ def test_number_types():
     field = f.Number(type=Decimal)
     field.load_data('3.02')
     assert field.validate() == Decimal('3.02')
-
-
-def test_number_load_obj_data():
-    field = f.Number()
-    obj_value = 20
-    field.load_data(None, obj_value)
-    assert field.validate() == obj_value
-
-
-def test_number_load_both_data():
-    field = f.Number()
-    user_value = 10
-    obj_value = 20
-    field.load_data(user_value, obj_value)
-    assert field.validate() == user_value
-
-
-def test_number_default():
-    default = 5
-    field = f.Number(default=default)
-    assert field.validate() == default
-
-    field.load_data(None, None)
-    assert field.validate() == default
-
-
-def test_number_default_with_user_data():
-    default = 5
-    field = f.Number(default=default)
-    user_value = 10
-    field.load_data(user_value)
-    assert field.validate() == user_value
-
-
-def test_number_default_with_obj_data():
-    default = 5
-    field = f.Number(default=default)
-    obj_value = 20
-
-    field.load_data(None, obj_value)
-    assert field.validate() == obj_value
-
-
-def test_number_default_with_both_data():
-    default = 5
-    field = f.Number(default=default)
-    user_value = 10
-    obj_value = 20
-    field.load_data(user_value, obj_value)
-    assert field.validate() == user_value
 
 
 def test_render_color():
@@ -443,8 +391,7 @@ def test_validate_boolean():
     field = f.Boolean(validate=[f.Required])
     value = field.validate()
     print(value)
-    assert value is None
-    assert field.error
+    assert value == False
 
 
 def test_render_file():

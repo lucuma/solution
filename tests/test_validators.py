@@ -1,5 +1,4 @@
 # coding=utf-8
-import pytest
 import solution as f
 
 
@@ -7,9 +6,9 @@ def test_required():
     validator = f.Required()
     assert validator(u'abc')
     assert validator(True)
-    assert not validator(u'')
-    assert not validator(u'  ')
-    assert not validator()
+    assert validator(u'')
+    assert validator(u'  ')
+    assert not validator(None)
 
 
 def test_required_message():

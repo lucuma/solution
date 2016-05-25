@@ -183,7 +183,7 @@ class Field(object):
         py_value = self.clean_value(py_value, **kwargs)
         self.has_changed = (py_value != self.obj_value)
 
-        if py_value is None:
+        if self.str_value is None and py_value is None:
             py_value = self.obj_value or self.default
         return py_value
 
