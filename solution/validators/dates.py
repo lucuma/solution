@@ -13,6 +13,8 @@ class IsDate(Validator):
     message = u'Enter a valid date.'
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         return isinstance(py_value, datetime.date)
 
 
@@ -25,6 +27,8 @@ class IsTime(Validator):
     message = u'Enter a valid date.'
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         return isinstance(py_value, datetime.time)
 
 
@@ -50,6 +54,8 @@ class Before(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         value = py_value
         if not isinstance(value, datetime.date):
             return False
@@ -80,6 +86,8 @@ class After(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         value = py_value
         if not isinstance(value, datetime.date):
             return False
@@ -102,6 +110,8 @@ class BeforeNow(Before):
             self.message = message
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         self.dt = datetime.datetime.utcnow()
         return super(BeforeNow, self).__call__(py_value, form)
 
@@ -120,5 +130,7 @@ class AfterNow(After):
             self.message = message
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         self.dt = datetime.datetime.utcnow()
         return super(AfterNow, self).__call__(py_value, form)

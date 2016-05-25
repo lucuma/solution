@@ -23,8 +23,8 @@ class LongerThan(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
-        if py_value is None:
-            return False
+        if py_value is None or py_value == u'':
+            return True
         py_value = to_unicode(py_value)
         return len(py_value) >= self.length
 
@@ -49,8 +49,8 @@ class ShorterThan(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
-        if py_value is None:
-            return False
+        if py_value is None or py_value == u'':
+            return True
         py_value = to_unicode(py_value or u'')
         return len(py_value) <= self.length
 
@@ -74,6 +74,8 @@ class LessThan(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         if isinstance(py_value, string_types):
             py_value = try_to_number(py_value)
         if py_value is None:
@@ -101,6 +103,8 @@ class MoreThan(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         if isinstance(py_value, string_types):
             py_value = try_to_number(py_value)
         if py_value is None:
@@ -132,6 +136,8 @@ class InRange(Validator):
         self.message = message
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         if isinstance(py_value, string_types):
             py_value = try_to_number(py_value)
         if py_value is None:

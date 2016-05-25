@@ -24,9 +24,10 @@ class IsNumber(Validator):
     message = u'Enter a number.'
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         try:
             float(py_value)
         except Exception:
             return False
         return True
-

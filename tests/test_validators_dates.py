@@ -7,9 +7,9 @@ import solution as f
 
 def test_isdate():
     validator = f.IsDate()
+    assert validator(None)
     assert validator(datetime.date.today())
     assert validator(datetime.datetime.utcnow())
-    assert not validator(None)
     assert not validator(u'2012-04-13')
 
 
@@ -17,9 +17,9 @@ def test_before():
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=1)
     validator = f.Before(now)
+    assert validator(None)
     assert validator(now - delta)
     assert not validator(now + delta)
-    assert not validator(None)
 
     now = datetime.date.today()
     delta = datetime.timedelta(days=1)
@@ -38,9 +38,9 @@ def test_after():
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=1)
     validator = f.After(now)
+    assert validator(None)
     assert validator(now + delta)
     assert not validator(now - delta)
-    assert not validator(None)
 
     now = datetime.date.today()
     delta = datetime.timedelta(days=1)
@@ -59,9 +59,9 @@ def test_beforenow():
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=1)
     validator = f.BeforeNow()
+    assert validator(None)
     assert validator(now - delta)
     assert not validator(now + delta)
-    assert not validator(None)
 
 
 def test_beforenow_message():
@@ -73,9 +73,9 @@ def test_afternow():
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=1)
     validator = f.AfterNow()
+    assert validator(None)
     assert validator(now + delta)
     assert not validator(now - delta)
-    assert not validator(None)
 
 
 def test_afternow_message():

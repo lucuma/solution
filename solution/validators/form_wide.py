@@ -99,10 +99,9 @@ class ValidSplitDate(FormValidator):
             month = int(data.get(self.month))
             year = int(data.get(self.year)) if self.year else None
             if year:
-                d = datetime.date(year, month, day)
+                datetime.date(year, month, day)
             else:
-                d = datetime.date(now.year, month, day)
+                datetime.date(now.year, month, day)
         except Exception:
             return False
         return True
-

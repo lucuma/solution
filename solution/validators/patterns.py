@@ -32,6 +32,8 @@ class Match(Validator):
             self.message = message
 
     def __call__(self, py_value=None, form=None):
+        if py_value is None or py_value == u'':
+            return True
         return self.regex.match(py_value or u'')
 
 
@@ -75,7 +77,9 @@ class ValidEmail(Validator):
             self.message = message
 
     def __call__(self, py_value=None, form=None):
-        if not py_value or '@' not in py_value:
+        if py_value is None or py_value == u'':
+            return True
+        if '@' not in py_value:
             return False
         py_value = parseaddr(py_value)[-1]
         if '.@' in py_value:
@@ -118,8 +122,8 @@ class ValidURL(Validator):
             self.message = message
 
     def __call__(self, py_value=None, form=None):
-        if not py_value:
-            return False
+        if py_value is None or py_value == u'':
+            return True
         if self.regex.match(py_value):
             return True
         # Common case failed. Try for possible IDN domain-part
