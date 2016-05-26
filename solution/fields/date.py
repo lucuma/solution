@@ -73,8 +73,10 @@ class Date(Text):
 
     def py_to_str(self, **kwargs):
         dt = self.obj_value or self.default
-        if not dt:
+        if not dt or not isinstance(dt, datetime.date):
             return u''
+        if not isinstance(dt, datetime.datetime):
+            dt = datetime.datetime(dt.year, dt.month, dt.day)
         dt = self._to_timezone(dt)
         return '{dt.year}-{dt.month:02d}-{dt.day:02d}'.format(dt=dt)
 
