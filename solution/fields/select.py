@@ -261,7 +261,7 @@ class MultiSelect(BaseSelect):
     """
 
     def __init__(self, items, type=None, create=False, **kwargs):
-        kwargs.setdefault('default', None)
+        kwargs.setdefault('default', [])
         self._items = items
         self._type = type
         self._create = create
@@ -302,7 +302,7 @@ class MultiSelect(BaseSelect):
             accepted = list(iter_flatten(self.items))
             py_value = [self._clean_value(v)
                         for v in self.str_value if v in accepted]
-        return py_value or None
+        return py_value
 
     def __call__(self, **kwargs):
         items = self.items

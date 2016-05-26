@@ -379,18 +379,15 @@ def test_validate_boolean():
     for val in [u'', u'0', u'no', u'off', u'false', u'NO', 'fAlsE']:
         field.load_data(val)
         value = field.validate()
-        # print(value)
         assert value == False
 
     for val in [u'1', u'ok', u'yes', u'Of course!!!1', u'whatever']:
         field.load_data(val)
         value = field.validate()
-        # print(value)
         assert value == True
 
     field = f.Boolean(validate=[f.Required])
     value = field.validate()
-    print(value)
     assert value == False
 
 

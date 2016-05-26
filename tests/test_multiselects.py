@@ -12,6 +12,67 @@ def lists_are_equal(l1, l2):
     return all(map(eq, l1, l2))
 
 
+def test_load_data():
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'), (6, u'F'), (7, u'G')]
+    user_value = [u'1', u'2', u'3']
+    obj_value = [2, 4, 6]
+
+    field = f.MultiSelect(items=items)
+    field.load_data()
+    assert field.validate() == []
+
+    field = f.MultiSelect(items=items)
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+    field = f.MultiSelect(items=items)
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
+
+    field = f.MultiSelect(items=items, validate=[f.Required])
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+    field = f.MultiSelect(items=items, validate=[f.Required])
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
+
+    field = f.MultiSelect(items=items)
+    field.load_data(None, obj_value)
+    assert field.validate() == obj_value
+
+
+def test_load_data_with_default():
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'), (6, u'F'), (7, u'G')]
+    default = [5]
+    user_value = [u'1', u'2', u'3']
+    obj_value = [2, 4, 6]
+
+    field = f.MultiSelect(items=items, default=default)
+    field.load_data()
+    assert field.validate() == default
+
+    field = f.MultiSelect(items=items, default=default)
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+    field = f.MultiSelect(items=items, default=default)
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
+
+    field = f.MultiSelect(items=items, default=default, validate=[f.Required])
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+    field = f.MultiSelect(items=items, default=default, validate=[f.Required])
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
+
+    field = f.MultiSelect(items=items, default=default)
+    field.load_data(None, obj_value)
+    assert field.validate() == obj_value
+
+
 def test_render_multiselect():
     items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'),
              (6, u'F'), (7, u'G')]
@@ -177,26 +238,6 @@ def test_render_multiselect_default_value():
         '</select>'
     )
     assert field.as_select() == expected
-
-
-def test_validate_multiselect():
-    items = [(1, u'A'), (2, u'B'), (3, u'C')]
-    field = f.MultiSelect(items=items, validate=[f.Required])
-    field.name = 'abc'
-
-    field.load_data([u'2'])
-    assert lists_are_equal(field.validate(), [u'2'])
-
-    field.load_data([u'2', u'x', u'3'])
-    assert lists_are_equal(field.validate(), [u'2', u'3'])
-
-    field.load_data()
-    assert field.validate() is None
-    assert field.error
-
-    field.load_data([u'xxx'])
-    assert field.validate() is None
-    assert field.error
 
 
 def test_multiselect_as_dict():

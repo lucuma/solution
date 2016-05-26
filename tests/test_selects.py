@@ -6,6 +6,67 @@ def _clean(form, value, **kwargs):
     return value
 
 
+def test_load_data():
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'), (6, u'F'), (7, u'G')]
+    user_value = u'2'
+    obj_value = 4
+
+    field = f.Select(items=items)
+    field.load_data()
+    assert field.validate() == None
+
+    field = f.Select(items=items)
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+    field = f.Select(items=items)
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
+
+    field = f.Select(items=items, validate=[f.Required])
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+    field = f.Select(items=items, validate=[f.Required])
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
+
+    field = f.Select(items=items)
+    field.load_data(None, obj_value)
+    assert field.validate() == obj_value
+
+
+def test_load_data_with_default():
+    items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'E'), (6, u'F'), (7, u'G')]
+    default = 5
+    user_value = u'2'
+    obj_value = 4
+
+    field = f.Select(items=items, default=default)
+    field.load_data()
+    assert field.validate() == default
+
+    field = f.Select(items=items, default=default)
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+    field = f.Select(items=items, default=default)
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
+
+    field = f.Select(items=items, default=default, validate=[f.Required])
+    field.load_data(user_value)
+    assert field.validate() == user_value
+
+    field = f.Select(items=items, default=default, validate=[f.Required])
+    field.load_data(user_value, obj_value)
+    assert field.validate() == user_value
+
+    field = f.Select(items=items, default=default)
+    field.load_data(None, obj_value)
+    assert field.validate() == obj_value
+
+
 def test_render_select():
     items = [(1, u'A'), (2, u'B'), (3, u'C'), (4, u'D'), (5, u'Curaçao'),
              (6, u'F'), (7, u'G'), (8, 'Curaçao')]
@@ -183,23 +244,6 @@ def test_iterate_select():
     assert u'|'.join([item[1] for item in field]) == 'A|B|C'
 
 
-def test_validate_select():
-    items = [(u'1', u'A'), (u'2', u'B'), (u'3', u'C')]
-    field = f.Select(items=items, validate=[f.Required])
-    field.name = 'abc'
-
-    field.load_data(u'2')
-    assert field.validate() == u'2'
-
-    field.load_data()
-    assert field.validate() is None
-    assert field.error
-
-    field.load_data(u'xxx')
-    assert field.validate() is None
-    assert field.error
-
-
 def test_validate_select_with_type():
     items = [(u'1', u'A'), (u'2', u'B'), (u'3', u'C')]
     field = f.Select(items=items, validate=[f.Required], type=int)
@@ -207,6 +251,9 @@ def test_validate_select_with_type():
 
     field.load_data(u'2')
     assert field.validate() == 2
+
+    field.load_data(u'x')
+    assert field.validate() == None
 
 
 def test_validate_select_with_groups():

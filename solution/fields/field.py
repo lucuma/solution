@@ -197,7 +197,7 @@ class Field(object):
             return None
 
     def is_empty(self, py_value):
-        return py_value is None or py_value == []
+        return py_value is None
 
     def validate_value(self, form, py_value):
         for validator in self.validators:
