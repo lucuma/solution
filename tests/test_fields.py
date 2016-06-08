@@ -187,12 +187,12 @@ def test_validate_text():
     assert field.error
 
     field.load_data(u'')
-    assert field.validate() == u''
-    assert not field.error
+    assert field.validate() == None
+    assert field.error
 
     field.load_data(u' ')
-    assert field.validate() == u' '
-    assert not field.error
+    assert field.validate() == None
+    assert field.error
 
 
 def test_text_default():

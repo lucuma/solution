@@ -6,8 +6,8 @@ def test_required():
     validator = f.Required()
     assert validator(u'abc')
     assert validator(True)
-    assert validator(u'')
-    assert validator(u'  ')
+    assert not validator(u'')
+    assert not validator(u'  ')
     assert not validator(None)
 
 
