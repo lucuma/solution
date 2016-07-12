@@ -1,6 +1,5 @@
 # coding=utf-8
 from __future__ import absolute_import
-from hashlib import md5
 import os
 
 from .._compat import to_unicode, string_types
@@ -69,9 +68,9 @@ class BaseSelect(Field):
 
     def _render_item(self, item, kwargs, values, tmpl):
         val, label = item
-        item_id = u'{id}-{random}'.format(
+        item_id = u'{id}-{hash}'.format(
             id=self.id,
-            random=md5(os.urandom(8)).hexdigest()[:8],
+            hash=hash(label or val or ''),
         )
         kwargs['value'] = val
         kwargs['checked'] = (val in values or str(val) in values)

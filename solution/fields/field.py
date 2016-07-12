@@ -1,6 +1,5 @@
 # coding=utf-8
 from __future__ import absolute_import
-from hashlib import md5
 import inspect
 import os
 import pytz
@@ -98,9 +97,9 @@ class Field(object):
         return self._id
 
     def _get_id(self):
-        return u'id-{name}-{random}'.format(
+        return u'id-{name}-{hash}'.format(
             name=self.name,
-            random=md5(os.urandom(8)).hexdigest()[:8]
+            hash=hash(self.name)
         )
 
     def reset(self):
