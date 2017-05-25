@@ -202,8 +202,8 @@ class Form(object):
 
         # Initialize form-sets
         for name, formset in self._sets.items():
-            obj_value = get_obj_value(obj, name)
             sclass = formset.__class__
+            objs = formset._objs or get_obj_value(obj, name)
             formset_name = '{prefix}{name}'.format(
                 prefix=self._prefix,
                 name=name.lower()
@@ -212,7 +212,7 @@ class Form(object):
                 form_class=formset._form_class,
                 name=formset_name,
                 data=data,
-                objs=obj_value,
+                objs=objs,
                 files=files,
                 locale=self._locale,
                 tz=self._tz,

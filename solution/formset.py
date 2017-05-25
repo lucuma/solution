@@ -41,12 +41,12 @@ class FormSet(object):
         self._create_new = bool(create_new)
         backref = backref or parent
         self._backref = backref
-
         self._forms = []
         self._errors = {}
         self._named_errors = {}
         self.missing_objs = []
         self.has_changed = False
+        self._objs = objs
 
         if (data or objs or files):
             self._init(data, objs, files)
