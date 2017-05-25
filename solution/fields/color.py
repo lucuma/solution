@@ -83,5 +83,5 @@ def normalize_rgb(r, g, b, a):
         return None
     color = '#%02x%02x%02x' % (r, g, b)
     if a:
-        color += '%02x' % a
+        color += '%02x' % int(a)
     return color

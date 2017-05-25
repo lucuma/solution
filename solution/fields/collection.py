@@ -108,4 +108,4 @@ class Collection(Text):
         if not str_value:
             return []
         values = re.split(self.rxsep, str_value.strip())
-        return filter(lambda x: x != u'', values)
+        return list(filter(lambda x: x != u'', values))

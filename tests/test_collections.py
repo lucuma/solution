@@ -92,4 +92,6 @@ def test_collection_as_dict():
     expdict['value'] = u'a,b,c'.split(',')
     result = sorted(list(field.as_dict().items()))
     expected = sorted(list(expdict.items()))
+    print(result)
+    print(expected)
     assert result == expected
