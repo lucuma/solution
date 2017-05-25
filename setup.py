@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding=utf-8
-b'This library requires pypy or Python 2.6, 2.7, 3.3, pypy or newer'
 import io
 import os
 import re
@@ -53,8 +52,8 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-        'Topic :: Software Development :: Libraries :: Python Modules'
-    ],
-    provides=['hours.of.debugging.fun'],
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+    ]
 )
